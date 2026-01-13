@@ -60,6 +60,7 @@ export default function CourseManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]); // For bulk selection
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -164,6 +165,21 @@ export default function CourseManagementPage() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await apiClient.delete("/courses/bulk/delete", { data: { ids } });
+    },
+    onSuccess: async () => {
+      message.success(`Đã xóa ${selectedRowKeys.length} khóa học`);
+      setSelectedRowKeys([]); // Clear selection
+      await queryClient.invalidateQueries({ queryKey: ["courses"] });
+      await refetch(); // Force immediate refetch
+    },
+    onError: (error: any) => {
+      message.error(error.response?.data?.message || "Không thể xóa khóa học");
+    },
+  });
+
   const handleCreate = () => {
     setSelectedCourse(null);
     form.resetFields();
@@ -202,6 +218,25 @@ export default function CourseManagementPage() {
   const handleViewDetail = (course: Course) => {
     setSelectedCourse(course);
     setIsDetailDrawerOpen(true);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning("Vui lòng chọn ít nhất một khóa học");
+      return;
+    }
+    bulkDeleteMutation.mutate(selectedRowKeys);
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys as string[]);
+    },
+    getCheckboxProps: (record: Course) => ({
+      disabled: false,
+      name: record.title,
+    }),
   };
 
   const columns = [
@@ -298,7 +333,6 @@ export default function CourseManagementPage() {
       title: "",
       key: "action",
       width: 200,
-      fixed: "right" as const,
       render: (_: any, record: Course) => (
         <Space size="small">
           <Button
@@ -369,12 +403,23 @@ export default function CourseManagementPage() {
 
   return (
     <DashboardLayout>
-      <div className="page-header">
-        <div>
-          <Title level={2} className="page-title">
+      <div
+        className="page-header"
+        style={{
+          flexDirection: "row",
+          gap: "16px",
+          alignItems: "flex-start",
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <Title
+            level={2}
+            className="page-title"
+            style={{ fontSize: "clamp(20px, 5vw, 28px)" }}
+          >
             Quản lý khóa học
           </Title>
-          <Text className="page-subtitle">
+          <Text className="page-subtitle" style={{ display: "block" }}>
             Tạo, sửa, xuất bản và quản lý các khóa học
           </Text>
         </div>
@@ -383,35 +428,36 @@ export default function CourseManagementPage() {
           icon={<MdAdd size={20} />}
           size="large"
           onClick={handleCreate}
+          style={{ flexShrink: 0 }}
         >
-          Tạo khóa học mới
+          <span className="hide-on-mobile">Tạo khóa học mới</span>
+          <span className="show-on-mobile">Tạo mới</span>
         </Button>
       </div>
 
       <Card variant="borderless">
         <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          <div className="filter-container">
             <Input
               placeholder="Tìm kiếm theo tiêu đề, mô tả..."
               prefix={<MdSearch size={20} style={{ color: "#94a3b8" }} />}
-              style={{ width: 320 }}
+              className="search-input"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
             <Select
               placeholder="Trạng thái"
-              style={{ width: 150 }}
+              className="filter-select"
               value={statusFilter || undefined}
               onChange={setStatusFilter}
               allowClear
-              size="large"
             >
               <Select.Option value="draft">Nháp</Select.Option>
               <Select.Option value="published">Đã xuất bản</Select.Option>
             </Select>
             <InputNumber
               placeholder="Giá tối thiểu"
-              style={{ width: 150 }}
+              className="filter-input"
               min={0}
               value={priceRange.min}
               onChange={(value) =>
@@ -420,16 +466,38 @@ export default function CourseManagementPage() {
             />
             <InputNumber
               placeholder="Giá tối đa"
-              style={{ width: 150 }}
+              className="filter-input"
               min={0}
               value={priceRange.max}
               onChange={(value) =>
                 setPriceRange({ ...priceRange, max: value || undefined })
               }
             />
-            <Button icon={<MdRefresh size={20} />} onClick={() => refetch()}>
-              Làm mới
+            <Button
+              icon={<MdRefresh size={20} />}
+              onClick={() => refetch()}
+              className="refresh-btn"
+            >
+              <span>Làm mới</span>
             </Button>
+            {selectedRowKeys.length > 0 && (
+              <Popconfirm
+                title={`Xóa ${selectedRowKeys.length} khóa học`}
+                description="Bạn có chắc muốn xóa các khóa học đã chọn?"
+                onConfirm={handleBulkDelete}
+                okText="Xóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+              >
+                <Button
+                  danger
+                  icon={<MdDelete size={20} />}
+                  loading={bulkDeleteMutation.isPending}
+                >
+                  Xóa {selectedRowKeys.length} khóa học
+                </Button>
+              </Popconfirm>
+            )}
           </div>
 
           <Table
@@ -438,6 +506,7 @@ export default function CourseManagementPage() {
             rowKey="_id"
             loading={isLoading}
             scroll={{ x: 1200 }}
+            rowSelection={rowSelection}
             pagination={{
               pageSize: 10,
               showSizeChanger: true,
@@ -458,7 +527,8 @@ export default function CourseManagementPage() {
         }}
         okText={selectedCourse ? "Cập nhật" : "Tạo"}
         cancelText="Hủy"
-        width={700}
+        width="90%"
+        style={{ maxWidth: 700 }}
         confirmLoading={createMutation.isPending || updateMutation.isPending}
       >
         <Form form={form} layout="vertical" style={{ marginTop: 24 }}>
@@ -514,7 +584,8 @@ export default function CourseManagementPage() {
           setIsDetailDrawerOpen(false);
           setSelectedCourse(null);
         }}
-        width={600}
+        width="90%"
+        style={{ maxWidth: 600 }}
       >
         {selectedCourse && (
           <Descriptions column={1} bordered>
@@ -573,6 +644,124 @@ export default function CourseManagementPage() {
         }
         .ant-table-body::-webkit-scrollbar-track {
           background: transparent;
+        }
+
+        /* Responsive styles */
+        .filter-container {
+          display: flex;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+
+        .search-input {
+          flex: 1;
+          min-width: 200px;
+        }
+
+        .filter-select {
+          width: 150px;
+        }
+
+        .filter-input {
+          width: 150px;
+        }
+
+        .refresh-btn {
+          flex-shrink: 0;
+        }
+
+        .hide-on-mobile {
+          display: inline;
+        }
+
+        .show-on-mobile {
+          display: none;
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+          .page-header {
+            flex-direction: column !important;
+            gap: 12px !important;
+          }
+
+          .page-header > div {
+            width: 100%;
+          }
+
+          .page-header button {
+            width: 100%;
+          }
+
+          .hide-on-mobile {
+            display: none;
+          }
+
+          .show-on-mobile {
+            display: inline;
+          }
+
+          .filter-container {
+            flex-direction: column;
+            gap: 12px;
+          }
+
+          .search-input,
+          .filter-select,
+          .filter-input,
+          .refresh-btn {
+            width: 100% !important;
+          }
+
+          .ant-table {
+            font-size: 12px;
+          }
+
+          .ant-table-thead > tr > th {
+            padding: 8px 4px;
+            font-size: 11px;
+          }
+
+          .ant-table-tbody > tr > td {
+            padding: 8px 4px;
+            font-size: 12px;
+          }
+
+          .ant-btn-sm {
+            font-size: 11px;
+            padding: 2px 6px;
+          }
+
+          .ant-modal {
+            max-width: calc(100vw - 32px);
+            margin: 16px;
+          }
+
+          .ant-modal-body {
+            padding: 16px;
+          }
+
+          .ant-drawer-content-wrapper {
+            width: 100vw !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .page-title {
+            font-size: 20px !important;
+          }
+
+          .page-subtitle {
+            font-size: 13px;
+          }
+
+          .ant-card-body {
+            padding: 12px;
+          }
+
+          .ant-space-vertical {
+            gap: 12px !important;
+          }
         }
       `}</style>
     </DashboardLayout>
