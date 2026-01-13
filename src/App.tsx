@@ -8,11 +8,13 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import UserManagementPage from './pages/UserManagementPage';
+import CourseManagementPage from './pages/CourseManagementPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <ConfigProvider
+      componentSize="middle"
       theme={{
         token: {
           colorPrimary: '#667eea',
@@ -52,6 +54,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <UserManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/courses"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <CourseManagementPage />
               </ProtectedRoute>
             }
           />
