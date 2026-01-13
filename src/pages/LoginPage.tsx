@@ -23,7 +23,11 @@ export default function LoginPage() {
       });
       setAuth(response.user, response.accessToken, response.refreshToken);
       message.success('Login successful!');
-      navigate('/');
+      if (response.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     } catch (error: any) {
       message.error(error.response?.data?.message || 'Login failed');
     } finally {

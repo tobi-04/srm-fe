@@ -1,10 +1,48 @@
-import axios from 'axios';
+import axios, { InternalAxiosRequestConfig } from 'axios';
+
+// In-memory cache
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+// Cache interceptor
+apiClient.interceptors.request.use((config) => {
+  if (config.method?.toLowerCase() === 'get') {
+    const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
+    const cached = cache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      // Use a custom property to indicate this is a cached response
+      (config as any)._fromCache = true;
+      (config as any)._cachedData = cached.data;
+    }
+  }
+  return config;
+});
+
+// Custom adapter/interceptor to return cached data
+apiClient.interceptors.request.use((config: any) => {
+  if (config._fromCache) {
+    // Returning a rejected promise with specific structure to be caught and returned as resolved
+    return Promise.reject({
+      config,
+      response: {
+        data: config._cachedData,
+        status: 200,
+        statusText: 'OK (from cache)',
+        headers: {},
+        config,
+      },
+      __isCache: true
+    });
+  }
+  return config;
 });
 
 // Request interceptor to add access token
@@ -21,7 +59,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token refresh
+// Response interceptor to handle token refresh and caching
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
@@ -38,8 +76,23 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Cache GET requests
+    if (response.config.method?.toLowerCase() === 'get') {
+      const cacheKey = `${response.config.url}${JSON.stringify(response.config.params || {})}`;
+      cache.set(cacheKey, {
+        data: response.data,
+        timestamp: Date.now(),
+      });
+    }
+    return response;
+  },
   async (error) => {
+    // Handle our custom cache "error"
+    if (error.__isCache) {
+      return Promise.resolve(error.response);
+    }
+
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -99,3 +152,4 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
+

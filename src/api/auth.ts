@@ -42,6 +42,15 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
+export interface UserInfo {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export const authApi = {
   register: async (data: RegisterData) => {
     const response = await apiClient.post('/auth/register', data);
@@ -50,6 +59,11 @@ export const authApi = {
 
   login: async (data: LoginData): Promise<AuthResponse> => {
     const response = await apiClient.post('/auth/login', data);
+    return response.data;
+  },
+
+  getMe: async (): Promise<{ user: UserInfo }> => {
+    const response = await apiClient.get('/auth/me');
     return response.data;
   },
 
