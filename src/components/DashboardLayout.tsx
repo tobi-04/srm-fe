@@ -26,6 +26,7 @@ import {
   MdSearch,
   MdKeyboardArrowDown,
   MdPlayArrow,
+  MdMenuBook,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -155,7 +156,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
           }}
         >
-          <MdApps style={{ color: "white" }} size={20} />
+          <MdMenuBook color="white" size={20} />
         </div>
         {(!collapsed || isMobile) && (
           <div style={{ lineHeight: 1 }}>
