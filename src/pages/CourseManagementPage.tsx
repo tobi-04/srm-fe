@@ -15,6 +15,7 @@ import {
   Select,
   Popconfirm,
   Dropdown,
+  Tooltip,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -30,12 +31,14 @@ import {
   MdCategory,
   MdList,
   MdMoreVert,
+  MdPublish,
+  MdDrafts,
 } from "react-icons/md";
 import DashboardLayout from "../components/DashboardLayout";
 import apiClient from "../api/client";
 import { getAvatarStyles } from "../utils/color";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
 interface Course {
@@ -171,13 +174,28 @@ export default function CourseManagementPage() {
       await apiClient.delete("/courses/bulk/delete", { data: { ids } });
     },
     onSuccess: async () => {
-      message.success(`Đã xóa ${selectedRowKeys.length} khóa học`);
+      message.success(`Đã chuyển ${selectedRowKeys.length} khóa học vào thùng rác`);
       setSelectedRowKeys([]); // Clear selection
       await queryClient.invalidateQueries({ queryKey: ["courses"] });
       await refetch(); // Force immediate refetch
     },
     onError: (error: any) => {
       message.error(error.response?.data?.message || "Không thể xóa khóa học");
+    },
+  });
+
+  const bulkHardDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await apiClient.delete("/courses/bulk/hard", { data: { ids } });
+    },
+    onSuccess: async () => {
+      message.success(`Đã xóa vĩnh viễn ${selectedRowKeys.length} khóa học`);
+      setSelectedRowKeys([]); // Clear selection
+      await queryClient.invalidateQueries({ queryKey: ["courses"] });
+      await refetch(); // Force immediate refetch
+    },
+    onError: (error: any) => {
+      message.error(error.response?.data?.message || "Không thể xóa vĩnh viễn");
     },
   });
 
@@ -247,12 +265,23 @@ export default function CourseManagementPage() {
       width: 250,
       render: (text: string, record: Course) => (
         <div>
-          <Text strong style={{ display: "block", color: "#1e293b" }}>
-            {text}
-          </Text>
-          <Text type="secondary" style={{ fontSize: 11 }}>
-            Slug: {record.slug?.slice(0, 30)}...
-          </Text>
+          <Tooltip title={text}>
+            <Paragraph
+              strong
+              ellipsis={{ rows: 2 }}
+              style={{
+                color: "#1e293b",
+                marginBottom: 0,
+              }}
+            >
+              {text}
+            </Paragraph>
+          </Tooltip>
+          <Tooltip title={record.slug}>
+            <Text type="secondary" style={{ fontSize: 11 }} ellipsis>
+              Slug: {record.slug}
+            </Text>
+          </Tooltip>
         </div>
       ),
     },
@@ -335,14 +364,26 @@ export default function CourseManagementPage() {
       width: 100,
       render: (_: any, record: Course) => {
         const items = [
-          {
-            key: "view",
-            label: "Xem chi tiết",
-            icon: <MdVisibility />,
-            onClick: () => handleViewDetail(record),
-          },
           ...(!record.is_deleted
             ? [
+                {
+                  key: "view",
+                  label: "Xem chi tiết",
+                  icon: <MdVisibility />,
+                  onClick: () => handleViewDetail(record),
+                },
+                {
+                  key: "status",
+                  label: record.status === "published" ? "Gỡ xuất bản" : "Xuất bản",
+                  icon: record.status === "published" ? <MdDrafts /> : <MdPublish />,
+                  onClick: () =>
+                    updateMutation.mutate({
+                      id: record._id,
+                      values: {
+                        status: record.status === "published" ? "draft" : "published",
+                      },
+                    }),
+                },
                 {
                   key: "edit",
                   label: "Chỉnh sửa",
@@ -513,22 +554,39 @@ export default function CourseManagementPage() {
               <span>Làm mới</span>
             </Button>
             {selectedRowKeys.length > 0 && (
-              <Popconfirm
-                title={`Xóa ${selectedRowKeys.length} khóa học`}
-                description="Bạn có chắc muốn xóa các khóa học đã chọn?"
-                onConfirm={handleBulkDelete}
-                okText="Xóa"
-                cancelText="Hủy"
-                okButtonProps={{ danger: true }}
-              >
-                <Button
-                  danger
-                  icon={<MdDelete size={20} />}
-                  loading={bulkDeleteMutation.isPending}
+              <Space wrap>
+                <Popconfirm
+                  title={`Chuyển ${selectedRowKeys.length} khóa học vào thùng rác`}
+                  description="Các khóa học này sẽ bị ẩn khỏi học viên."
+                  onConfirm={() => bulkDeleteMutation.mutate(selectedRowKeys)}
+                  okText="Chuyển"
+                  cancelText="Hủy"
                 >
-                  Xóa {selectedRowKeys.length} khóa học
-                </Button>
-              </Popconfirm>
+                  <Button
+                    icon={<MdDelete size={20} />}
+                    loading={bulkDeleteMutation.isPending}
+                    style={{ color: "#faad14", borderColor: "#faad14" }}
+                  >
+                    Thùng rác ({selectedRowKeys.length})
+                  </Button>
+                </Popconfirm>
+                <Popconfirm
+                  title={`Xóa vĩnh viễn ${selectedRowKeys.length} khóa học`}
+                  description="Hành động này không thể hoàn tác và sẽ xóa sạch dữ liệu khỏi hệ thống!"
+                  onConfirm={() => bulkHardDeleteMutation.mutate(selectedRowKeys)}
+                  okText="Xóa vĩnh viễn"
+                  cancelText="Hủy"
+                  okButtonProps={{ danger: true }}
+                >
+                  <Button
+                    danger
+                    icon={<MdDeleteForever size={20} />}
+                    loading={bulkHardDeleteMutation.isPending}
+                  >
+                    Xóa vĩnh viễn ({selectedRowKeys.length})
+                  </Button>
+                </Popconfirm>
+              </Space>
             )}
           </div>
 
