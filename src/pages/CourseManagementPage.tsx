@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   Tag,
@@ -12,9 +13,8 @@ import {
   Form,
   InputNumber,
   Select,
-  Drawer,
-  Descriptions,
   Popconfirm,
+  Dropdown,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -29,6 +29,7 @@ import {
   MdAttachMoney,
   MdCategory,
   MdList,
+  MdMoreVert,
 } from "react-icons/md";
 import DashboardLayout from "../components/DashboardLayout";
 import apiClient from "../api/client";
@@ -52,13 +53,13 @@ interface Course {
 }
 
 export default function CourseManagementPage() {
+  const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>(
     {}
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]); // For bulk selection
   const [form] = Form.useForm();
@@ -216,8 +217,7 @@ export default function CourseManagementPage() {
   };
 
   const handleViewDetail = (course: Course) => {
-    setSelectedCourse(course);
-    setIsDetailDrawerOpen(true);
+    navigate(`/admin/courses/${course.slug}`);
   };
 
   const handleBulkDelete = () => {
@@ -330,74 +330,106 @@ export default function CourseManagementPage() {
       render: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
     },
     {
-      title: "",
+      title: "Hành động",
       key: "action",
-      width: 200,
-      render: (_: any, record: Course) => (
-        <Space size="small">
-          <Button
-            type="text"
-            size="small"
-            icon={<MdVisibility />}
-            onClick={() => handleViewDetail(record)}
+      width: 100,
+      render: (_: any, record: Course) => {
+        const items = [
+          {
+            key: "view",
+            label: "Xem chi tiết",
+            icon: <MdVisibility />,
+            onClick: () => handleViewDetail(record),
+          },
+          ...(!record.is_deleted
+            ? [
+                {
+                  key: "edit",
+                  label: "Chỉnh sửa",
+                  icon: <MdEdit />,
+                  style: { color: "#6366f1" },
+                  onClick: () => handleEdit(record),
+                },
+                {
+                  key: "delete",
+                  label: (
+                    <Popconfirm
+                      title="Chuyển vào thùng rác"
+                      description="Khóa học sẽ được chuyển vào mục lưu trữ tạm thời."
+                      onConfirm={() => deleteMutation.mutate(record._id)}
+                      okText="Chuyển"
+                      cancelText="Hủy"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <span style={{ color: "#faad14", display: "block" }}>
+                        Chuyển vào thùng rác
+                      </span>
+                    </Popconfirm>
+                  ),
+                  icon: <MdDelete style={{ color: "#faad14" }} />,
+                },
+                {
+                  key: "hard_delete_active",
+                  label: (
+                    <Popconfirm
+                      title="Xóa vĩnh viễn"
+                      description="Hành động này không thể hoàn tác và sẽ xóa sạch dữ liệu!"
+                      onConfirm={() => hardDeleteMutation.mutate(record._id)}
+                      okText="Xóa vĩnh viễn"
+                      cancelText="Hủy"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <span style={{ color: "#ff4d4f", display: "block" }}>
+                        Xoá vĩnh viễn
+                      </span>
+                    </Popconfirm>
+                  ),
+                  icon: <MdDeleteForever style={{ color: "#ff4d4f" }} />,
+                },
+              ]
+            : [
+                {
+                  key: "restore",
+                  label: "Khôi phục",
+                  icon: <MdRestore />,
+                  style: { color: "#10b981" },
+                  onClick: () => restoreMutation.mutate(record._id),
+                },
+                {
+                  key: "hard_delete",
+                  label: (
+                    <Popconfirm
+                      title="Xóa vĩnh viễn"
+                      description="Hành động này không thể hoàn tác!"
+                      onConfirm={() => hardDeleteMutation.mutate(record._id)}
+                      okText="Xóa vĩnh viễn"
+                      cancelText="Hủy"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <span style={{ color: "#ff4d4f", display: "block" }}>
+                        Xóa vĩnh viễn
+                      </span>
+                    </Popconfirm>
+                  ),
+                  icon: <MdDeleteForever style={{ color: "#ff4d4f" }} />,
+                },
+              ]),
+        ];
+
+        return (
+          <Dropdown
+            menu={{ items }}
+            trigger={["click"]}
+            placement="bottomRight"
           >
-            Xem
-          </Button>
-          {!record.is_deleted && (
-            <>
-              <Button
-                type="text"
-                size="small"
-                icon={<MdEdit />}
-                style={{ color: "#6366f1" }}
-                onClick={() => handleEdit(record)}
-              >
-                Sửa
-              </Button>
-              <Popconfirm
-                title="Xóa khóa học"
-                description="Bạn có chắc muốn xóa khóa học này?"
-                onConfirm={() => deleteMutation.mutate(record._id)}
-                okText="Xóa"
-                cancelText="Hủy"
-              >
-                <Button type="text" size="small" icon={<MdDelete />} danger>
-                  Xóa
-                </Button>
-              </Popconfirm>
-            </>
-          )}
-          {record.is_deleted && (
-            <>
-              <Button
-                type="text"
-                size="small"
-                icon={<MdRestore />}
-                style={{ color: "#10b981" }}
-                onClick={() => restoreMutation.mutate(record._id)}
-              >
-                Khôi phục
-              </Button>
-              <Popconfirm
-                title="Xóa vĩnh viễn"
-                description="Hành động này không thể hoàn tác!"
-                onConfirm={() => hardDeleteMutation.mutate(record._id)}
-                okText="Xóa vĩnh viễn"
-                cancelText="Hủy"
-              >
-                <Button
-                  type="text"
-                  size="small"
-                  icon={<MdDeleteForever />}
-                  danger
-                >
-                  Xóa vĩnh viễn
-                </Button>
-              </Popconfirm>
-            </>
-          )}
-        </Space>
-      ),
+            <Button
+              type="text"
+              icon={<MdMoreVert size={20} />}
+              className="action-btn"
+            />
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -576,62 +608,6 @@ export default function CourseManagementPage() {
           </Form.Item>
         </Form>
       </Modal>
-
-      <Drawer
-        title="Chi tiết khóa học"
-        open={isDetailDrawerOpen}
-        onClose={() => {
-          setIsDetailDrawerOpen(false);
-          setSelectedCourse(null);
-        }}
-        width="90%"
-        style={{ maxWidth: 600 }}
-      >
-        {selectedCourse && (
-          <Descriptions column={1} bordered>
-            <Descriptions.Item label="Tiêu đề">
-              {selectedCourse.title}
-            </Descriptions.Item>
-            <Descriptions.Item label="Mô tả">
-              {selectedCourse.description || "Chưa có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Giá">
-              {selectedCourse.price === 0
-                ? "Miễn phí"
-                : `${selectedCourse.price.toLocaleString()}đ`}
-            </Descriptions.Item>
-            <Descriptions.Item label="Danh mục">
-              {selectedCourse.category || "Chưa có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">
-              {selectedCourse.status === "published" ? "Đã xuất bản" : "Nháp"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Slug">
-              {selectedCourse.slug}
-            </Descriptions.Item>
-            <Descriptions.Item label="Chương trình học">
-              {selectedCourse.syllabus?.length > 0 ? (
-                <ul style={{ paddingLeft: 20, margin: 0 }}>
-                  {selectedCourse.syllabus.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              ) : (
-                "Chưa có"
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày tạo">
-              {new Date(selectedCourse.created_at).toLocaleString("vi-VN")}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày cập nhật">
-              {new Date(selectedCourse.updated_at).toLocaleString("vi-VN")}
-            </Descriptions.Item>
-            <Descriptions.Item label="Đã xóa">
-              {selectedCourse.is_deleted ? "Có" : "Không"}
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Drawer>
 
       <style>{`
         .ant-table-body::-webkit-scrollbar {

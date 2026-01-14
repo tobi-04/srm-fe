@@ -9,6 +9,7 @@ import ChangePasswordPage from './pages/ChangePasswordPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import UserManagementPage from './pages/UserManagementPage';
 import CourseManagementPage from './pages/CourseManagementPage';
+import CourseDetailPage from './pages/CourseDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -62,6 +63,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <CourseManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/courses/:slug"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <CourseDetailPage />
               </ProtectedRoute>
             }
           />
