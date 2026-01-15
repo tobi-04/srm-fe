@@ -27,6 +27,7 @@ import {
   MdKeyboardArrowDown,
   MdPlayArrow,
   MdMenuBook,
+  MdWebAsset,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -82,6 +83,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "/admin/courses",
           icon: <MdDescription size={20} />,
           label: "Danh sách bài học",
+        },
+        {
+          key: "/admin/landing-pages",
+          icon: <MdWebAsset size={20} />,
+          label: "Landing Page Builder",
         },
         {
           key: "/admin/stats",
