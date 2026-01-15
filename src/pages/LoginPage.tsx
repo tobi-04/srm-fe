@@ -21,7 +21,8 @@ export default function LoginPage() {
         ...values,
         ...deviceInfo,
       });
-      setAuth(response.user, response.accessToken, response.refreshToken);
+      // refreshToken is now stored in httpOnly cookie by the backend
+      setAuth(response.user, response.accessToken);
       message.success('Login successful!');
       if (response.user.role === 'admin') {
         navigate('/admin');

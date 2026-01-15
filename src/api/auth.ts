@@ -39,7 +39,7 @@ export interface AuthResponse {
     role: string;
   };
   accessToken: string;
-  refreshToken: string;
+  // Note: refreshToken is stored in httpOnly cookie by the backend
 }
 
 export interface UserInfo {
@@ -87,8 +87,9 @@ export const authApi = {
     return response.data;
   },
 
-  refreshToken: async (refresh_token: string) => {
-    const response = await apiClient.post('/auth/refresh', { refresh_token });
+  refreshToken: async () => {
+    // Refresh token is sent via httpOnly cookie
+    const response = await apiClient.post('/auth/refresh', {});
     return response.data;
   },
 };

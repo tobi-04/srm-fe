@@ -13,9 +13,8 @@ interface User {
 interface AuthState {
   user: User | null;
   accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  setAuth: (user: User, accessToken: string) => void;
   updateAccessToken: (accessToken: string) => void;
   logout: () => Promise<void>;
   clearAuth: () => void;
@@ -26,12 +25,12 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
-      setAuth: (user, accessToken, refreshToken) => {
+      setAuth: (user, accessToken) => {
+        // Store access token in localStorage
         localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        set({ user, accessToken, refreshToken, isAuthenticated: true });
+        // Note: refreshToken is stored in httpOnly cookie by the backend
+        set({ user, accessToken, isAuthenticated: true });
       },
       updateAccessToken: (accessToken) => {
         localStorage.setItem('accessToken', accessToken);
@@ -45,16 +44,16 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error('Logout error:', error);
         } finally {
-          // Clear local storage and state regardless of API call result
+          // Clear local storage and state (httpOnly cookie cleared by backend)
           localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
+          set({ user: null, accessToken: null, isAuthenticated: false });
         }
       },
       clearAuth: () => {
+        // Clear access token from localStorage
         localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
+        // Note: httpOnly cookie will be cleared by backend on logout
+        set({ user: null, accessToken: null, isAuthenticated: false });
       },
     }),
     {
