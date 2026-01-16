@@ -24,6 +24,12 @@ export default function LoginPage() {
       // Store both access and refresh tokens
       setAuth(response.user, response.accessToken, response.refreshToken);
       message.success("Login successful!");
+
+      if (response.user.must_change_password) {
+        navigate("/change-password");
+        return;
+      }
+
       if (response.user.role === "admin") {
         navigate("/admin");
       } else {

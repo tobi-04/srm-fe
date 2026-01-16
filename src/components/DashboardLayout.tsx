@@ -28,6 +28,7 @@ import {
   MdPlayArrow,
   MdMenuBook,
   MdWebAsset,
+  MdMail,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -117,6 +118,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           label: "Danh sách học viên",
         },
         {
+          key: "/admin/email-automation",
+          icon: <MdMail size={20} />,
+          label: "Email Automation",
+        },
+        {
           key: "/admin/reports",
           icon: <MdDescription size={20} />,
           label: "Báo cáo kinh doanh",
@@ -148,8 +154,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           alignItems: "center",
           padding: "0 24px",
           gap: 12,
-        }}
-      >
+        }}>
         <div
           style={{
             width: 36,
@@ -160,8 +165,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             alignItems: "center",
             justifyContent: "center",
             boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
-          }}
-        >
+          }}>
           <MdMenuBook color="white" size={20} />
         </div>
         {(!collapsed || isMobile) && (
@@ -172,8 +176,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 fontWeight: 800,
                 color: "#1e293b",
                 display: "block",
-              }}
-            >
+              }}>
               CRM/LMS cá nhân
             </Text>
             <Text type="secondary" style={{ fontSize: 11 }}>
@@ -210,8 +213,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             gap: 12,
             height: 40,
             borderRadius: 8,
-          }}
-        >
+          }}>
           {(!collapsed || isMobile) && "Đăng xuất"}
         </Button>
       </div>
@@ -238,8 +240,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             display: "flex",
             flexDirection: "column",
           }}
-          theme="light"
-        >
+          theme="light">
           {sidebarContent}
         </Sider>
       ) : (
@@ -249,11 +250,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           open={drawerVisible}
           width={280}
           styles={{ body: { padding: 0 } }}
-          closable={false}
-        >
+          closable={false}>
           <div
-            style={{ display: "flex", flexDirection: "column", height: "100%" }}
-          >
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
+            }}>
             {sidebarContent}
           </div>
         </Drawer>
@@ -264,8 +267,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           marginLeft: isMobile ? 0 : collapsed ? 80 : 280,
           transition: "all 0.2s",
           background: "transparent",
-        }}
-      >
+        }}>
         <Header
           style={{
             padding: isMobile ? "0 16px" : "0 32px",
@@ -279,16 +281,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             top: 0,
             zIndex: 99,
             borderBottom: "1px solid #f1f5f9",
-          }}
-        >
+          }}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: isMobile ? 12 : 24,
               flex: 1,
-            }}
-          >
+            }}>
             <Button
               type="text"
               icon={
@@ -341,8 +341,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 height: 40,
                 display: isMobile ? "none" : "inline-flex",
                 boxShadow: "none",
-              }}
-            >
+              }}>
               Màn hình học tập
             </Button>
 
@@ -350,8 +349,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <Badge
                 count={5}
                 offset={[-2, 2]}
-                style={{ backgroundColor: "#ef4444" }}
-              >
+                style={{ backgroundColor: "#ef4444" }}>
                 <Button
                   type="text"
                   icon={<MdNotifications size={24} />}
@@ -370,8 +368,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <Dropdown
               menu={{ items: userMenuItems }}
               placement="bottomRight"
-              arrow
-            >
+              arrow>
               <div
                 style={{
                   display: "flex",
@@ -382,15 +379,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   borderRadius: 8,
                   transition: "all 0.2s",
                 }}
-                className="user-profile-trigger"
-              >
+                className="user-profile-trigger">
                 <Avatar
                   style={{
                     ...getAvatarStyles(user?.name || "admin"),
                     fontWeight: "bold",
                     boxShadow: "none",
-                  }}
-                >
+                  }}>
                   {user?.name ? (
                     user.name.substring(0, 2).toUpperCase()
                   ) : (
@@ -404,8 +399,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         display: "flex",
                         flexDirection: "column",
                         lineHeight: 1.2,
-                      }}
-                    >
+                      }}>
                       <Text strong style={{ fontSize: 14, color: "#1e293b" }}>
                         {user?.name || "Admin Profile"}
                       </Text>
@@ -428,8 +422,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           style={{
             margin: isMobile ? "16px" : "32px",
             minHeight: 280,
-          }}
-        >
+          }}>
           {children}
         </Content>
       </Layout>

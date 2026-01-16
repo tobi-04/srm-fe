@@ -14,6 +14,7 @@ import CourseManagementPage from "./pages/CourseManagementPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
 import LandingPageManagementPage from "./pages/LandingPageManagementPage";
 import LandingPageBuilderPage from "./pages/LandingPageBuilderPage";
+import EmailAutomationPage from "./pages/EmailAutomationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -91,6 +92,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <LandingPageBuilderPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/email-automation"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <EmailAutomationPage />
               </ProtectedRoute>
             }
           />

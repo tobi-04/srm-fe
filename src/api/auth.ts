@@ -37,6 +37,7 @@ export interface AuthResponse {
     email: string;
     name: string;
     role: string;
+    must_change_password?: boolean;
   };
   accessToken: string;
   refreshToken: string;
@@ -48,6 +49,7 @@ export interface UserInfo {
   name: string;
   role: string;
   is_active: boolean;
+  must_change_password?: boolean;
   created_at: string;
 }
 
