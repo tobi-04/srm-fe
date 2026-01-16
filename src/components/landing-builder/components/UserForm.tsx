@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Checkbox } from "antd";
+import { Form, Input, Checkbox, message } from "antd";
+import { useParams } from "react-router-dom";
+import { submitUserForm } from "../../../api/landingPage";
+import { useAuthStore } from "../../../stores/authStore";
 
 interface UserFormProps {
   buttonText?: string;
@@ -42,6 +45,106 @@ export const UserForm: React.FC<UserFormProps> = ({
     selected: state.events.selected,
   }));
 
+  const { slug } = useParams<{ slug: string }>();
+  const { user } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    birthday: "",
+  });
+
+  // Auto-fill name and email if user is logged in
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name || "",
+        email: user.email || "",
+      }));
+    }
+  }, [user]);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Check if we're in builder/preview mode (no slug available)
+    if (!slug) {
+      message.info(
+        "Form submission is disabled in preview mode. Publish the landing page to enable form submission."
+      );
+      return;
+    }
+
+    // Basic validation
+    if (!formData.name.trim()) {
+      message.error("Please enter your name");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      message.error("Please enter your email");
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      message.error("Please enter a valid email address");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const submitData: any = {
+        name: formData.name,
+        email: formData.email,
+      };
+
+      // Add optional fields if they have values
+      if (showPhone && formData.phone) submitData.phone = formData.phone;
+      if (showAddress && formData.address)
+        submitData.address = formData.address;
+      if (showBirthday && formData.birthday)
+        submitData.birthday = formData.birthday;
+
+      await submitUserForm(slug, submitData);
+
+      message.success("Form submitted successfully!");
+
+      // Navigate to step 2 using window.location
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set("step", "2");
+      window.location.href = currentUrl.toString();
+
+      // Reset form (will happen after navigation, but good practice)
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        birthday: "",
+      });
+    } catch (error: any) {
+      console.error("Form submission error:", error);
+      message.error(
+        error.response?.data?.message ||
+          "Failed to submit form. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "12px 16px",
@@ -60,20 +163,21 @@ export const UserForm: React.FC<UserFormProps> = ({
     color: buttonTextColor,
     border: "none",
     borderRadius: "4px",
-    cursor: "pointer",
+    cursor: isSubmitting ? "not-allowed" : "pointer",
     textTransform: "uppercase",
+    opacity: isSubmitting ? 0.7 : 1,
   };
 
   return (
     <div
+      id="user-form-section"
       ref={(ref) => ref && connect(drag(ref))}
       className="landing-builder-component"
       style={{
         padding: "0 12px",
         marginBottom: `${marginBottom}px`,
         border: selected ? "2px dashed #1890ff" : "none",
-      }}
-    >
+      }}>
       <div
         style={{
           maxWidth: `${maxWidth}px`,
@@ -82,26 +186,34 @@ export const UserForm: React.FC<UserFormProps> = ({
           padding: 0,
           boxSizing: "border-box",
           ...style,
-        }}
-      >
-        <form onSubmit={(e) => e.preventDefault()}>
+        }}>
+        <form onSubmit={handleSubmit}>
           <input
             type="text"
             placeholder={namePlaceholder}
             style={inputStyle}
             required
+            value={formData.name}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+            disabled={isSubmitting}
           />
           <input
             type="email"
             placeholder={emailPlaceholder}
             style={inputStyle}
             required
+            value={formData.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            disabled={isSubmitting}
           />
           {showPhone && (
             <input
               type="tel"
               placeholder={phonePlaceholder}
               style={inputStyle}
+              value={formData.phone}
+              onChange={(e) => handleInputChange("phone", e.target.value)}
+              disabled={isSubmitting}
             />
           )}
           {showAddress && (
@@ -109,6 +221,9 @@ export const UserForm: React.FC<UserFormProps> = ({
               type="text"
               placeholder={addressPlaceholder}
               style={inputStyle}
+              value={formData.address}
+              onChange={(e) => handleInputChange("address", e.target.value)}
+              disabled={isSubmitting}
             />
           )}
           {showBirthday && (
@@ -116,10 +231,13 @@ export const UserForm: React.FC<UserFormProps> = ({
               type="date"
               placeholder={birthdayPlaceholder}
               style={inputStyle}
+              value={formData.birthday}
+              onChange={(e) => handleInputChange("birthday", e.target.value)}
+              disabled={isSubmitting}
             />
           )}
-          <button type="submit" style={buttonStyle}>
-            {buttonText}
+          <button type="submit" style={buttonStyle} disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : buttonText}
           </button>
         </form>
       </div>
@@ -184,8 +302,7 @@ const UserFormSettings = () => {
           checked={props.showPhone}
           onChange={(e) =>
             setProp((props: any) => (props.showPhone = e.target.checked))
-          }
-        >
+          }>
           Show Phone Field
         </Checkbox>
       </Form.Item>
@@ -204,8 +321,7 @@ const UserFormSettings = () => {
           checked={props.showAddress}
           onChange={(e) =>
             setProp((props: any) => (props.showAddress = e.target.checked))
-          }
-        >
+          }>
           Show Address Field
         </Checkbox>
       </Form.Item>
@@ -226,8 +342,7 @@ const UserFormSettings = () => {
           checked={props.showBirthday}
           onChange={(e) =>
             setProp((props: any) => (props.showBirthday = e.target.checked))
-          }
-        >
+          }>
           Show Birthday Field
         </Checkbox>
       </Form.Item>

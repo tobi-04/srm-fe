@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNode } from "@craftjs/core";
 import { Form, Input } from "antd";
+import { useCountdown } from "../../../contexts/CountdownContext";
 
 interface CountdownTimerProps {
   label?: string;
@@ -36,6 +37,8 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     selected: state.events.selected,
   }));
 
+  const { setCountdownFinished } = useCountdown();
+
   const [timeLeft, setTimeLeft] = useState({
     hours,
     minutes,
@@ -57,7 +60,9 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
           minutes = 59;
           seconds = 59;
         } else {
+          // Countdown finished!
           clearInterval(timer);
+          setCountdownFinished(true);
           return prev;
         }
 
@@ -66,7 +71,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [setCountdownFinished]);
 
   const formatNumber = (num: number) => String(num).padStart(2, "0");
 
@@ -80,8 +85,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
         marginBottom: `${marginBottom}px`,
         border: selected ? "2px dashed #1890ff" : "none",
         textAlign: "center",
-      }}
-    >
+      }}>
       <div style={style}>
         <p
           style={{
@@ -89,8 +93,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
             fontWeight: 600,
             color: labelColor,
             marginBottom: "16px",
-          }}
-        >
+          }}>
           {label}
         </p>
 
@@ -100,8 +103,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
             justifyContent: "center",
             gap: "clamp(8px, 20px, 20px)",
             flexWrap: "wrap",
-          }}
-        >
+          }}>
           {/* Hours */}
           <div style={{ textAlign: "center" }}>
             <div
@@ -112,8 +114,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
                 fontWeight,
                 color,
                 lineHeight: 1,
-              }}
-            >
+              }}>
               {formatNumber(timeLeft.hours)}
             </div>
             <div
@@ -122,8 +123,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
                 color: labelColor,
                 marginTop: "8px",
                 textTransform: "uppercase",
-              }}
-            >
+              }}>
               HOURS
             </div>
           </div>
@@ -135,8 +135,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
               }px, ${fontSize}px)`,
               color,
               lineHeight: 1,
-            }}
-          >
+            }}>
             :
           </div>
 
@@ -150,8 +149,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
                 fontWeight,
                 color,
                 lineHeight: 1,
-              }}
-            >
+              }}>
               {formatNumber(timeLeft.minutes)}
             </div>
             <div
@@ -160,8 +158,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
                 color: labelColor,
                 marginTop: "8px",
                 textTransform: "uppercase",
-              }}
-            >
+              }}>
               MINUTES
             </div>
           </div>
@@ -173,8 +170,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
               }px, ${fontSize}px)`,
               color,
               lineHeight: 1,
-            }}
-          >
+            }}>
             :
           </div>
 
@@ -188,8 +184,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
                 fontWeight,
                 color,
                 lineHeight: 1,
-              }}
-            >
+              }}>
               {formatNumber(timeLeft.seconds)}
             </div>
             <div
@@ -198,8 +193,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
                 color: labelColor,
                 marginTop: "8px",
                 textTransform: "uppercase",
-              }}
-            >
+              }}>
               SECONDS
             </div>
           </div>

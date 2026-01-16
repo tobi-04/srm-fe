@@ -1,7 +1,8 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input } from "antd";
+import { Form, Input, message } from "antd";
 import { MdCheckCircle } from "react-icons/md";
+import { useParams } from "react-router-dom";
 
 interface InstructorBioProps {
   imageUrl?: string;
@@ -47,6 +48,8 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
     selected: state.events.selected,
   }));
 
+  const { slug } = useParams<{ slug: string }>();
+
   return (
     <div
       ref={(ref) => ref && connect(drag(ref))}
@@ -56,8 +59,7 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
         padding: "0 12px",
         marginBottom: `${marginBottom}px`,
         border: selected ? "2px dashed #1890ff" : "none",
-      }}
-    >
+      }}>
       <div
         style={{
           display: "grid",
@@ -67,16 +69,14 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
           margin: "0 auto",
           padding: 0,
           ...style,
-        }}
-      >
+        }}>
         {/* Left Column: Instructor Image and Bio */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-          }}
-        >
+          }}>
           <img
             src={imageUrl}
             alt={instructorName}
@@ -94,8 +94,7 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
               color: "#666",
               textAlign: "center",
               margin: 0,
-            }}
-          >
+            }}>
             {bioText}
           </p>
         </div>
@@ -106,16 +105,14 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-          }}
-        >
+          }}>
           <h3
             style={{
               fontSize: "24px",
               fontWeight: "bold",
               color: "#000",
               marginBottom: "20px",
-            }}
-          >
+            }}>
             {sectionTitle}
           </h3>
 
@@ -128,8 +125,7 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
                   display: "flex",
                   alignItems: "flex-start",
                   marginBottom: "12px",
-                }}
-              >
+                }}>
                 <MdCheckCircle
                   style={{
                     fontSize: "24px",
@@ -140,8 +136,7 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
                   }}
                 />
                 <span
-                  style={{ fontSize: "16px", color: "#000", lineHeight: 1.5 }}
-                >
+                  style={{ fontSize: "16px", color: "#000", lineHeight: 1.5 }}>
                   {benefit}
                 </span>
               </div>
@@ -163,7 +158,24 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
               textTransform: "uppercase",
               marginBottom: "12px",
             }}
-          >
+            onClick={() => {
+              // Check if we're in builder/preview mode
+              if (!slug) {
+                message.info(
+                  "This button will scroll to the form when viewing the published landing page."
+                );
+                return;
+              }
+
+              // Scroll to user form section
+              const formSection = document.getElementById("user-form-section");
+              if (formSection) {
+                formSection.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+              }
+            }}>
             {buttonText}
           </button>
 
@@ -174,8 +186,7 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
               color: "#666",
               textAlign: "center",
               margin: 0,
-            }}
-          >
+            }}>
             {footerText}
           </p>
         </div>

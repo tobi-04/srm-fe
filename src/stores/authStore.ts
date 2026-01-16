@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { authApi } from '../api/auth';
-import { getDeviceId } from '../utils/device';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { authApi } from "../api/auth";
+import { getDeviceId } from "../utils/device";
 
 interface User {
   id: string;
@@ -14,7 +14,7 @@ interface AuthState {
   user: User | null;
   accessToken: string | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, accessToken: string) => void;
+  setAuth: (user: User, accessToken: string, refreshToken?: string) => void;
   updateAccessToken: (accessToken: string) => void;
   logout: () => Promise<void>;
   clearAuth: () => void;
@@ -26,14 +26,17 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isAuthenticated: false,
-      setAuth: (user, accessToken) => {
+      setAuth: (user, accessToken, refreshToken) => {
         // Store access token in localStorage
-        localStorage.setItem('accessToken', accessToken);
-        // Note: refreshToken is stored in httpOnly cookie by the backend
+        localStorage.setItem("accessToken", accessToken);
+        // Store refresh token in localStorage if provided
+        if (refreshToken) {
+          localStorage.setItem("refreshToken", refreshToken);
+        }
         set({ user, accessToken, isAuthenticated: true });
       },
       updateAccessToken: (accessToken) => {
-        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem("accessToken", accessToken);
         set({ accessToken });
       },
       logout: async () => {
@@ -42,22 +45,23 @@ export const useAuthStore = create<AuthState>()(
           const deviceId = getDeviceId();
           await authApi.logout(deviceId);
         } catch (error) {
-          console.error('Logout error:', error);
+          console.error("Logout error:", error);
         } finally {
-          // Clear local storage and state (httpOnly cookie cleared by backend)
-          localStorage.removeItem('accessToken');
+          // Clear both tokens from local storage and state
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
           set({ user: null, accessToken: null, isAuthenticated: false });
         }
       },
       clearAuth: () => {
-        // Clear access token from localStorage
-        localStorage.removeItem('accessToken');
-        // Note: httpOnly cookie will be cleared by backend on logout
+        // Clear both tokens from localStorage
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         set({ user: null, accessToken: null, isAuthenticated: false });
       },
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
     }
   )
 );

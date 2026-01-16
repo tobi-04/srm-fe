@@ -20,6 +20,7 @@ import {
 } from "react-icons/md";
 import { getLandingPageBySlug } from "../../api/landingPage";
 import { useAuthStore } from "../../stores/authStore";
+import { CountdownProvider } from "../../contexts/CountdownContext";
 import {
   Text,
   Button as BuilderButton,
@@ -92,8 +93,7 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}
-      >
+        }}>
         <Spin size="large" />
       </Layout>
     );
@@ -107,8 +107,7 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}
-      >
+        }}>
         <Result
           status="404"
           title="Landing Page Not Found"
@@ -128,8 +127,7 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}
-      >
+        }}>
         <Result
           status="403"
           title="Page Not Available"
@@ -204,18 +202,10 @@ export default function LandingPageView() {
             <SuccessHeadline />
             <Container background="#ffffff">
               <Element is={TwoColumnLayout} canvas>
-                <Element
-                  is={Container}
-                  background="transparent"
-                  canvas
-                >
+                <Element is={Container} background="transparent" canvas>
                   <VideoPlayer />
                 </Element>
-                <Element
-                  is={Container}
-                  background="transparent"
-                  canvas
-                >
+                <Element is={Container} background="transparent" canvas>
                   <CountdownTimer />
                   <SalesPageContent />
                 </Element>
@@ -251,8 +241,7 @@ export default function LandingPageView() {
             alignItems: "center",
             justifyContent: "center",
             padding: "50px",
-          }}
-        >
+          }}>
           <Result
             status="success"
             icon={<MdCheckCircle size={72} style={{ color: "#52c41a" }} />}
@@ -275,341 +264,326 @@ export default function LandingPageView() {
   const pageContent = getCurrentPageContent();
 
   return (
-    <Layout style={{ minHeight: "100vh", background: "#ffffff" }}>
-      <Content>
-        {/* Draft preview banner for admins */}
-        {isAdmin && landingPage.status === "draft" && (
-          <Alert
-            message="Draft Preview Mode"
-            description="You are viewing a draft landing page. This page is not visible to the public yet."
-            type="warning"
-            showIcon
-            banner
-            style={{ marginBottom: 0 }}
-          />
-        )}
+    <CountdownProvider>
+      <Layout style={{ minHeight: "100vh", background: "#ffffff" }}>
+        <Content>
+          {/* Draft preview banner for admins */}
+          {isAdmin && landingPage.status === "draft" && (
+            <Alert
+              message="Draft Preview Mode"
+              description="You are viewing a draft landing page. This page is not visible to the public yet."
+              type="warning"
+              showIcon
+              banner
+              style={{ marginBottom: 0 }}
+            />
+          )}
 
-        {/* Progress Steps */}
-        <div
-          style={{
-            background: "#fff",
-            padding: "16px 20px",
-            borderBottom: "1px solid #f0f0f0",
-          }}
-        >
-          <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: "20px",
-                flexWrap: "wrap",
-              }}
-            >
-              <div style={{ flex: 1, minWidth: "300px" }}>
-                <Steps
-                  current={currentStep - 1}
-                  responsive
-                  items={[
+          {/* Progress Steps */}
+          <div
+            style={{
+              background: "#fff",
+              padding: "16px 20px",
+              borderBottom: "1px solid #f0f0f0",
+            }}>
+            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "20px",
+                  flexWrap: "wrap",
+                }}>
+                <div style={{ flex: 1, minWidth: "300px" }}>
+                  <Steps
+                    current={currentStep - 1}
+                    responsive
+                    items={[
+                      {
+                        title: "Information",
+                        description: "Your details",
+                      },
+                      {
+                        title: "Course",
+                        description: "Review course",
+                      },
+                      {
+                        title: "Payment",
+                        description: "Complete purchase",
+                      },
+                    ]}
+                  />
+                </div>
+
+                {/* Device Selector */}
+                <Segmented
+                  value={deviceType}
+                  onChange={(value) => setDeviceType(value as DeviceType)}
+                  options={[
                     {
-                      title: "Information",
-                      description: "Your details",
+                      label: (
+                        <div
+                          style={{
+                            padding: "4px 8px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}>
+                          <MdPhoneIphone size={18} />
+                          <span>Mobile</span>
+                        </div>
+                      ),
+                      value: "mobile",
                     },
                     {
-                      title: "Course",
-                      description: "Review course",
+                      label: (
+                        <div
+                          style={{
+                            padding: "4px 8px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}>
+                          <MdTablet size={18} />
+                          <span>Tablet</span>
+                        </div>
+                      ),
+                      value: "tablet",
                     },
                     {
-                      title: "Payment",
-                      description: "Complete purchase",
+                      label: (
+                        <div
+                          style={{
+                            padding: "4px 8px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}>
+                          <MdLaptop size={18} />
+                          <span>Desktop</span>
+                        </div>
+                      ),
+                      value: "desktop",
                     },
                   ]}
                 />
               </div>
-
-              {/* Device Selector */}
-              <Segmented
-                value={deviceType}
-                onChange={(value) => setDeviceType(value as DeviceType)}
-                options={[
-                  {
-                    label: (
-                      <div
-                        style={{
-                          padding: "4px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        <MdPhoneIphone size={18} />
-                        <span>Mobile</span>
-                      </div>
-                    ),
-                    value: "mobile",
-                  },
-                  {
-                    label: (
-                      <div
-                        style={{
-                          padding: "4px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        <MdTablet size={18} />
-                        <span>Tablet</span>
-                      </div>
-                    ),
-                    value: "tablet",
-                  },
-                  {
-                    label: (
-                      <div
-                        style={{
-                          padding: "4px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        <MdLaptop size={18} />
-                        <span>Desktop</span>
-                      </div>
-                    ),
-                    value: "desktop",
-                  },
-                ]}
-              />
             </div>
           </div>
-        </div>
 
-        {/* Render the page content using Craft.js in view-only mode */}
-        <div
-          style={{
-            background: "#e5e7eb",
-            minHeight: "calc(100vh - 180px)",
-            padding: "40px 20px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "flex-start",
-          }}
-        >
-          {/* Device Mockup Container */}
+          {/* Render the page content using Craft.js in view-only mode */}
           <div
             style={{
-              perspective: "2000px",
+              background: "#e5e7eb",
+              minHeight: "calc(100vh - 180px)",
+              padding: "40px 20px",
               display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "16px",
-            }}
-          >
-            {/* Device Label */}
+              justifyContent: "center",
+              alignItems: "flex-start",
+            }}>
+            {/* Device Mockup Container */}
             <div
               style={{
-                fontSize: "14px",
-                color: "#6b7280",
-                fontWeight: 500,
-              }}
-            >
-              {deviceConfig.label} ({deviceConfig.width} × {deviceConfig.height}
-              )
-            </div>
-
-            {/* Device Frame */}
-            <div
-              style={{
-                width: `${deviceConfig.width}px`,
-                transform: `scale(${deviceConfig.scale})`,
-                transformOrigin: "top center",
-                transition: "all 0.3s ease-in-out",
-              }}
-            >
-              {/* Mockup Frame */}
+                perspective: "2000px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "16px",
+              }}>
+              {/* Device Label */}
               <div
                 style={{
-                  background:
-                    deviceType === "mobile"
-                      ? "#1f2937"
-                      : deviceType === "tablet"
-                      ? "#374151"
-                      : "#4b5563",
-                  borderRadius:
-                    deviceType === "desktop"
-                      ? "12px"
-                      : deviceType === "tablet"
-                      ? "24px"
-                      : "32px",
-                  padding:
-                    deviceType === "desktop"
-                      ? "20px 20px 60px"
-                      : deviceType === "tablet"
-                      ? "50px 20px"
-                      : "12px",
-                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-                  position: "relative",
-                }}
-              >
-                {/* Mobile notch */}
-                {deviceType === "mobile" && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "0",
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      width: "150px",
-                      height: "24px",
-                      background: "#1f2937",
-                      borderRadius: "0 0 16px 16px",
-                      zIndex: 10,
-                    }}
-                  />
-                )}
+                  fontSize: "14px",
+                  color: "#6b7280",
+                  fontWeight: 500,
+                }}>
+                {deviceConfig.label} ({deviceConfig.width} ×{" "}
+                {deviceConfig.height})
+              </div>
 
-                {/* Tablet home button */}
-                {deviceType === "tablet" && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: "15px",
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      width: "50px",
-                      height: "50px",
-                      borderRadius: "50%",
-                      border: "2px solid #6b7280",
-                    }}
-                  />
-                )}
-
-                {/* Screen Content */}
+              {/* Device Frame */}
+              <div
+                style={{
+                  width: `${deviceConfig.width}px`,
+                  transform: `scale(${deviceConfig.scale})`,
+                  transformOrigin: "top center",
+                  transition: "all 0.3s ease-in-out",
+                }}>
+                {/* Mockup Frame */}
                 <div
                   style={{
-                    width: "100%",
-                    height: `${deviceConfig.height}px`,
-                    background: "#ffffff",
-                    borderRadius: deviceType === "desktop" ? "8px" : "16px",
-                    overflow: "hidden",
+                    background:
+                      deviceType === "mobile"
+                        ? "#1f2937"
+                        : deviceType === "tablet"
+                        ? "#374151"
+                        : "#4b5563",
+                    borderRadius:
+                      deviceType === "desktop"
+                        ? "12px"
+                        : deviceType === "tablet"
+                        ? "24px"
+                        : "32px",
+                    padding:
+                      deviceType === "desktop"
+                        ? "20px 20px 60px"
+                        : deviceType === "tablet"
+                        ? "50px 20px"
+                        : "12px",
+                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                     position: "relative",
-                  }}
-                >
+                  }}>
+                  {/* Mobile notch */}
+                  {deviceType === "mobile" && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "0",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: "150px",
+                        height: "24px",
+                        background: "#1f2937",
+                        borderRadius: "0 0 16px 16px",
+                        zIndex: 10,
+                      }}
+                    />
+                  )}
+
+                  {/* Tablet home button */}
+                  {deviceType === "tablet" && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "15px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: "50px",
+                        height: "50px",
+                        borderRadius: "50%",
+                        border: "2px solid #6b7280",
+                      }}
+                    />
+                  )}
+
+                  {/* Screen Content */}
                   <div
                     style={{
                       width: "100%",
-                      height: "100%",
-                      overflowY: "auto",
-                      overflowX: "hidden",
-                    }}
-                    className="landing-builder-content"
-                  >
-                    <Editor
-                      resolver={{
-                        Text,
-                        Button: BuilderButton,
-                        Container,
-                        Image,
-                        Header,
-                        Headline,
-                        Subtitle,
-                        UserForm,
-                        InstructorBio,
-                        SuccessHeadline,
-                        VideoPlayer,
-                        CountdownTimer,
-                        SalesPageContent,
-                        TwoColumnLayout,
-                        Footer,
+                      height: `${deviceConfig.height}px`,
+                      background: "#ffffff",
+                      borderRadius: deviceType === "desktop" ? "8px" : "16px",
+                      overflow: "hidden",
+                      position: "relative",
+                    }}>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        overflowY: "auto",
+                        overflowX: "hidden",
                       }}
-                      enabled={false}
-                    >
-                      <Frame
-                        key={`step-${currentStep}-${deviceType}`}
-                        data={
-                          pageContent && Object.keys(pageContent).length > 0
-                            ? JSON.stringify(pageContent)
-                            : undefined
-                        }
-                      >
-                        {/* Show default content for step if no saved content exists */}
-                        {(!pageContent ||
-                          Object.keys(pageContent).length === 0) &&
-                          getDefaultStepSections(currentStep)}
-                      </Frame>
-                    </Editor>
+                      className="landing-builder-content">
+                      <Editor
+                        resolver={{
+                          Text,
+                          Button: BuilderButton,
+                          Container,
+                          Image,
+                          Header,
+                          Headline,
+                          Subtitle,
+                          UserForm,
+                          InstructorBio,
+                          SuccessHeadline,
+                          VideoPlayer,
+                          CountdownTimer,
+                          SalesPageContent,
+                          TwoColumnLayout,
+                          Footer,
+                        }}
+                        enabled={false}>
+                        <Frame
+                          key={`step-${currentStep}-${deviceType}`}
+                          data={
+                            pageContent && Object.keys(pageContent).length > 0
+                              ? JSON.stringify(pageContent)
+                              : undefined
+                          }>
+                          {/* Show default content for step if no saved content exists */}
+                          {(!pageContent ||
+                            Object.keys(pageContent).length === 0) &&
+                            getDefaultStepSections(currentStep)}
+                        </Frame>
+                      </Editor>
+                    </div>
                   </div>
-                </div>
 
-                {/* Desktop stand */}
-                {deviceType === "desktop" && (
-                  <>
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: "20px",
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        width: "200px",
-                        height: "8px",
-                        background: "#6b7280",
-                        borderRadius: "4px",
-                      }}
-                    />
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: "0",
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        width: "300px",
-                        height: "20px",
-                        background: "#4b5563",
-                        borderRadius: "0 0 8px 8px",
-                      }}
-                    />
-                  </>
-                )}
+                  {/* Desktop stand */}
+                  {deviceType === "desktop" && (
+                    <>
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "20px",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: "200px",
+                          height: "8px",
+                          background: "#6b7280",
+                          borderRadius: "4px",
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "0",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: "300px",
+                          height: "20px",
+                          background: "#4b5563",
+                          borderRadius: "0 0 8px 8px",
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Navigation Buttons */}
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                  justifyContent: "center",
+                  width: `${deviceConfig.width * deviceConfig.scale}px`,
+                }}>
+                <AntButton
+                  size="large"
+                  onClick={handlePrevStep}
+                  disabled={currentStep === 1}
+                  style={{ minWidth: "120px" }}>
+                  Previous
+                </AntButton>
+                <AntButton
+                  type="primary"
+                  size="large"
+                  onClick={handleNextStep}
+                  style={{ minWidth: "120px" }}>
+                  {currentStep === 1
+                    ? "Continue to Course"
+                    : currentStep === 2
+                    ? "Proceed to Payment"
+                    : "Complete Payment"}
+                </AntButton>
               </div>
             </div>
-
-            {/* Navigation Buttons */}
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "12px",
-                justifyContent: "center",
-                width: `${deviceConfig.width * deviceConfig.scale}px`,
-              }}
-            >
-              <AntButton
-                size="large"
-                onClick={handlePrevStep}
-                disabled={currentStep === 1}
-                style={{ minWidth: "120px" }}
-              >
-                Previous
-              </AntButton>
-              <AntButton
-                type="primary"
-                size="large"
-                onClick={handleNextStep}
-                style={{ minWidth: "120px" }}
-              >
-                {currentStep === 1
-                  ? "Continue to Course"
-                  : currentStep === 2
-                  ? "Proceed to Payment"
-                  : "Complete Payment"}
-              </AntButton>
-            </div>
           </div>
-        </div>
-      </Content>
-    </Layout>
+        </Content>
+      </Layout>
+    </CountdownProvider>
   );
 }

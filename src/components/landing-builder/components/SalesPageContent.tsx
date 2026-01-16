@@ -2,6 +2,7 @@ import React from "react";
 import { useNode } from "@craftjs/core";
 import { Form, Input } from "antd";
 import { MdCheckCircle } from "react-icons/md";
+import { useCountdown } from "../../../contexts/CountdownContext";
 
 interface SalesPageContentProps {
   confirmationText?: string;
@@ -38,6 +39,8 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
     selected: state.events.selected,
   }));
 
+  const { isCountdownFinished } = useCountdown();
+
   return (
     <div
       ref={(ref) => ref && connect(drag(ref))}
@@ -47,8 +50,7 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
         padding: "0 12px",
         marginBottom: `${marginBottom}px`,
         border: selected ? "2px dashed #1890ff" : "none",
-      }}
-    >
+      }}>
       <div style={style}>
         {/* Confirmation Text */}
         <p
@@ -58,8 +60,7 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
             color: "#000",
             marginBottom: "20px",
             textAlign: "center",
-          }}
-        >
+          }}>
           {confirmationText}
         </p>
 
@@ -72,8 +73,7 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
                 display: "flex",
                 alignItems: "center",
                 marginBottom: "12px",
-              }}
-            >
+              }}>
               <MdCheckCircle
                 style={{
                   fontSize: "clamp(20px, 24px, 24px)",
@@ -83,48 +83,46 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
                 }}
               />
               <span
-                style={{ fontSize: "clamp(14px, 16px, 16px)", color: "#000" }}
-              >
+                style={{ fontSize: "clamp(14px, 16px, 16px)", color: "#000" }}>
                 {benefit}
               </span>
             </div>
           ))}
         </div>
 
-        {/* CTA Button with Two Lines */}
-        <button
-          style={{
-            width: "100%",
-            padding: "16px 24px",
-            backgroundColor: buttonColor,
-            color: buttonTextColor,
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "4px",
-          }}
-        >
-          <span
+        {/* CTA Button - Only show when countdown is finished */}
+        {isCountdownFinished && (
+          <button
             style={{
-              fontSize: "clamp(16px, 22px, 22px)",
-              fontWeight: "bold",
-              textTransform: "uppercase",
-            }}
-          >
-            {buttonMainText}
-          </span>
-          <span
-            style={{
-              fontSize: "clamp(12px, 14px, 14px)",
-              fontWeight: "normal",
-            }}
-          >
-            {buttonSubText}
-          </span>
-        </button>
+              width: "100%",
+              padding: "16px 24px",
+              backgroundColor: buttonColor,
+              color: buttonTextColor,
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "4px",
+            }}>
+            <span
+              style={{
+                fontSize: "clamp(16px, 22px, 22px)",
+                fontWeight: "bold",
+                textTransform: "uppercase",
+              }}>
+              {buttonMainText}
+            </span>
+            <span
+              style={{
+                fontSize: "clamp(12px, 14px, 14px)",
+                fontWeight: "normal",
+              }}>
+              {buttonSubText}
+            </span>
+          </button>
+        )}
       </div>
     </div>
   );

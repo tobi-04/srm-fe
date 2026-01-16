@@ -1,16 +1,16 @@
-import apiClient from './client';
-import type { LandingPage } from '../stores/landingPageStore';
+import apiClient from "./client";
+import type { LandingPage } from "../stores/landingPageStore";
 
 export interface CreateLandingPageInput {
   course_id: string;
   title: string;
   slug: string;
-  status?: 'draft' | 'published';
+  status?: "draft" | "published";
   page_content?: Record<string, any>;
   form_fields?: Array<{
     name: string;
     label: string;
-    type: 'text' | 'email' | 'tel' | 'textarea' | 'select';
+    type: "text" | "email" | "tel" | "textarea" | "select";
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -29,7 +29,8 @@ export interface CreateLandingPageInput {
   };
 }
 
-export interface UpdateLandingPageInput extends Partial<CreateLandingPageInput> {}
+export interface UpdateLandingPageInput
+  extends Partial<CreateLandingPageInput> {}
 
 export interface LandingPageListResponse {
   data: LandingPage[];
@@ -41,11 +42,25 @@ export interface LandingPageListResponse {
   };
 }
 
+export interface SubmitUserFormInput {
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  birthday?: string;
+}
+
+export interface SubmitUserFormResponse {
+  success: boolean;
+  message: string;
+  submission_id: string;
+}
+
 // Create landing page
 export const createLandingPage = async (
   data: CreateLandingPageInput
 ): Promise<LandingPage> => {
-  const response = await apiClient.post('/landing-pages', data);
+  const response = await apiClient.post("/landing-pages", data);
   return response.data;
 };
 
@@ -56,7 +71,7 @@ export const getLandingPages = async (params?: {
   course_id?: string;
   status?: string;
 }): Promise<LandingPageListResponse> => {
-  const response = await apiClient.get('/landing-pages', { params });
+  const response = await apiClient.get("/landing-pages", { params });
   return response.data;
 };
 
@@ -67,13 +82,17 @@ export const getLandingPageById = async (id: string): Promise<LandingPage> => {
 };
 
 // Get landing page by slug (public)
-export const getLandingPageBySlug = async (slug: string): Promise<LandingPage> => {
+export const getLandingPageBySlug = async (
+  slug: string
+): Promise<LandingPage> => {
   const response = await apiClient.get(`/landing-pages/slug/${slug}`);
   return response.data;
 };
 
 // Get landing pages by course ID
-export const getLandingPagesByCourse = async (courseId: string): Promise<LandingPage[]> => {
+export const getLandingPagesByCourse = async (
+  courseId: string
+): Promise<LandingPage[]> => {
   const response = await apiClient.get(`/landing-pages/course/${courseId}`);
   return response.data;
 };
@@ -94,7 +113,7 @@ export const deleteLandingPage = async (id: string): Promise<void> => {
 
 // Bulk delete landing pages
 export const bulkDeleteLandingPages = async (ids: string[]): Promise<void> => {
-  await apiClient.delete('/landing-pages/bulk/delete', { data: { ids } });
+  await apiClient.delete("/landing-pages/bulk/delete", { data: { ids } });
 };
 
 // Hard delete landing page
@@ -105,5 +124,17 @@ export const hardDeleteLandingPage = async (id: string): Promise<void> => {
 // Restore landing page
 export const restoreLandingPage = async (id: string): Promise<LandingPage> => {
   const response = await apiClient.put(`/landing-pages/${id}/restore`);
+  return response.data;
+};
+
+// Submit user form
+export const submitUserForm = async (
+  slug: string,
+  data: SubmitUserFormInput
+): Promise<SubmitUserFormResponse> => {
+  const response = await apiClient.post(
+    `/landing-pages/slug/${slug}/submit-form`,
+    data
+  );
   return response.data;
 };

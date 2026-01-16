@@ -1,15 +1,15 @@
-import axios from 'axios';
-import { useAuthStore } from '../stores/authStore';
+import axios from "axios";
+import { useAuthStore } from "../stores/authStore";
 
 // In-memory cache
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
   withCredentials: true, // Enable sending httpOnly cookies
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -17,7 +17,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Check cache first for GET requests
-    if (config.method?.toLowerCase() === 'get') {
+    if (config.method?.toLowerCase() === "get") {
       const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
       const cached = cache.get(cacheKey);
 
@@ -28,7 +28,7 @@ apiClient.interceptors.request.use(
     }
 
     // Attach access token from localStorage to Authorization header
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -45,11 +45,11 @@ apiClient.interceptors.request.use((config: any) => {
       response: {
         data: config._cachedData,
         status: 200,
-        statusText: 'OK (from cache)',
+        statusText: "OK (from cache)",
         headers: {},
         config,
       },
-      __isCache: true
+      __isCache: true,
     });
   }
   return config;
@@ -84,8 +84,10 @@ apiClient.interceptors.response.use(
     const method = response.config.method?.toLowerCase();
 
     // Cache GET requests
-    if (method === 'get') {
-      const cacheKey = `${response.config.url}${JSON.stringify(response.config.params || {})}`;
+    if (method === "get") {
+      const cacheKey = `${response.config.url}${JSON.stringify(
+        response.config.params || {}
+      )}`;
       cache.set(cacheKey, {
         data: response.data,
         timestamp: Date.now(),
@@ -93,7 +95,12 @@ apiClient.interceptors.response.use(
     }
 
     // Clear all cache on CUD operations
-    if (method === 'post' || method === 'put' || method === 'patch' || method === 'delete') {
+    if (
+      method === "post" ||
+      method === "put" ||
+      method === "patch" ||
+      method === "delete"
+    ) {
       cache.clear();
     }
 
@@ -128,16 +135,19 @@ apiClient.interceptors.response.use(
 
       try {
         // Retrieve refresh token from localStorage as the backend expects it in the body
-        const refreshToken = localStorage.getItem('refreshToken');
-        
+        const refreshToken = localStorage.getItem("refreshToken");
+
         if (!refreshToken) {
-          throw new Error('No refresh token available');
+          throw new Error("No refresh token available");
         }
 
         // Call refresh endpoint with the token in the body
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/auth/refresh`,
-          { refresh_token: refreshToken }
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:3000"
+          }/auth/refresh`,
+          { refresh_token: refreshToken },
+          { withCredentials: true }
         );
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
@@ -145,7 +155,7 @@ apiClient.interceptors.response.use(
         // Update tokens in localStorage and Zustand store
         useAuthStore.getState().updateAccessToken(accessToken);
         if (newRefreshToken) {
-          localStorage.setItem('refreshToken', newRefreshToken);
+          localStorage.setItem("refreshToken", newRefreshToken);
         }
 
         // Update default Authorization header
@@ -161,7 +171,8 @@ apiClient.interceptors.response.use(
         // Refresh token expired or invalid
         processQueue(refreshError, null);
 
-        // Clear auth state. This will trigger the SPA's ProtectedRoute to redirect.
+        // Clear auth state and tokens. This will trigger the SPA's ProtectedRoute to redirect.
+        localStorage.removeItem("refreshToken");
         useAuthStore.getState().clearAuth();
 
         return Promise.reject(refreshError);
@@ -180,4 +191,3 @@ export default apiClient;
 export const clearApiCache = () => {
   cache.clear();
 };
-
