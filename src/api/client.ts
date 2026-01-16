@@ -114,6 +114,22 @@ apiClient.interceptors.response.use(
 
     const originalRequest = error.config;
 
+    // Handle 403 ACCOUNT_LOCKED - dispatch event for UI to show modal
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.error === "ACCOUNT_LOCKED"
+    ) {
+      // Dispatch custom event for the app to handle
+      window.dispatchEvent(
+        new CustomEvent("account-locked", {
+          detail: {
+            message: error.response.data.message,
+          },
+        })
+      );
+      return Promise.reject(error);
+    }
+
     // Handle 401 Unauthorized (Access Token Expired)
     if (error.response?.status === 401 && !originalRequest._retry) {
       // If already refreshing, queue this request

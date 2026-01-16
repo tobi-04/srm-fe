@@ -9,13 +9,15 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ChangePasswordPage from "./pages/ChangePasswordPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
-import UserManagementPage from "./pages/UserManagementPage";
+import StudentManagementPage from "./pages/StudentManagementPage";
+import SalerManagementPage from "./pages/SalerManagementPage";
 import CourseManagementPage from "./pages/CourseManagementPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
 import LandingPageManagementPage from "./pages/LandingPageManagementPage";
 import LandingPageBuilderPage from "./pages/LandingPageBuilderPage";
 import EmailAutomationPage from "./pages/EmailAutomationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AccountLockedModal from "./components/AccountLockedModal";
 
 function App() {
   return (
@@ -57,9 +59,21 @@ function App() {
           />
           <Route
             path="/admin/users"
+            element={<Navigate to="/admin/students" replace />}
+          />
+          <Route
+            path="/admin/students"
             element={
               <ProtectedRoute requiredRole="admin">
-                <UserManagementPage />
+                <StudentManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/salers"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <SalerManagementPage />
               </ProtectedRoute>
             }
           />
@@ -107,6 +121,7 @@ function App() {
           {/* Public Landing Page Route - Must be last to avoid conflicts */}
           <Route path="/:slug" element={<LandingPageView />} />
         </Routes>
+        <AccountLockedModal />
       </BrowserRouter>
     </ConfigProvider>
   );

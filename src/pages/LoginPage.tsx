@@ -36,7 +36,14 @@ export default function LoginPage() {
         navigate("/");
       }
     } catch (error: any) {
-      message.error(error.response?.data?.message || "Login failed");
+      const errorMessage = error.response?.data?.message || "Login failed";
+      // Check if account is locked (backend returns "ACCOUNT_LOCKED:message")
+      if (errorMessage.startsWith("ACCOUNT_LOCKED:")) {
+        const lockedMessage = errorMessage.replace("ACCOUNT_LOCKED:", "");
+        message.error(lockedMessage);
+      } else {
+        message.error(errorMessage);
+      }
     } finally {
       setLoading(false);
     }

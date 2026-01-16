@@ -113,9 +113,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       type: "group",
       children: [
         {
-          key: "/admin/users",
+          key: "/admin/students",
           icon: <MdPeople size={20} />,
-          label: "Danh sách học viên",
+          label: "Quản lý Học viên",
+        },
+        {
+          key: "/admin/salers",
+          icon: <MdPerson size={20} />,
+          label: "Quản lý Saler",
         },
         {
           key: "/admin/email-automation",
