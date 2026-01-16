@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input } from "antd";
+import { Form, Input, Slider } from "antd";
 import { useCountdown } from "../../../contexts/CountdownContext";
 
 interface CountdownTimerProps {
@@ -13,7 +13,10 @@ interface CountdownTimerProps {
   color?: string;
   labelColor?: string;
   backgroundColor?: string;
+  padding?: number;
+  marginTop?: number;
   marginBottom?: number;
+  maxWidth?: number;
   style?: React.CSSProperties;
 }
 
@@ -27,7 +30,10 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   color = "#000000",
   labelColor = "#666666",
   backgroundColor = "transparent",
+  padding = 0,
+  marginTop = 0,
   marginBottom = 30,
+  maxWidth = 1200,
   style,
 }) => {
   const {
@@ -44,6 +50,15 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     minutes,
     seconds,
   });
+
+  // Reset timer when props change (in builder mode)
+  useEffect(() => {
+    setTimeLeft({
+      hours,
+      minutes,
+      seconds,
+    });
+  }, [hours, minutes, seconds]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -81,8 +96,11 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
       className="landing-builder-component"
       style={{
         backgroundColor,
-        padding: "0 12px",
+        padding: `${padding}px 12px`,
+        marginTop: `${marginTop}px`,
         marginBottom: `${marginBottom}px`,
+        maxWidth: maxWidth ? `${maxWidth}px` : "100%",
+        margin: `${marginTop}px auto ${marginBottom}px auto`,
         border: selected ? "2px dashed #1890ff" : "none",
         textAlign: "center",
       }}>
@@ -254,26 +272,24 @@ const CountdownTimerSettings = () => {
           }
         />
       </Form.Item>
-      <Form.Item label="Font Size">
-        <Input
-          type="number"
+      <Form.Item label={`Font Size (${props.fontSize}px)`}>
+        <Slider
+          min={10}
+          max={120}
           value={props.fontSize}
-          onChange={(e) =>
-            setProp((props: any) => (props.fontSize = parseInt(e.target.value)))
+          onChange={(value) =>
+            setProp((props: any) => (props.fontSize = value))
           }
         />
       </Form.Item>
-      <Form.Item label="Font Weight">
-        <Input
-          type="number"
-          value={props.fontWeight}
+      <Form.Item label={`Font Weight (${props.fontWeight})`}>
+        <Slider
           min={100}
           max={900}
           step={100}
-          onChange={(e) =>
-            setProp(
-              (props: any) => (props.fontWeight = parseInt(e.target.value))
-            )
+          value={props.fontWeight}
+          onChange={(value) =>
+            setProp((props: any) => (props.fontWeight = value))
           }
         />
       </Form.Item>
@@ -304,14 +320,41 @@ const CountdownTimerSettings = () => {
           }
         />
       </Form.Item>
-      <Form.Item label="Margin Bottom">
-        <Input
-          type="number"
+      <Form.Item label={`Padding (${props.padding}px)`}>
+        <Slider
+          min={0}
+          max={200}
+          value={props.padding}
+          onChange={(value) => setProp((props: any) => (props.padding = value))}
+        />
+      </Form.Item>
+      <Form.Item label={`Max Width (${props.maxWidth}px)`}>
+        <Slider
+          min={400}
+          max={2000}
+          value={props.maxWidth}
+          onChange={(value) =>
+            setProp((props: any) => (props.maxWidth = value))
+          }
+        />
+      </Form.Item>
+      <Form.Item label={`Margin Top (${props.marginTop}px)`}>
+        <Slider
+          min={0}
+          max={100}
+          value={props.marginTop}
+          onChange={(value) =>
+            setProp((props: any) => (props.marginTop = value))
+          }
+        />
+      </Form.Item>
+      <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
+        <Slider
+          min={0}
+          max={100}
           value={props.marginBottom}
-          onChange={(e) =>
-            setProp(
-              (props: any) => (props.marginBottom = parseInt(e.target.value))
-            )
+          onChange={(value) =>
+            setProp((props: any) => (props.marginBottom = value))
           }
         />
       </Form.Item>
@@ -331,7 +374,10 @@ const CountdownTimerSettings = () => {
     color: "#000000",
     labelColor: "#666666",
     backgroundColor: "transparent",
+    padding: 0,
+    marginTop: 0,
     marginBottom: 30,
+    maxWidth: 1200,
   },
   related: {
     toolbar: CountdownTimerSettings,

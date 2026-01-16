@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Checkbox, message } from "antd";
+import { Form, Input, Checkbox, message, Slider } from "antd";
 import { useParams } from "react-router-dom";
 import { submitUserForm } from "../../../api/landingPage";
 import { useAuthStore } from "../../../stores/authStore";
@@ -18,7 +18,9 @@ interface UserFormProps {
   showAddress?: boolean;
   showBirthday?: boolean;
   maxWidth?: number;
+  marginTop?: number;
   marginBottom?: number;
+  padding?: number;
   style?: React.CSSProperties;
 }
 
@@ -35,7 +37,9 @@ export const UserForm: React.FC<UserFormProps> = ({
   showAddress = false,
   showBirthday = false,
   maxWidth = 600,
+  marginTop = 0,
   marginBottom = 40,
+  padding = 0,
   style,
 }) => {
   const {
@@ -102,6 +106,18 @@ export const UserForm: React.FC<UserFormProps> = ({
       return;
     }
 
+    // Phone validation (if provided)
+    if (showPhone && formData.phone && formData.phone.trim()) {
+      // Vietnamese phone number: 10 digits, starts with 0
+      const phoneRegex = /^0\d{9}$/;
+      if (!phoneRegex.test(formData.phone.replace(/\s/g, ""))) {
+        message.error(
+          "Please enter a valid phone number (10 digits, starts with 0)"
+        );
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -117,9 +133,15 @@ export const UserForm: React.FC<UserFormProps> = ({
       if (showBirthday && formData.birthday)
         submitData.birthday = formData.birthday;
 
-      await submitUserForm(slug, submitData);
+      const response = await submitUserForm(slug, submitData);
 
       message.success("Form submitted successfully!");
+
+      // Save real submission ID to localStorage for payment creation later
+      localStorage.setItem(
+        `landing_${slug}_submission_id`,
+        response.submission_id
+      );
 
       // Navigate to step 2 using window.location
       const currentUrl = new URL(window.location.href);
@@ -174,7 +196,8 @@ export const UserForm: React.FC<UserFormProps> = ({
       ref={(ref) => ref && connect(drag(ref))}
       className="landing-builder-component"
       style={{
-        padding: "0 12px",
+        padding: `${padding}px 12px`,
+        marginTop: `${marginTop}px`,
         marginBottom: `${marginBottom}px`,
         border: selected ? "2px dashed #1890ff" : "none",
       }}>
@@ -190,26 +213,58 @@ export const UserForm: React.FC<UserFormProps> = ({
         <form onSubmit={handleSubmit}>
           <input
             type="text"
-            placeholder={namePlaceholder}
-            style={inputStyle}
+            placeholder={namePlaceholder + " *"}
+            style={{
+              ...inputStyle,
+              backgroundColor: user ? "#f5f5f5" : inputStyle.backgroundColor,
+              cursor: user ? "not-allowed" : "text",
+            }}
             required
             value={formData.name}
             onChange={(e) => handleInputChange("name", e.target.value)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !!user}
           />
+          {user && (
+            <small
+              style={{
+                color: "#999",
+                fontSize: "12px",
+                marginTop: "-8px",
+                marginBottom: "8px",
+                display: "block",
+              }}>
+              Name is locked for logged-in users
+            </small>
+          )}
           <input
             type="email"
-            placeholder={emailPlaceholder}
-            style={inputStyle}
+            placeholder={emailPlaceholder + " *"}
+            style={{
+              ...inputStyle,
+              backgroundColor: user ? "#f5f5f5" : inputStyle.backgroundColor,
+              cursor: user ? "not-allowed" : "text",
+            }}
             required
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !!user}
           />
+          {user && (
+            <small
+              style={{
+                color: "#999",
+                fontSize: "12px",
+                marginTop: "-8px",
+                marginBottom: "8px",
+                display: "block",
+              }}>
+              Email is locked for logged-in users
+            </small>
+          )}
           {showPhone && (
             <input
               type="tel"
-              placeholder={phonePlaceholder}
+              placeholder={phonePlaceholder + " (Optional)"}
               style={inputStyle}
               value={formData.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
@@ -219,7 +274,7 @@ export const UserForm: React.FC<UserFormProps> = ({
           {showAddress && (
             <input
               type="text"
-              placeholder={addressPlaceholder}
+              placeholder={addressPlaceholder + " (Optional)"}
               style={inputStyle}
               value={formData.address}
               onChange={(e) => handleInputChange("address", e.target.value)}
@@ -227,14 +282,24 @@ export const UserForm: React.FC<UserFormProps> = ({
             />
           )}
           {showBirthday && (
-            <input
-              type="date"
-              placeholder={birthdayPlaceholder}
-              style={inputStyle}
-              value={formData.birthday}
-              onChange={(e) => handleInputChange("birthday", e.target.value)}
-              disabled={isSubmitting}
-            />
+            <div>
+              <label
+                style={{
+                  fontSize: "14px",
+                  color: "#666",
+                  marginBottom: "4px",
+                  display: "block",
+                }}>
+                {birthdayPlaceholder} (Optional)
+              </label>
+              <input
+                type="date"
+                style={inputStyle}
+                value={formData.birthday}
+                onChange={(e) => handleInputChange("birthday", e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
           )}
           <button type="submit" style={buttonStyle} disabled={isSubmitting}>
             {isSubmitting ? "Submitting..." : buttonText}
@@ -358,23 +423,41 @@ const UserFormSettings = () => {
           />
         </Form.Item>
       )}
-      <Form.Item label="Max Width">
-        <Input
-          type="number"
+      <Form.Item label={`Max Width (${props.maxWidth}px)`}>
+        <Slider
+          min={300}
+          max={1200}
           value={props.maxWidth}
-          onChange={(e) =>
-            setProp((props: any) => (props.maxWidth = parseInt(e.target.value)))
+          onChange={(value) =>
+            setProp((props: any) => (props.maxWidth = value))
           }
         />
       </Form.Item>
-      <Form.Item label="Margin Bottom">
-        <Input
-          type="number"
+      <Form.Item label={`Padding (${props.padding}px)`}>
+        <Slider
+          min={0}
+          max={100}
+          value={props.padding}
+          onChange={(value) => setProp((props: any) => (props.padding = value))}
+        />
+      </Form.Item>
+      <Form.Item label={`Margin Top (${props.marginTop}px)`}>
+        <Slider
+          min={0}
+          max={100}
+          value={props.marginTop}
+          onChange={(value) =>
+            setProp((props: any) => (props.marginTop = value))
+          }
+        />
+      </Form.Item>
+      <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
+        <Slider
+          min={0}
+          max={100}
           value={props.marginBottom}
-          onChange={(e) =>
-            setProp(
-              (props: any) => (props.marginBottom = parseInt(e.target.value))
-            )
+          onChange={(value) =>
+            setProp((props: any) => (props.marginBottom = value))
           }
         />
       </Form.Item>
@@ -397,7 +480,9 @@ const UserFormSettings = () => {
     showAddress: false,
     showBirthday: false,
     maxWidth: 600,
+    marginTop: 0,
     marginBottom: 40,
+    padding: 0,
   },
   related: {
     toolbar: UserFormSettings,

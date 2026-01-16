@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input } from "antd";
+import { Form, Input, message, Slider } from "antd";
 import { MdCheckCircle } from "react-icons/md";
 import { useCountdown } from "../../../contexts/CountdownContext";
+import { useParams } from "react-router-dom";
+import { createPaymentTransaction } from "../../../api/paymentTransaction";
+import { useLandingPageData } from "../../../contexts/LandingPageContext";
 
 interface SalesPageContentProps {
   confirmationText?: string;
@@ -13,7 +16,10 @@ interface SalesPageContentProps {
   buttonTextColor?: string;
   checkIconColor?: string;
   backgroundColor?: string;
+  padding?: number;
+  marginTop?: number;
   marginBottom?: number;
+  maxWidth?: number;
   style?: React.CSSProperties;
 }
 
@@ -29,7 +35,10 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
   buttonTextColor = "#ffffff",
   checkIconColor = "#52c41a",
   backgroundColor = "#ffffff",
+  padding = 0,
+  marginTop = 0,
   marginBottom = 30,
+  maxWidth = 1200,
   style,
 }) => {
   const {
@@ -40,6 +49,59 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
   }));
 
   const { isCountdownFinished } = useCountdown();
+  const { slug } = useParams<{ slug: string }>();
+  const { landingPage } = useLandingPageData();
+  const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+
+  const handleNavigateToPayment = async () => {
+    // In builder mode, just show info
+    if (!slug || !landingPage) {
+      message.info(
+        "This button will navigate to payment page when viewing the published landing page."
+      );
+      return;
+    }
+
+    setIsCreatingPayment(true);
+
+    try {
+      // Get user submission ID from localStorage (saved during form submission)
+      const submissionId = localStorage.getItem(
+        `landing_${slug}_submission_id`
+      );
+
+      if (!submissionId) {
+        message.error("Please complete the registration form first");
+        // Navigate back to step 1
+        window.location.href = `${window.location.pathname}?step=1`;
+        return;
+      }
+
+      // Get real course_id and course_price from landing page data
+      const courseId = landingPage.course_id;
+      const coursePrice = landingPage.course_price || 100000;
+
+      // Create payment transaction
+      const response = await createPaymentTransaction({
+        course_id: courseId,
+        user_submission_id: submissionId,
+        course_price: coursePrice,
+      });
+
+      message.success("Payment created successfully!");
+
+      // Navigate to step 3 with transaction ID
+      window.location.href = `${window.location.pathname}?step=3&tx=${response.transaction_id}`;
+    } catch (error: any) {
+      console.error("Payment creation error:", error);
+      message.error(
+        error.response?.data?.message ||
+          "Failed to create payment. Please try again."
+      );
+    } finally {
+      setIsCreatingPayment(false);
+    }
+  };
 
   return (
     <div
@@ -47,8 +109,11 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
       className="landing-builder-component"
       style={{
         backgroundColor,
-        padding: "0 12px",
+        padding: `${padding}px 12px`,
+        marginTop: `${marginTop}px`,
         marginBottom: `${marginBottom}px`,
+        maxWidth: maxWidth ? `${maxWidth}px` : "100%",
+        margin: `${marginTop}px auto ${marginBottom}px auto`,
         border: selected ? "2px dashed #1890ff" : "none",
       }}>
       <div style={style}>
@@ -93,6 +158,8 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
         {/* CTA Button - Only show when countdown is finished */}
         {isCountdownFinished && (
           <button
+            onClick={handleNavigateToPayment}
+            disabled={isCreatingPayment}
             style={{
               width: "100%",
               padding: "16px 24px",
@@ -100,11 +167,12 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
               color: buttonTextColor,
               border: "none",
               borderRadius: "6px",
-              cursor: "pointer",
+              cursor: isCreatingPayment ? "not-allowed" : "pointer",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               gap: "4px",
+              opacity: isCreatingPayment ? 0.7 : 1,
             }}>
             <span
               style={{
@@ -112,7 +180,7 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
                 fontWeight: "bold",
                 textTransform: "uppercase",
               }}>
-              {buttonMainText}
+              {isCreatingPayment ? "Processing..." : buttonMainText}
             </span>
             <span
               style={{
@@ -213,14 +281,41 @@ const SalesPageContentSettings = () => {
           }
         />
       </Form.Item>
-      <Form.Item label="Margin Bottom">
-        <Input
-          type="number"
+      <Form.Item label={`Padding (${props.padding}px)`}>
+        <Slider
+          min={0}
+          max={100}
+          value={props.padding}
+          onChange={(value) => setProp((props: any) => (props.padding = value))}
+        />
+      </Form.Item>
+      <Form.Item label={`Max Width (${props.maxWidth}px)`}>
+        <Slider
+          min={400}
+          max={2000}
+          value={props.maxWidth}
+          onChange={(value) =>
+            setProp((props: any) => (props.maxWidth = value))
+          }
+        />
+      </Form.Item>
+      <Form.Item label={`Margin Top (${props.marginTop}px)`}>
+        <Slider
+          min={0}
+          max={100}
+          value={props.marginTop}
+          onChange={(value) =>
+            setProp((props: any) => (props.marginTop = value))
+          }
+        />
+      </Form.Item>
+      <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
+        <Slider
+          min={0}
+          max={100}
           value={props.marginBottom}
-          onChange={(e) =>
-            setProp(
-              (props: any) => (props.marginBottom = parseInt(e.target.value))
-            )
+          onChange={(value) =>
+            setProp((props: any) => (props.marginBottom = value))
           }
         />
       </Form.Item>
@@ -242,7 +337,10 @@ const SalesPageContentSettings = () => {
     buttonTextColor: "#ffffff",
     checkIconColor: "#52c41a",
     backgroundColor: "#ffffff",
+    padding: 0,
+    marginTop: 0,
     marginBottom: 30,
+    maxWidth: 600,
   },
   related: {
     toolbar: SalesPageContentSettings,

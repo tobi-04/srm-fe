@@ -1,11 +1,11 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 export interface LandingPage {
   _id: string;
   course_id: string;
   title: string;
   slug: string;
-  status: 'draft' | 'published';
+  status: "draft" | "published";
   page_1_content: Record<string, any>; // Step 1: User Info Form
   page_2_content: Record<string, any>; // Step 2: Sales Page
   page_3_content: Record<string, any>; // Step 3: Payment Page
@@ -13,7 +13,7 @@ export interface LandingPage {
   form_fields: Array<{
     name: string;
     label: string;
-    type: 'text' | 'email' | 'tel' | 'textarea' | 'select';
+    type: "text" | "email" | "tel" | "textarea" | "select";
     required: boolean;
     placeholder?: string;
     options?: string[];
@@ -30,6 +30,8 @@ export interface LandingPage {
     button_text?: string;
     success_message?: string;
   };
+  course_price: number;
+  payment_enabled: boolean;
   created_at: string;
   updated_at: string;
   is_deleted: boolean;
@@ -43,6 +45,7 @@ interface LandingPageState {
 
 export const useLandingPageStore = create<LandingPageState>()((set) => ({
   currentLandingPage: null,
-  setCurrentLandingPage: (landingPage) => set({ currentLandingPage: landingPage }),
+  setCurrentLandingPage: (landingPage) =>
+    set({ currentLandingPage: landingPage }),
   clearCurrentLandingPage: () => set({ currentLandingPage: null }),
 }));

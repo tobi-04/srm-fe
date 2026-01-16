@@ -1,6 +1,6 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Checkbox, Select } from "antd";
+import { Form, Input, Checkbox, Select, Slider } from "antd";
 
 interface HeadlineProps {
   text?: string;
@@ -11,7 +11,10 @@ interface HeadlineProps {
   color?: string;
   textAlign?: "left" | "center" | "right";
   hasUnderline?: boolean;
+  padding?: number;
+  marginTop?: number;
   marginBottom?: number;
+  maxWidth?: number;
   style?: React.CSSProperties;
 }
 
@@ -24,7 +27,10 @@ export const Headline: React.FC<HeadlineProps> = ({
   color = "#000000",
   textAlign = "center",
   hasUnderline = true,
+  padding = 0,
+  marginTop = 0,
   marginBottom = 30,
+  maxWidth = 900,
   style,
 }) => {
   const {
@@ -46,8 +52,7 @@ export const Headline: React.FC<HeadlineProps> = ({
             backgroundColor: highlightColor,
             textDecoration: hasUnderline ? "underline" : "none",
             padding: "0 12px",
-          }}
-        >
+          }}>
           {highlightText}
         </span>
         {parts[1]}
@@ -60,11 +65,11 @@ export const Headline: React.FC<HeadlineProps> = ({
       ref={(ref) => ref && connect(drag(ref))}
       className="landing-builder-component"
       style={{
-        padding: "0 12px",
+        padding: `${padding}px 12px`,
+        marginTop: `${marginTop}px`,
         marginBottom: `${marginBottom}px`,
         border: selected ? "2px dashed #1890ff" : "none",
-      }}
-    >
+      }}>
       <h1
         style={{
           fontSize: `clamp(${Math.max(20, fontSize * 0.55)}px, ${
@@ -74,12 +79,11 @@ export const Headline: React.FC<HeadlineProps> = ({
           color,
           textAlign,
           margin: "0 auto",
-          maxWidth: "900px",
+          maxWidth: maxWidth === 1200 ? "100%" : `${maxWidth}px`,
           lineHeight: 1.3,
           padding: 0,
           ...style,
-        }}
-      >
+        }}>
         {renderTextWithHighlight()}
       </h1>
     </div>
@@ -131,27 +135,30 @@ const HeadlineSettings = () => {
           }
         />
       </Form.Item>
-      <Form.Item label="Font Size">
-        <Input
-          type="number"
+      <Form.Item label={`Font Size: ${props.fontSize}px`}>
+        <Slider
+          min={10}
+          max={100}
           value={props.fontSize}
-          onChange={(e) =>
-            setProp((props: any) => (props.fontSize = parseInt(e.target.value)))
+          onChange={(value) =>
+            setProp((props: any) => (props.fontSize = value))
           }
         />
       </Form.Item>
       <Form.Item label="Font Weight">
-        <Input
-          type="number"
+        <Select
           value={props.fontWeight}
-          min={100}
-          max={900}
-          step={100}
-          onChange={(e) =>
-            setProp(
-              (props: any) => (props.fontWeight = parseInt(e.target.value))
-            )
+          onChange={(value) =>
+            setProp((props: any) => (props.fontWeight = value))
           }
+          options={[
+            { value: 100, label: "Thin" },
+            { value: 300, label: "Light" },
+            { value: 400, label: "Normal" },
+            { value: 600, label: "Semi Bold" },
+            { value: 700, label: "Bold" },
+            { value: 900, label: "Extra Bold" },
+          ]}
         />
       </Form.Item>
       <Form.Item label="Text Align">
@@ -172,19 +179,49 @@ const HeadlineSettings = () => {
           checked={props.hasUnderline}
           onChange={(e) =>
             setProp((props: any) => (props.hasUnderline = e.target.checked))
-          }
-        >
+          }>
           Underline Highlighted Text
         </Checkbox>
       </Form.Item>
-      <Form.Item label="Margin Bottom">
-        <Input
-          type="number"
-          value={props.marginBottom}
-          onChange={(e) =>
-            setProp(
-              (props: any) => (props.marginBottom = parseInt(e.target.value))
-            )
+      <Form.Item label={`Padding: ${props.padding || 0}px`}>
+        <Slider
+          min={0}
+          max={100}
+          value={props.padding || 0}
+          onChange={(value) => setProp((props: any) => (props.padding = value))}
+        />
+      </Form.Item>
+      <Form.Item
+        label={`Max Width: ${
+          props.maxWidth === 1200 ? "Full" : (props.maxWidth || 900) + "px"
+        }`}>
+        <Slider
+          min={400}
+          max={1200}
+          step={10}
+          value={props.maxWidth || 900}
+          onChange={(value) =>
+            setProp((props: any) => (props.maxWidth = value))
+          }
+        />
+      </Form.Item>
+      <Form.Item label={`Margin Top: ${props.marginTop || 0}px`}>
+        <Slider
+          min={0}
+          max={100}
+          value={props.marginTop || 0}
+          onChange={(value) =>
+            setProp((props: any) => (props.marginTop = value))
+          }
+        />
+      </Form.Item>
+      <Form.Item label={`Margin Bottom: ${props.marginBottom || 0}px`}>
+        <Slider
+          min={0}
+          max={100}
+          value={props.marginBottom || 0}
+          onChange={(value) =>
+            setProp((props: any) => (props.marginBottom = value))
           }
         />
       </Form.Item>
@@ -203,7 +240,10 @@ const HeadlineSettings = () => {
     color: "#000000",
     textAlign: "center",
     hasUnderline: true,
+    padding: 0,
+    marginTop: 0,
     marginBottom: 30,
+    maxWidth: 900,
   },
   related: {
     toolbar: HeadlineSettings,

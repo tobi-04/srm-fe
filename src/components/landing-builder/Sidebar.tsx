@@ -16,6 +16,9 @@ import {
   MdPlayCircle,
   MdTimer,
   MdContactPage,
+  MdQrCode2,
+  MdPayment,
+  MdInfo,
 } from "react-icons/md";
 import {
   Text,
@@ -33,6 +36,9 @@ import {
   SalesPageContent,
   TwoColumnLayout,
   Footer,
+  PaymentQRCode,
+  PaymentInfo,
+  PaymentStatus,
 } from "./components";
 
 const { Text: AntText } = Typography;
@@ -208,6 +214,41 @@ export const Toolbox = () => {
               style={{ cursor: "move" }}
               size="small">
               Two Columns
+            </Button>
+          </div>
+        </Space>
+      ),
+    },
+    {
+      key: "step3",
+      label: "Step 3: Payment",
+      children: (
+        <Space direction="vertical" style={{ width: "100%" }} size="small">
+          <div ref={(ref) => ref && connectors.create(ref, <PaymentQRCode />)}>
+            <Button
+              block
+              icon={<MdQrCode2 />}
+              style={{ cursor: "move" }}
+              size="small">
+              Payment QR Code
+            </Button>
+          </div>
+          <div ref={(ref) => ref && connectors.create(ref, <PaymentInfo />)}>
+            <Button
+              block
+              icon={<MdInfo />}
+              style={{ cursor: "move" }}
+              size="small">
+              Payment Info
+            </Button>
+          </div>
+          <div ref={(ref) => ref && connectors.create(ref, <PaymentStatus />)}>
+            <Button
+              block
+              icon={<MdPayment />}
+              style={{ cursor: "move" }}
+              size="small">
+              Payment Status
             </Button>
           </div>
         </Space>

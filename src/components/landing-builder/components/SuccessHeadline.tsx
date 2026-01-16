@@ -1,6 +1,6 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input } from "antd";
+import { Form, Input, Slider } from "antd";
 
 interface SuccessHeadlineProps {
   text?: string;
@@ -8,7 +8,10 @@ interface SuccessHeadlineProps {
   fontWeight?: number;
   color?: string;
   textAlign?: "left" | "center" | "right";
+  padding?: number;
+  marginTop?: number;
   marginBottom?: number;
+  maxWidth?: number;
   style?: React.CSSProperties;
 }
 
@@ -18,7 +21,10 @@ export const SuccessHeadline: React.FC<SuccessHeadlineProps> = ({
   fontWeight = 900,
   color = "#000000",
   textAlign = "center",
+  padding = 0,
+  marginTop = 0,
   marginBottom = 30,
+  maxWidth = 1200,
   style,
 }) => {
   const {
@@ -33,11 +39,14 @@ export const SuccessHeadline: React.FC<SuccessHeadlineProps> = ({
       ref={(ref) => ref && connect(drag(ref))}
       className="landing-builder-component"
       style={{
-        padding: "0 12px",
+        padding: `${padding}px 12px`,
+        marginTop: `${marginTop}px`,
         marginBottom: `${marginBottom}px`,
+        maxWidth: maxWidth ? `${maxWidth}px` : "100%",
+        margin: `${marginTop}px auto ${marginBottom}px auto`,
         border: selected ? "2px dashed #1890ff" : "none",
-      }}
-    >
+        textAlign,
+      }}>
       <h1
         style={{
           fontSize: `clamp(${Math.max(24, fontSize * 0.55)}px, ${
@@ -50,8 +59,7 @@ export const SuccessHeadline: React.FC<SuccessHeadlineProps> = ({
           lineHeight: 1.2,
           padding: 0,
           ...style,
-        }}
-      >
+        }}>
         {text}
       </h1>
     </div>
@@ -77,26 +85,24 @@ const SuccessHeadlineSettings = () => {
           rows={2}
         />
       </Form.Item>
-      <Form.Item label="Font Size">
-        <Input
-          type="number"
+      <Form.Item label={`Font Size (${props.fontSize}px)`}>
+        <Slider
+          min={10}
+          max={100}
           value={props.fontSize}
-          onChange={(e) =>
-            setProp((props: any) => (props.fontSize = parseInt(e.target.value)))
+          onChange={(value) =>
+            setProp((props: any) => (props.fontSize = value))
           }
         />
       </Form.Item>
-      <Form.Item label="Font Weight">
-        <Input
-          type="number"
-          value={props.fontWeight}
+      <Form.Item label={`Font Weight (${props.fontWeight})`}>
+        <Slider
           min={100}
           max={900}
           step={100}
-          onChange={(e) =>
-            setProp(
-              (props: any) => (props.fontWeight = parseInt(e.target.value))
-            )
+          value={props.fontWeight}
+          onChange={(value) =>
+            setProp((props: any) => (props.fontWeight = value))
           }
         />
       </Form.Item>
@@ -109,14 +115,41 @@ const SuccessHeadlineSettings = () => {
           }
         />
       </Form.Item>
-      <Form.Item label="Margin Bottom">
-        <Input
-          type="number"
+      <Form.Item label={`Padding (${props.padding}px)`}>
+        <Slider
+          min={0}
+          max={100}
+          value={props.padding}
+          onChange={(value) => setProp((props: any) => (props.padding = value))}
+        />
+      </Form.Item>
+      <Form.Item label={`Max Width (${props.maxWidth}px)`}>
+        <Slider
+          min={400}
+          max={2000}
+          value={props.maxWidth}
+          onChange={(value) =>
+            setProp((props: any) => (props.maxWidth = value))
+          }
+        />
+      </Form.Item>
+      <Form.Item label={`Margin Top (${props.marginTop}px)`}>
+        <Slider
+          min={0}
+          max={100}
+          value={props.marginTop}
+          onChange={(value) =>
+            setProp((props: any) => (props.marginTop = value))
+          }
+        />
+      </Form.Item>
+      <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
+        <Slider
+          min={0}
+          max={100}
           value={props.marginBottom}
-          onChange={(e) =>
-            setProp(
-              (props: any) => (props.marginBottom = parseInt(e.target.value))
-            )
+          onChange={(value) =>
+            setProp((props: any) => (props.marginBottom = value))
           }
         />
       </Form.Item>
@@ -130,9 +163,12 @@ const SuccessHeadlineSettings = () => {
     text: "Success! You're Registered For The Web Class!",
     fontSize: 42,
     fontWeight: 900,
+    padding: 0,
     color: "#000000",
     textAlign: "center",
+    marginTop: 0,
     marginBottom: 30,
+    maxWidth: 1200,
   },
   related: {
     toolbar: SuccessHeadlineSettings,
