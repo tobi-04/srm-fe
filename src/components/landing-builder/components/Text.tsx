@@ -81,7 +81,7 @@ const TextSettings = () => {
   );
 };
 
-Text.craft = {
+(Text as any).craft = {
   displayName: 'Text',
   props: {
     text: 'Edit this text',

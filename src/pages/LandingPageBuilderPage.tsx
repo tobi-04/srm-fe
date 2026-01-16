@@ -11,6 +11,17 @@ import {
   Button as BuilderButton,
   Container,
   Image,
+  Header,
+  Headline,
+  Subtitle,
+  UserForm,
+  InstructorBio,
+  SuccessHeadline,
+  VideoPlayer,
+  CountdownTimer,
+  SalesPageContent,
+  TwoColumnLayout,
+  Footer,
 } from '../components/landing-builder/components';
 import { Toolbox, SettingsPanel } from '../components/landing-builder/Sidebar';
 
@@ -20,12 +31,10 @@ const { Title } = Typography;
 type PageStep = '1' | '2' | '3';
 
 const SaveButton = ({
-  id,
   currentStep,
   onSave,
   loading
 }: {
-  id: string;
   currentStep: PageStep;
   onSave: (query: any, step: PageStep) => void;
   loading: boolean;
@@ -85,28 +94,71 @@ export default function LandingPageBuilderPage() {
   const getCurrentPageContent = () => {
     if (!landingPage) return undefined;
 
+    let content;
     switch (currentStep) {
       case '1':
-        return landingPage.page_1_content;
+        content = landingPage.page_1_content;
+        break;
       case '2':
-        return landingPage.page_2_content;
+        content = landingPage.page_2_content;
+        break;
       case '3':
-        return landingPage.page_3_content;
+        content = landingPage.page_3_content;
+        break;
       default:
-        return undefined;
+        content = undefined;
     }
+
+    // Return content if it exists and has nodes
+    if (content && Object.keys(content).length > 0) {
+      return content;
+    }
+
+    // Return undefined for empty content - will use default React elements
+    return undefined;
   };
 
-  const getStepTitle = (step: PageStep) => {
+  // Get default sections for each step
+  const getDefaultStepSections = (step: PageStep) => {
     switch (step) {
       case '1':
-        return 'Step 1: User Information Form';
+        return (
+          <Element is={Container} padding={0} background="#ffffff" canvas>
+            <Header />
+            <Headline />
+            <Subtitle />
+            <UserForm />
+            <InstructorBio />
+            <Footer />
+          </Element>
+        );
       case '2':
-        return 'Step 2: Sales Page';
+        return (
+          <Element is={Container} padding={0} background="#f5f5f5" canvas>
+            <SuccessHeadline />
+            <Container background="#ffffff">
+              <Element is={TwoColumnLayout} canvas>
+                <Element is={Container} background="transparent" canvas>
+                  <VideoPlayer />
+                </Element>
+                <Element is={Container} background="transparent" canvas>
+                  <CountdownTimer />
+                  <SalesPageContent />
+                </Element>
+              </Element>
+            </Container>
+            <Footer />
+          </Element>
+        );
       case '3':
-        return 'Step 3: Payment Page';
+        return (
+          <Element is={Container} background="#ffffff" canvas>
+            <Text text="Step 3: Payment Page" type="title" level={1} />
+            <Text text="Drag and drop components to build your payment page." />
+          </Element>
+        );
       default:
-        return '';
+        return null;
     }
   };
 
@@ -129,6 +181,17 @@ export default function LandingPageBuilderPage() {
             Button: BuilderButton,
             Container,
             Image,
+            Header,
+            Headline,
+            Subtitle,
+            UserForm,
+            InstructorBio,
+            SuccessHeadline,
+            VideoPlayer,
+            CountdownTimer,
+            SalesPageContent,
+            TwoColumnLayout,
+            Footer,
           }}
           enabled={enabled}
           onRender={({ render }) => (
@@ -159,7 +222,6 @@ export default function LandingPageBuilderPage() {
                   {enabled ? 'Preview Mode' : 'Edit Mode'}
                 </Button>
                 <SaveButton
-                  id={id!}
                   currentStep={currentStep}
                   onSave={handleSave}
                   loading={updateMutation.isPending}
@@ -231,21 +293,12 @@ export default function LandingPageBuilderPage() {
                 background: '#fff',
                 minHeight: '100%',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
+              }} className="landing-builder-content">
                 <Frame
                   key={currentStep}
                   data={getCurrentPageContent() ? JSON.stringify(getCurrentPageContent()) : undefined}
                 >
-                  <Element
-                    is={Container}
-                    padding={40}
-                    background="#ffffff"
-                    canvas
-                  >
-                    <Text text={getStepTitle(currentStep)} type="title" level={1} />
-                    <Text text="Drag and drop components from the right sidebar to customize this page." />
-                    <BuilderButton text="Continue" type="primary" size="large" />
-                  </Element>
+                  {!getCurrentPageContent() && getDefaultStepSections(currentStep)}
                 </Frame>
               </div>
             </Content>

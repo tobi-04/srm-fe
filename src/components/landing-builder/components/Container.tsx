@@ -5,14 +5,12 @@ import { Form, Input, Slider } from 'antd';
 interface ContainerProps {
   children?: React.ReactNode;
   background?: string;
-  padding?: number;
   style?: React.CSSProperties;
 }
 
 export const Container: React.FC<ContainerProps> = ({
   children,
   background = '#ffffff',
-  padding = 20,
   style,
 }) => {
   const {
@@ -27,7 +25,6 @@ export const Container: React.FC<ContainerProps> = ({
       ref={(ref) => ref && connect(drag(ref))}
       style={{
         background,
-        padding: `${padding}px`,
         minHeight: '100px',
         width: '100%',
         border: selected ? '1px dashed #1890ff' : '1px transparent solid',
@@ -56,23 +53,14 @@ const ContainerSettings = () => {
           onChange={(e) => setProp((props: any) => (props.background = e.target.value))}
         />
       </Form.Item>
-      <Form.Item label="Padding">
-        <Slider
-          value={props.padding}
-          onChange={(value) => setProp((props: any) => (props.padding = value))}
-          min={0}
-          max={100}
-        />
-      </Form.Item>
     </Form>
   );
 };
 
-Container.craft = {
+(Container as any).craft = {
   displayName: 'Container',
   props: {
     background: '#ffffff',
-    padding: 20,
   },
   rules: {
     canDrag: () => true,

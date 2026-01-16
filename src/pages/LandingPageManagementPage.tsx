@@ -21,7 +21,7 @@ import {
   getLandingPages,
   createLandingPage,
   updateLandingPage,
-  deleteLandingPage,
+  hardDeleteLandingPage,
 } from '../api/landingPage';
 import type { LandingPage } from '../stores/landingPageStore';
 
@@ -104,11 +104,11 @@ export default function LandingPageManagementPage() {
     },
   });
 
-  // Delete mutation
+  // Delete mutation (hard delete)
   const deleteMutation = useMutation({
-    mutationFn: deleteLandingPage,
+    mutationFn: hardDeleteLandingPage,
     onSuccess: async () => {
-      message.success('Landing page deleted successfully');
+      message.success('Landing page permanently deleted');
       await queryClient.invalidateQueries({ queryKey: ['landing-pages'] });
       await refetch();
     },
@@ -204,10 +204,12 @@ export default function LandingPageManagementPage() {
             Edit
           </Button>
           <Popconfirm
-            title="Are you sure to delete this landing page?"
+            title="Permanently delete this landing page?"
+            description="This action cannot be undone. The landing page will be permanently deleted."
             onConfirm={() => handleDelete(record._id)}
-            okText="Yes"
-            cancelText="No"
+            okText="Yes, Delete"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
           >
             <Button type="link" danger icon={<MdDelete />}>
               Delete

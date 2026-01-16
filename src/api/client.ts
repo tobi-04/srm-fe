@@ -127,17 +127,26 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Call refresh endpoint (refresh token sent via httpOnly cookie)
+        // Retrieve refresh token from localStorage as the backend expects it in the body
+        const refreshToken = localStorage.getItem('refreshToken');
+        
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
+        }
+
+        // Call refresh endpoint with the token in the body
         const response = await axios.post(
           `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/auth/refresh`,
-          {}, // Empty body - refresh token is sent via httpOnly cookie
-          { withCredentials: true } // Ensure cookies are sent
+          { refresh_token: refreshToken }
         );
 
-        const { accessToken } = response.data;
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-        // Update access token in localStorage and Zustand store
+        // Update tokens in localStorage and Zustand store
         useAuthStore.getState().updateAccessToken(accessToken);
+        if (newRefreshToken) {
+          localStorage.setItem('refreshToken', newRefreshToken);
+        }
 
         // Update default Authorization header
         apiClient.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
@@ -152,9 +161,8 @@ apiClient.interceptors.response.use(
         // Refresh token expired or invalid
         processQueue(refreshError, null);
 
-        // Clear auth state and redirect to login
+        // Clear auth state. This will trigger the SPA's ProtectedRoute to redirect.
         useAuthStore.getState().clearAuth();
-        window.location.href = '/login';
 
         return Promise.reject(refreshError);
       } finally {

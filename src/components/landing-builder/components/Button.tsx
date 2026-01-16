@@ -85,7 +85,7 @@ const ButtonSettings = () => {
   );
 };
 
-Button.craft = {
+(Button as any).craft = {
   displayName: 'Button',
   props: {
     text: 'Click Me',

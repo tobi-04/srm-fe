@@ -139,3 +139,11 @@ body {
   color: #64748b !important;
   font-size: 16px !important;
 }
+
+/* Landing Builder Mobile Padding */
+@media (max-width: 767px) {
+  .landing-builder-content {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+}

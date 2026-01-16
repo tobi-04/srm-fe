@@ -1,16 +1,42 @@
 import React from 'react';
 import { useEditor, Element } from '@craftjs/core';
-import { Card, Button, Space, Typography, Divider, Empty } from 'antd';
-import { 
-  MdTextFields, 
-  MdSmartButton, 
-  MdCropSquare, 
+import { Button, Space, Typography, Divider, Empty, Collapse } from 'antd';
+import {
+  MdTextFields,
+  MdSmartButton,
+  MdCropSquare,
   MdImage,
-  MdSettings
+  MdSettings,
+  MdViewWeek,
+  MdTitle,
+  MdSubtitles,
+  MdInput,
+  MdPerson,
+  MdCheckCircle,
+  MdPlayCircle,
+  MdTimer,
+  MdContactPage
 } from 'react-icons/md';
-import { Text, Button as BuilderButton, Container, Image } from './components';
+import {
+  Text,
+  Button as BuilderButton,
+  Container,
+  Image,
+  Header,
+  Headline,
+  Subtitle,
+  UserForm,
+  InstructorBio,
+  SuccessHeadline,
+  VideoPlayer,
+  CountdownTimer,
+  SalesPageContent,
+  TwoColumnLayout,
+  Footer
+} from './components';
 
 const { Text: AntText } = Typography;
+const { Panel } = Collapse;
 
 export const Toolbox = () => {
   const { connectors } = useEditor();
@@ -20,61 +46,200 @@ export const Toolbox = () => {
       <AntText strong style={{ marginBottom: '16px', display: 'block' }}>
         Components
       </AntText>
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        <div
-          ref={(ref) =>
-            ref &&
-            connectors.create(ref, <Text text="New Text" />)
-          }
-        >
-          <Button block icon={<MdTextFields />} style={{ cursor: 'move' }}>
-            Text
-          </Button>
-        </div>
-        <div
-          ref={(ref) =>
-            ref &&
-            connectors.create(ref, <BuilderButton text="Click Me" type="primary" />)
-          }
-        >
-          <Button block icon={<MdSmartButton />} style={{ cursor: 'move' }}>
-            Button
-          </Button>
-        </div>
-        <div
-          ref={(ref) =>
-            ref &&
-            connectors.create(
-              ref,
-              <Element is={Container} padding={20} canvas>
-                <Text text="Empty Container" />
-              </Element>
-            )
-          }
-        >
-          <Button block icon={<MdCropSquare />} style={{ cursor: 'move' }}>
-            Container
-          </Button>
-        </div>
-        <div
-          ref={(ref) =>
-            ref &&
-            connectors.create(ref, <Image />)
-          }
-        >
-          <Button block icon={<MdImage />} style={{ cursor: 'move' }}>
-            Image
-          </Button>
-        </div>
-      </Space>
+      <Collapse defaultActiveKey={['basic']} ghost>
+        {/* Basic Components */}
+        <Panel header="Basic Components" key="basic">
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <Text text="New Text" />)
+              }
+            >
+              <Button block icon={<MdTextFields />} style={{ cursor: 'move' }}>
+                Text
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <BuilderButton text="Click Me" type="primary" />)
+              }
+            >
+              <Button block icon={<MdSmartButton />} style={{ cursor: 'move' }}>
+                Button
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(
+                  ref,
+                  <Element is={Container} padding={20} canvas>
+                    <Text text="Empty Container" />
+                  </Element>
+                )
+              }
+            >
+              <Button block icon={<MdCropSquare />} style={{ cursor: 'move' }}>
+                Container
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <Image src="https://via.placeholder.com/150" />)
+              }
+            >
+              <Button block icon={<MdImage />} style={{ cursor: 'move' }}>
+                Image
+              </Button>
+            </div>
+          </Space>
+        </Panel>
+
+        {/* Step 1 Components */}
+        <Panel header="Step 1: User Info Form" key="step1">
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <Header />)
+              }
+            >
+              <Button block icon={<MdTitle />} style={{ cursor: 'move' }} size="small">
+                Header Banner
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <Headline />)
+              }
+            >
+              <Button block icon={<MdTitle />} style={{ cursor: 'move' }} size="small">
+                Headline
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <Subtitle />)
+              }
+            >
+              <Button block icon={<MdSubtitles />} style={{ cursor: 'move' }} size="small">
+                Subtitle
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <UserForm />)
+              }
+            >
+              <Button block icon={<MdInput />} style={{ cursor: 'move' }} size="small">
+                User Form
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <InstructorBio />)
+              }
+            >
+              <Button block icon={<MdPerson />} style={{ cursor: 'move' }} size="small">
+                Instructor Bio
+              </Button>
+            </div>
+          </Space>
+        </Panel>
+
+        {/* Step 2 Components */}
+        <Panel header="Step 2: Sales Page" key="step2">
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <SuccessHeadline />)
+              }
+            >
+              <Button block icon={<MdCheckCircle />} style={{ cursor: 'move' }} size="small">
+                Success Headline
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <VideoPlayer />)
+              }
+            >
+              <Button block icon={<MdPlayCircle />} style={{ cursor: 'move' }} size="small">
+                Video Player
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <CountdownTimer />)
+              }
+            >
+              <Button block icon={<MdTimer />} style={{ cursor: 'move' }} size="small">
+                Countdown Timer
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <SalesPageContent />)
+              }
+            >
+              <Button block icon={<MdCheckCircle />} style={{ cursor: 'move' }} size="small">
+                Sales Content
+              </Button>
+            </div>
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(
+                  ref,
+                  <Element is={TwoColumnLayout} canvas>
+                    <Text text="Left Column" />
+                    <Text text="Right Column" />
+                  </Element>
+                )
+              }
+            >
+              <Button block icon={<MdViewWeek />} style={{ cursor: 'move' }} size="small">
+                Two Columns
+              </Button>
+            </div>
+          </Space>
+        </Panel>
+
+        {/* Common Components */}
+        <Panel header="Common Components" key="common">
+          <Space direction="vertical" style={{ width: '100%' }} size="small">
+            <div
+              ref={(ref) =>
+                ref &&
+                connectors.create(ref, <Footer />)
+              }
+            >
+              <Button block icon={<MdContactPage />} style={{ cursor: 'move' }} size="small">
+                Footer
+              </Button>
+            </div>
+          </Space>
+        </Panel>
+      </Collapse>
     </div>
   );
 };
 
 export const SettingsPanel = () => {
-  const { selected, query } = useEditor((state) => {
+  const { selected } = useEditor((state, query) => {
     const [currentNodeId] = state.events.selected;
-    let selected;
+    let selected: any;
 
     if (currentNodeId) {
       selected = {

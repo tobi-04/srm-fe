@@ -64,7 +64,7 @@ const ImageSettings = () => {
   );
 };
 
-Image.craft = {
+(Image as any).craft = {
   displayName: 'Image',
   props: {
     src: 'https://via.placeholder.com/400x200',
