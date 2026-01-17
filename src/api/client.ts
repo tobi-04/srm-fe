@@ -1,14 +1,15 @@
-import axios from 'axios';
-import { useAuthStore } from '../stores/authStore';
+import axios from "axios";
+import { useAuthStore } from "../stores/authStore";
 
 // In-memory cache
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+  withCredentials: true, // Enable sending httpOnly cookies
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -16,17 +17,18 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Check cache first for GET requests
-    if (config.method?.toLowerCase() === 'get') {
+    if (config.method?.toLowerCase() === "get") {
       const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
       const cached = cache.get(cacheKey);
-      
+
       if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
         (config as any)._fromCache = true;
         (config as any)._cachedData = cached.data;
       }
     }
 
-    const accessToken = localStorage.getItem('accessToken');
+    // Attach access token from localStorage to Authorization header
+    const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -43,20 +45,28 @@ apiClient.interceptors.request.use((config: any) => {
       response: {
         data: config._cachedData,
         status: 200,
-        statusText: 'OK (from cache)',
+        statusText: "OK (from cache)",
         headers: {},
         config,
       },
-      __isCache: true
+      __isCache: true,
     });
   }
   return config;
 });
 
-// Response interceptor to handle token refresh and caching
+// Token refresh state management
 let isRefreshing = false;
-let failedQueue: any[] = [];
+let failedQueue: Array<{
+  resolve: (value: string | null) => void;
+  reject: (reason?: any) => void;
+}> = [];
 
+/**
+ * Process all queued requests after token refresh
+ * @param error - Error if refresh failed
+ * @param token - New access token if refresh succeeded
+ */
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -68,13 +78,16 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+// Response interceptor to handle token refresh and caching
 apiClient.interceptors.response.use(
   (response) => {
     const method = response.config.method?.toLowerCase();
 
     // Cache GET requests
-    if (method === 'get') {
-      const cacheKey = `${response.config.url}${JSON.stringify(response.config.params || {})}`;
+    if (method === "get") {
+      const cacheKey = `${response.config.url}${JSON.stringify(
+        response.config.params || {}
+      )}`;
       cache.set(cacheKey, {
         data: response.data,
         timestamp: Date.now(),
@@ -82,7 +95,12 @@ apiClient.interceptors.response.use(
     }
 
     // Clear all cache on CUD operations
-    if (method === 'post' || method === 'put' || method === 'patch' || method === 'delete') {
+    if (
+      method === "post" ||
+      method === "put" ||
+      method === "patch" ||
+      method === "delete"
+    ) {
       cache.clear();
     }
 
@@ -96,53 +114,83 @@ apiClient.interceptors.response.use(
 
     const originalRequest = error.config;
 
-    // Handle 401 Unauthorized (Expired Access Token)
+    // Handle 403 ACCOUNT_LOCKED - dispatch event for UI to show modal
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.error === "ACCOUNT_LOCKED"
+    ) {
+      // Dispatch custom event for the app to handle
+      window.dispatchEvent(
+        new CustomEvent("account-locked", {
+          detail: {
+            message: error.response.data.message,
+          },
+        })
+      );
+      return Promise.reject(error);
+    }
+
+    // Handle 401 Unauthorized (Access Token Expired)
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // If already refreshing, queue this request
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
           .then((token) => {
+            // Retry the original request with the new token
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return apiClient(originalRequest);
           })
           .catch((err) => Promise.reject(err));
       }
 
+      // Mark this request as retried to prevent infinite loops
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('refreshToken');
-
-      if (!refreshToken) {
-        useAuthStore.getState().clearAuth();
-        window.location.href = '/login';
-        return Promise.reject(error);
-      }
-
       try {
+        // Retrieve refresh token from localStorage as the backend expects it in the body
+        const refreshToken = localStorage.getItem("refreshToken");
+
+        if (!refreshToken) {
+          throw new Error("No refresh token available");
+        }
+
+        // Call refresh endpoint with the token in the body
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/auth/refresh`,
-          { refresh_token: refreshToken }
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:3000"
+          }/auth/refresh`,
+          { refresh_token: refreshToken },
+          { withCredentials: true }
         );
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
-        
-        // Update both tokens in storage and state
+
+        // Update tokens in localStorage and Zustand store
         useAuthStore.getState().updateAccessToken(accessToken);
         if (newRefreshToken) {
-          localStorage.setItem('refreshToken', newRefreshToken);
+          localStorage.setItem("refreshToken", newRefreshToken);
         }
 
+        // Update default Authorization header
         apiClient.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
+        // Process all queued requests with the new token
         processQueue(null, accessToken);
+
+        // Retry the original request
         return apiClient(originalRequest);
       } catch (refreshError) {
+        // Refresh token expired or invalid
         processQueue(refreshError, null);
+
+        // Clear auth state and tokens. This will trigger the SPA's ProtectedRoute to redirect.
+        localStorage.removeItem("refreshToken");
         useAuthStore.getState().clearAuth();
-        window.location.href = '/login';
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -159,4 +207,3 @@ export default apiClient;
 export const clearApiCache = () => {
   cache.clear();
 };
-

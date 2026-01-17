@@ -1,21 +1,21 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { authApi } from '../api/auth';
-import { getDeviceId } from '../utils/device';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { authApi } from "../api/auth";
+import { getDeviceId } from "../utils/device";
 
 interface User {
   id: string;
   email: string;
   name: string;
   role: string;
+  must_change_password?: boolean;
 }
 
 interface AuthState {
   user: User | null;
   accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  setAuth: (user: User, accessToken: string, refreshToken?: string) => void;
   updateAccessToken: (accessToken: string) => void;
   logout: () => Promise<void>;
   clearAuth: () => void;
@@ -26,15 +26,18 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
       setAuth: (user, accessToken, refreshToken) => {
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        set({ user, accessToken, refreshToken, isAuthenticated: true });
+        // Store access token in localStorage
+        localStorage.setItem("accessToken", accessToken);
+        // Store refresh token in localStorage if provided
+        if (refreshToken) {
+          localStorage.setItem("refreshToken", refreshToken);
+        }
+        set({ user, accessToken, isAuthenticated: true });
       },
       updateAccessToken: (accessToken) => {
-        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem("accessToken", accessToken);
         set({ accessToken });
       },
       logout: async () => {
@@ -43,22 +46,23 @@ export const useAuthStore = create<AuthState>()(
           const deviceId = getDeviceId();
           await authApi.logout(deviceId);
         } catch (error) {
-          console.error('Logout error:', error);
+          console.error("Logout error:", error);
         } finally {
-          // Clear local storage and state regardless of API call result
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
+          // Clear both tokens from local storage and state
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          set({ user: null, accessToken: null, isAuthenticated: false });
         }
       },
       clearAuth: () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
+        // Clear both tokens from localStorage
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        set({ user: null, accessToken: null, isAuthenticated: false });
       },
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
     }
   )
 );
