@@ -15,6 +15,7 @@ import CourseManagementPage from "./pages/CourseManagementPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
 import LandingPageManagementPage from "./pages/LandingPageManagementPage";
 import LandingPageBuilderPage from "./pages/LandingPageBuilderPage";
+import LandingPagePreviewPage from "./pages/LandingPagePreviewPage";
 import EmailAutomationPage from "./pages/EmailAutomationPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
@@ -28,12 +29,14 @@ function App() {
           colorPrimary: "#f78404",
           borderRadius: 8,
         },
-      }}>
+      }}
+    >
       <BrowserRouter
         future={{
           v7_startTransition: true,
           v7_relativeSplatPath: true,
-        }}>
+        }}
+      >
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/landing/:slug" element={<LandingPageView />} />
@@ -106,6 +109,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <LandingPageBuilderPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/landing-preview/:id"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <LandingPagePreviewPage />
               </ProtectedRoute>
             }
           />

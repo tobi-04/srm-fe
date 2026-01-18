@@ -97,7 +97,7 @@ export default function LandingPageView() {
   // Handle auto-redirect when payment is completed
   useEffect(() => {
     if (currentStep === 3 && transaction?.status === "completed") {
-      message.success("Payment confirmed!");
+      message.success("Thanh toán đã được xác nhận!");
       setSearchParams({ step: "4", tx: txId || "" });
       // Refresh currentStep logic since it's derived from URL
       window.location.reload(); // Simplest way to force full refresh of step logic
@@ -120,7 +120,8 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}>
+        }}
+      >
         <Spin size="large" />
       </Layout>
     );
@@ -134,11 +135,12 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}>
+        }}
+      >
         <Result
           status="404"
-          title="Landing Page Not Found"
-          subTitle="Sorry, the landing page you are looking for does not exist."
+          title="Không tìm thấy Landing Page"
+          subTitle="Xin lỗi, landing page bạn đang tìm kiếm không tồn tại."
           icon={<MdError size={64} />}
         />
       </Layout>
@@ -154,11 +156,12 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}>
+        }}
+      >
         <Result
           status="403"
-          title="Page Not Available"
-          subTitle="This landing page is not published yet."
+          title="Trang không khả dụng"
+          subTitle="Landing page này chưa được xuất bản."
         />
       </Layout>
     );
@@ -221,10 +224,11 @@ export default function LandingPageView() {
                 padding: "40px 20px",
                 maxWidth: "800px",
                 margin: "0 auto",
-              }}>
+              }}
+            >
               <Element
                 is={Text}
-                text="Complete Your Payment"
+                text="Hoàn tất Thanh toán"
                 type="title"
                 level={1}
               />
@@ -252,18 +256,19 @@ export default function LandingPageView() {
             alignItems: "center",
             justifyContent: "center",
             padding: "50px",
-          }}>
+          }}
+        >
           <Result
             status="success"
             icon={<MdCheckCircle size={72} style={{ color: "#52c41a" }} />}
-            title="Payment Successful!"
+            title="Thanh toán thành công!"
             subTitle={
               landingPage.metadata?.success_message ||
-              "Thank you for your purchase! We've sent a confirmation email to your registered email address."
+              "Cảm ơn bạn đã mua hàng! Chúng tôi đã gửi email xác nhận đến địa chỉ email đã đăng ký của bạn."
             }
             extra={[
               <AntButton type="primary" key="home" size="large">
-                Go to Course
+                Đi đến khóa học
               </AntButton>,
             ]}
           />
@@ -288,8 +293,8 @@ export default function LandingPageView() {
                 {/* Draft preview banner for admins */}
                 {isAdmin && landingPage.status === "draft" && (
                   <Alert
-                    message="Draft Preview Mode"
-                    description="You are viewing a draft landing page. This page is not visible to the public yet."
+                    message="Chế độ xem trước bản nháp"
+                    description="Bạn đang xem landing page bản nháp. Trang này chưa hiển thị công khai."
                     type="warning"
                     showIcon
                     banner
@@ -305,16 +310,19 @@ export default function LandingPageView() {
                     width: "100%",
                     display: "flex",
                     justifyContent: "center",
-                  }}>
+                  }}
+                >
                   <div
                     style={{ width: "100%" }}
-                    className="landing-builder-content">
+                    className="landing-builder-content"
+                  >
                     <Editor resolver={CRAFT_RESOLVER} enabled={false}>
                       <Frame
                         key={`step-${currentStep}`}
                         data={
                           hasContent ? JSON.stringify(pageContent) : undefined
-                        }>
+                        }
+                      >
                         {!hasContent && getDefaultStepSections(currentStep)}
                       </Frame>
                     </Editor>

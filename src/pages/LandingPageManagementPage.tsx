@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   Tag,
@@ -13,17 +13,24 @@ import {
   Form,
   Select,
   Popconfirm,
-} from 'antd';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MdAdd, MdEdit, MdDelete, MdVisibility, MdRefresh, MdSearch } from 'react-icons/md';
-import DashboardLayout from '../components/DashboardLayout';
+} from "antd";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  MdAdd,
+  MdEdit,
+  MdDelete,
+  MdVisibility,
+  MdRefresh,
+  MdSearch,
+} from "react-icons/md";
+import DashboardLayout from "../components/DashboardLayout";
 import {
   getLandingPages,
   createLandingPage,
   updateLandingPage,
   hardDeleteLandingPage,
-} from '../api/landingPage';
-import type { LandingPage } from '../stores/landingPageStore';
+} from "../api/landingPage";
+import type { LandingPage } from "../stores/landingPageStore";
 
 const { Title } = Typography;
 
@@ -31,25 +38,29 @@ interface FormValues {
   course_id: string;
   title: string;
   slug: string;
-  status: 'draft' | 'published';
+  status: "draft" | "published";
 }
 
 export default function LandingPageManagementPage() {
   const navigate = useNavigate();
-  const [searchText, setSearchText] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedLandingPage, setSelectedLandingPage] = useState<LandingPage | null>(null);
+  const [selectedLandingPage, setSelectedLandingPage] =
+    useState<LandingPage | null>(null);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
   // Query courses for dropdown
   const { data: coursesData } = useQuery({
-    queryKey: ['courses'],
+    queryKey: ["courses"],
     queryFn: async () => {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/courses`, {
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/courses`,
+        {
+          credentials: "include",
+        },
+      );
       return response.json();
     },
   });
@@ -58,7 +69,7 @@ export default function LandingPageManagementPage() {
 
   // Query landing pages
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['landing-pages', searchText, statusFilter],
+    queryKey: ["landing-pages", searchText, statusFilter],
     queryFn: async () => {
       return getLandingPages({
         page: 1,
@@ -76,14 +87,14 @@ export default function LandingPageManagementPage() {
   const createMutation = useMutation({
     mutationFn: createLandingPage,
     onSuccess: async () => {
-      message.success('Landing page created successfully');
-      await queryClient.invalidateQueries({ queryKey: ['landing-pages'] });
+      message.success("Tạo landing page thành công");
+      await queryClient.invalidateQueries({ queryKey: ["landing-pages"] });
       await refetch();
       setIsModalOpen(false);
       form.resetFields();
     },
     onError: () => {
-      message.error('Failed to create landing page');
+      message.error("Không thể tạo landing page");
     },
   });
 
@@ -92,15 +103,15 @@ export default function LandingPageManagementPage() {
     mutationFn: ({ id, data }: { id: string; data: Partial<FormValues> }) =>
       updateLandingPage(id, data),
     onSuccess: async () => {
-      message.success('Landing page updated successfully');
-      await queryClient.invalidateQueries({ queryKey: ['landing-pages'] });
+      message.success("Cập nhật landing page thành công");
+      await queryClient.invalidateQueries({ queryKey: ["landing-pages"] });
       await refetch();
       setIsModalOpen(false);
       setSelectedLandingPage(null);
       form.resetFields();
     },
     onError: () => {
-      message.error('Failed to update landing page');
+      message.error("Không thể cập nhật landing page");
     },
   });
 
@@ -108,12 +119,12 @@ export default function LandingPageManagementPage() {
   const deleteMutation = useMutation({
     mutationFn: hardDeleteLandingPage,
     onSuccess: async () => {
-      message.success('Landing page permanently deleted');
-      await queryClient.invalidateQueries({ queryKey: ['landing-pages'] });
+      message.success("Đã xóa vĩnh viễn landing page");
+      await queryClient.invalidateQueries({ queryKey: ["landing-pages"] });
       await refetch();
     },
     onError: () => {
-      message.error('Failed to delete landing page');
+      message.error("Không thể xóa landing page");
     },
   });
 
@@ -155,38 +166,38 @@ export default function LandingPageManagementPage() {
 
   const columns = [
     {
-      title: 'Title',
-      dataIndex: 'title',
-      key: 'title',
+      title: "Tiêu đề",
+      dataIndex: "title",
+      key: "title",
       render: (text: string) => <strong>{text}</strong>,
     },
     {
-      title: 'Slug',
-      dataIndex: 'slug',
-      key: 'slug',
+      title: "Đường dẫn",
+      dataIndex: "slug",
+      key: "slug",
     },
     {
-      title: 'Course',
-      dataIndex: 'course_id',
-      key: 'course_id',
+      title: "Khóa học",
+      dataIndex: "course_id",
+      key: "course_id",
       render: (courseId: string) => {
         const course = courses.find((c: any) => c._id === courseId);
         return course?.title || courseId;
       },
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
       render: (status: string) => (
-        <Tag color={status === 'published' ? 'green' : 'orange'}>
-          {status.toUpperCase()}
+        <Tag color={status === "published" ? "green" : "orange"}>
+          {status === "published" ? "ĐÃ XUẤT BẢN" : "BẢN NHÁP"}
         </Tag>
       ),
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Thao tác",
+      key: "actions",
       render: (_: any, record: LandingPage) => (
         <Space>
           <Button
@@ -194,25 +205,25 @@ export default function LandingPageManagementPage() {
             icon={<MdVisibility />}
             onClick={() => handleBuilder(record)}
           >
-            Builder
+            Thiết kế
           </Button>
           <Button
             type="link"
             icon={<MdEdit />}
             onClick={() => handleEdit(record)}
           >
-            Edit
+            Sửa
           </Button>
           <Popconfirm
-            title="Permanently delete this landing page?"
-            description="This action cannot be undone. The landing page will be permanently deleted."
+            title="Xóa vĩnh viễn landing page này?"
+            description="Hành động này không thể hoàn tác. Landing page sẽ bị xóa vĩnh viễn."
             onConfirm={() => handleDelete(record._id)}
-            okText="Yes, Delete"
-            cancelText="Cancel"
+            okText="Có, Xóa"
+            cancelText="Hủy"
             okButtonProps={{ danger: true }}
           >
             <Button type="link" danger icon={<MdDelete />}>
-              Delete
+              Xóa
             </Button>
           </Popconfirm>
         </Space>
@@ -224,36 +235,32 @@ export default function LandingPageManagementPage() {
     <DashboardLayout>
       <Card>
         <div style={{ marginBottom: 16 }}>
-          <Title level={2}>Landing Page Management</Title>
+          <Title level={2}>Quản lý Landing Page</Title>
         </div>
 
         <Space style={{ marginBottom: 16 }}>
-          <Button
-            type="primary"
-            icon={<MdAdd />}
-            onClick={handleCreate}
-          >
-            Create Landing Page
+          <Button type="primary" icon={<MdAdd />} onClick={handleCreate}>
+            Tạo Landing Page
           </Button>
           <Button icon={<MdRefresh />} onClick={() => refetch()}>
-            Refresh
+            Làm mới
           </Button>
           <Input
-            placeholder="Search..."
+            placeholder="Tìm kiếm..."
             prefix={<MdSearch />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 200 }}
           />
           <Select
-            placeholder="Filter by status"
+            placeholder="Lọc theo trạng thái"
             allowClear
             value={statusFilter || undefined}
-            onChange={(value) => setStatusFilter(value || '')}
+            onChange={(value) => setStatusFilter(value || "")}
             style={{ width: 150 }}
           >
-            <Select.Option value="draft">Draft</Select.Option>
-            <Select.Option value="published">Published</Select.Option>
+            <Select.Option value="draft">Bản nháp</Select.Option>
+            <Select.Option value="published">Đã xuất bản</Select.Option>
           </Select>
         </Space>
 
@@ -266,7 +273,9 @@ export default function LandingPageManagementPage() {
         />
 
         <Modal
-          title={selectedLandingPage ? 'Edit Landing Page' : 'Create Landing Page'}
+          title={
+            selectedLandingPage ? "Chỉnh sửa Landing Page" : "Tạo Landing Page"
+          }
           open={isModalOpen}
           onCancel={() => {
             setIsModalOpen(false);
@@ -278,10 +287,10 @@ export default function LandingPageManagementPage() {
           <Form form={form} onFinish={handleSubmit} layout="vertical">
             <Form.Item
               name="course_id"
-              label="Course"
-              rules={[{ required: true, message: 'Please select a course' }]}
+              label="Khóa học"
+              rules={[{ required: true, message: "Vui lòng chọn khóa học" }]}
             >
-              <Select placeholder="Select a course">
+              <Select placeholder="Chọn khóa học">
                 {courses.map((course: any) => (
                   <Select.Option key={course._id} value={course._id}>
                     {course.title}
@@ -292,24 +301,24 @@ export default function LandingPageManagementPage() {
 
             <Form.Item
               name="title"
-              label="Title"
-              rules={[{ required: true, message: 'Please enter a title' }]}
+              label="Tiêu đề"
+              rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
             >
-              <Input placeholder="Enter landing page title" />
+              <Input placeholder="Nhập tiêu đề landing page" />
             </Form.Item>
 
             <Form.Item
               name="slug"
-              label="Slug"
-              rules={[{ required: true, message: 'Please enter a slug' }]}
+              label="Đường dẫn (Slug)"
+              rules={[{ required: true, message: "Vui lòng nhập đường dẫn" }]}
             >
-              <Input placeholder="landing-page-slug" />
+              <Input placeholder="duong-dan-landing-page" />
             </Form.Item>
 
-            <Form.Item name="status" label="Status" initialValue="draft">
+            <Form.Item name="status" label="Trạng thái" initialValue="draft">
               <Select>
-                <Select.Option value="draft">Draft</Select.Option>
-                <Select.Option value="published">Published</Select.Option>
+                <Select.Option value="draft">Bản nháp</Select.Option>
+                <Select.Option value="published">Đã xuất bản</Select.Option>
               </Select>
             </Form.Item>
 
@@ -320,7 +329,7 @@ export default function LandingPageManagementPage() {
                   htmlType="submit"
                   loading={createMutation.isPending || updateMutation.isPending}
                 >
-                  {selectedLandingPage ? 'Update' : 'Create'}
+                  {selectedLandingPage ? "Cập nhật" : "Tạo mới"}
                 </Button>
                 <Button
                   onClick={() => {
@@ -329,7 +338,7 @@ export default function LandingPageManagementPage() {
                     form.resetFields();
                   }}
                 >
-                  Cancel
+                  Hủy
                 </Button>
               </Space>
             </Form.Item>

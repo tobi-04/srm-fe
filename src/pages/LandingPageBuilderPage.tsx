@@ -67,8 +67,9 @@ const SaveButton = ({
       type="primary"
       icon={<MdSave />}
       onClick={() => onSave(query, currentStep)}
-      loading={loading}>
-      Save Step {currentStep}
+      loading={loading}
+    >
+      Lưu Bước {currentStep}
     </Button>
   );
 };
@@ -92,11 +93,11 @@ export default function LandingPageBuilderPage() {
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       updateLandingPage(id, data),
     onSuccess: () => {
-      message.success(`Step ${currentStep} saved successfully`);
+      message.success(`Bước ${currentStep} đã được lưu thành công`);
       queryClient.invalidateQueries({ queryKey: ["landing-page", id] });
     },
     onError: () => {
-      message.error("Failed to save landing page");
+      message.error("Không thể lưu landing page");
     },
   });
 
@@ -205,7 +206,8 @@ export default function LandingPageBuilderPage() {
           height: "calc(100vh - 120px)",
           display: "flex",
           flexDirection: "column",
-        }}>
+        }}
+      >
         <LandingPageProvider landingPage={landingPage || null}>
           <PaymentProvider>
             <CountdownProvider>
@@ -233,7 +235,8 @@ export default function LandingPageBuilderPage() {
                 enabled={enabled}
                 onRender={({ render }) => (
                   <div style={{ position: "relative" }}>{render}</div>
-                )}>
+                )}
+              >
                 {/* Top Control Bar */}
                 <Card size="small" style={{ marginBottom: 16 }}>
                   <div
@@ -241,22 +244,25 @@ export default function LandingPageBuilderPage() {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                    }}>
+                    }}
+                  >
                     <Space>
                       <Button
                         icon={<MdArrowBack />}
-                        onClick={() => navigate("/admin/landing-pages")}>
-                        Back
+                        onClick={() => navigate("/admin/landing-pages")}
+                      >
+                        Quay lại
                       </Button>
                       <Title level={5} style={{ margin: 0 }}>
-                        Builder: {landingPage?.title}
+                        Thiết kế: {landingPage?.title}
                       </Title>
                     </Space>
                     <Space>
                       <Button
                         icon={enabled ? <MdVisibility /> : <MdEdit />}
-                        onClick={() => setEnabled(!enabled)}>
-                        {enabled ? "Preview Mode" : "Edit Mode"}
+                        onClick={() => setEnabled(!enabled)}
+                      >
+                        {enabled ? "Chế độ xem trước" : "Chế độ chỉnh sửa"}
                       </Button>
                       <SaveButton
                         currentStep={currentStep}
@@ -265,15 +271,22 @@ export default function LandingPageBuilderPage() {
                       />
                       <Button
                         icon={<MdPreview />}
+                        onClick={() => navigate(`/admin/landing-preview/${id}`)}
+                      >
+                        Xem trước
+                      </Button>
+                      <Button
+                        icon={<MdVisibility />}
                         onClick={() => {
                           if (landingPage?.slug) {
                             window.open(
                               `/landing/${landingPage.slug}`,
-                              "_blank"
+                              "_blank",
                             );
                           }
-                        }}>
-                        Live Preview
+                        }}
+                      >
+                        Mở trong tab mới
                       </Button>
                     </Space>
                   </div>
@@ -288,10 +301,10 @@ export default function LandingPageBuilderPage() {
                         key: "1",
                         label: (
                           <span>
-                            <span style={{ fontWeight: 600 }}>Step 1</span>
+                            <span style={{ fontWeight: 600 }}>Bước 1</span>
                             <br />
                             <span style={{ fontSize: "12px", color: "#666" }}>
-                              User Info Form
+                              Form thông tin
                             </span>
                           </span>
                         ),
@@ -300,10 +313,10 @@ export default function LandingPageBuilderPage() {
                         key: "2",
                         label: (
                           <span>
-                            <span style={{ fontWeight: 600 }}>Step 2</span>
+                            <span style={{ fontWeight: 600 }}>Bước 2</span>
                             <br />
                             <span style={{ fontSize: "12px", color: "#666" }}>
-                              Sales Page
+                              Trang bán hàng
                             </span>
                           </span>
                         ),
@@ -312,10 +325,10 @@ export default function LandingPageBuilderPage() {
                         key: "3",
                         label: (
                           <span>
-                            <span style={{ fontWeight: 600 }}>Step 3</span>
+                            <span style={{ fontWeight: 600 }}>Bước 3</span>
                             <br />
                             <span style={{ fontSize: "12px", color: "#666" }}>
-                              Payment Page
+                              Trang thanh toán
                             </span>
                           </span>
                         ),
@@ -329,7 +342,8 @@ export default function LandingPageBuilderPage() {
                     flex: 1,
                     background: "#f0f2f5",
                     overflow: "hidden",
-                  }}>
+                  }}
+                >
                   {/* Main Canvas Area */}
                   <Content
                     style={{
@@ -337,7 +351,8 @@ export default function LandingPageBuilderPage() {
                       overflowY: "auto",
                       display: "flex",
                       justifyContent: "center",
-                    }}>
+                    }}
+                  >
                     <div
                       style={{
                         width: "100%",
@@ -346,14 +361,16 @@ export default function LandingPageBuilderPage() {
                         minHeight: "100%",
                         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                       }}
-                      className="landing-builder-content">
+                      className="landing-builder-content"
+                    >
                       <Frame
                         key={currentStep}
                         data={
                           getCurrentPageContent()
                             ? JSON.stringify(getCurrentPageContent())
                             : undefined
-                        }>
+                        }
+                      >
                         {!getCurrentPageContent() &&
                           getDefaultStepSections(currentStep)}
                       </Frame>
@@ -367,7 +384,8 @@ export default function LandingPageBuilderPage() {
                     style={{
                       borderLeft: "1px solid #f0f0f0",
                       overflowY: "auto",
-                    }}>
+                    }}
+                  >
                     <Toolbox />
                     <Divider style={{ margin: 0 }} />
                     <SettingsPanel />
