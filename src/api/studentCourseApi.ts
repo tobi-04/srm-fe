@@ -4,6 +4,9 @@ export interface LessonProgressData {
   status: "not_started" | "in_progress" | "completed";
   watch_time: number;
   last_position: number;
+  duration?: number;
+  progress_percent?: number;
+  watched_segments?: { start: number; end: number }[];
 }
 
 export interface LessonFile {
@@ -22,6 +25,7 @@ export interface LessonWithProgress {
   order: number;
   chapter_index?: number;
   status: string;
+  is_locked?: boolean;
   progress: LessonProgressData;
 }
 
@@ -52,6 +56,7 @@ export interface StudentCourse {
   lessons: LessonWithProgress[];
   totalLessons: number;
   progress: CourseProgressSummary;
+  autoResumeLessonId?: string;
 }
 
 export interface LessonNavigation {
@@ -110,6 +115,8 @@ export const studentCourseApi = {
     data: {
       watch_time?: number;
       last_position?: number;
+      duration?: number;
+      watched_segments?: { start: number; end: number }[];
       completed?: boolean;
     },
   ): Promise<LessonProgressData> {
