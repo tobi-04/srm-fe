@@ -19,7 +19,9 @@ import {
   MdCheckCircle,
   MdTrendingUp,
   MdTrendingDown,
+  MdPerson,
 } from "react-icons/md";
+import { getAvatarStyles } from "../utils/color";
 import {
   AreaChart,
   Area,
@@ -115,8 +117,26 @@ export default function AdminDashboardPage() {
         <Space>
           <Avatar
             src={record.user_submission_id?.avatar}
-            style={{ backgroundColor: "#2563eb" }}>
-            {record.user_submission_id?.name?.charAt(0)}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              ...getAvatarStyles(
+                record.user_submission_id?.name ||
+                  record.user_submission_id?._id ||
+                  record._id,
+              ),
+              fontWeight: "bold",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "none",
+            }}>
+            {record.user_submission_id?.name ? (
+              record.user_submission_id.name.substring(0, 2).toUpperCase()
+            ) : (
+              <MdPerson />
+            )}
           </Avatar>
           <div>
             <Text strong>{record.user_submission_id?.name || "N/A"}</Text>
