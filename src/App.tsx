@@ -13,6 +13,7 @@ import StudentManagementPage from "./pages/StudentManagementPage";
 import SalerManagementPage from "./pages/SalerManagementPage";
 import CourseManagementPage from "./pages/CourseManagementPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
+import CourseViewerPage from "./pages/CourseViewerPage";
 import LandingPageManagementPage from "./pages/LandingPageManagementPage";
 import LandingPageBuilderPage from "./pages/LandingPageBuilderPage";
 import LandingPagePreviewPage from "./pages/LandingPagePreviewPage";
@@ -29,14 +30,12 @@ function App() {
           colorPrimary: "#f78404",
           borderRadius: 8,
         },
-      }}
-    >
+      }}>
       <BrowserRouter
         future={{
           v7_startTransition: true,
           v7_relativeSplatPath: true,
-        }}
-      >
+        }}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/landing/:slug" element={<LandingPageView />} />
@@ -46,6 +45,24 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/change-password" element={<ChangePasswordPage />} />
+
+          {/* Student Course Viewer Routes - Protected */}
+          <Route
+            path="/learn/:courseId"
+            element={
+              <ProtectedRoute>
+                <CourseViewerPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/learn/:courseId/lessons/:lessonId"
+            element={
+              <ProtectedRoute>
+                <CourseViewerPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin Routes - Protected */}
           <Route

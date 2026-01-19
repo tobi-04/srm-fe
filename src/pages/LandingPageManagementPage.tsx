@@ -22,8 +22,10 @@ import {
   MdVisibility,
   MdRefresh,
   MdSearch,
+  MdShare,
 } from "react-icons/md";
 import DashboardLayout from "../components/DashboardLayout";
+import ShareDialog from "../components/ShareDialog";
 import {
   getLandingPages,
   createLandingPage,
@@ -48,6 +50,8 @@ export default function LandingPageManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLandingPage, setSelectedLandingPage] =
     useState<LandingPage | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareItem, setShareItem] = useState<LandingPage | null>(null);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -164,6 +168,11 @@ export default function LandingPageManagementPage() {
     await deleteMutation.mutateAsync(id);
   };
 
+  const handleShare = (record: LandingPage) => {
+    setShareItem(record);
+    setShareDialogOpen(true);
+  };
+
   const columns = [
     {
       title: "Tiêu đề",
@@ -203,16 +212,20 @@ export default function LandingPageManagementPage() {
           <Button
             type="link"
             icon={<MdVisibility />}
-            onClick={() => handleBuilder(record)}
-          >
+            onClick={() => handleBuilder(record)}>
             Thiết kế
           </Button>
           <Button
             type="link"
             icon={<MdEdit />}
-            onClick={() => handleEdit(record)}
-          >
+            onClick={() => handleEdit(record)}>
             Sửa
+          </Button>
+          <Button
+            type="link"
+            icon={<MdShare />}
+            onClick={() => handleShare(record)}>
+            Chia sẻ
           </Button>
           <Popconfirm
             title="Xóa vĩnh viễn landing page này?"
@@ -220,8 +233,7 @@ export default function LandingPageManagementPage() {
             onConfirm={() => handleDelete(record._id)}
             okText="Có, Xóa"
             cancelText="Hủy"
-            okButtonProps={{ danger: true }}
-          >
+            okButtonProps={{ danger: true }}>
             <Button type="link" danger icon={<MdDelete />}>
               Xóa
             </Button>
@@ -257,8 +269,7 @@ export default function LandingPageManagementPage() {
             allowClear
             value={statusFilter || undefined}
             onChange={(value) => setStatusFilter(value || "")}
-            style={{ width: 150 }}
-          >
+            style={{ width: 150 }}>
             <Select.Option value="draft">Bản nháp</Select.Option>
             <Select.Option value="published">Đã xuất bản</Select.Option>
           </Select>
@@ -282,14 +293,12 @@ export default function LandingPageManagementPage() {
             setSelectedLandingPage(null);
             form.resetFields();
           }}
-          footer={null}
-        >
+          footer={null}>
           <Form form={form} onFinish={handleSubmit} layout="vertical">
             <Form.Item
               name="course_id"
               label="Khóa học"
-              rules={[{ required: true, message: "Vui lòng chọn khóa học" }]}
-            >
+              rules={[{ required: true, message: "Vui lòng chọn khóa học" }]}>
               <Select placeholder="Chọn khóa học">
                 {courses.map((course: any) => (
                   <Select.Option key={course._id} value={course._id}>
@@ -302,16 +311,14 @@ export default function LandingPageManagementPage() {
             <Form.Item
               name="title"
               label="Tiêu đề"
-              rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
-            >
+              rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}>
               <Input placeholder="Nhập tiêu đề landing page" />
             </Form.Item>
 
             <Form.Item
               name="slug"
               label="Đường dẫn (Slug)"
-              rules={[{ required: true, message: "Vui lòng nhập đường dẫn" }]}
-            >
+              rules={[{ required: true, message: "Vui lòng nhập đường dẫn" }]}>
               <Input placeholder="duong-dan-landing-page" />
             </Form.Item>
 
@@ -327,8 +334,9 @@ export default function LandingPageManagementPage() {
                 <Button
                   type="primary"
                   htmlType="submit"
-                  loading={createMutation.isPending || updateMutation.isPending}
-                >
+                  loading={
+                    createMutation.isPending || updateMutation.isPending
+                  }>
                   {selectedLandingPage ? "Cập nhật" : "Tạo mới"}
                 </Button>
                 <Button
@@ -336,14 +344,24 @@ export default function LandingPageManagementPage() {
                     setIsModalOpen(false);
                     setSelectedLandingPage(null);
                     form.resetFields();
-                  }}
-                >
+                  }}>
                   Hủy
                 </Button>
               </Space>
             </Form.Item>
           </Form>
         </Modal>
+
+        {/* Share Dialog */}
+        <ShareDialog
+          open={shareDialogOpen}
+          onClose={() => {
+            setShareDialogOpen(false);
+            setShareItem(null);
+          }}
+          landingPageSlug={shareItem?.slug}
+          landingPageTitle={shareItem?.title}
+        />
       </Card>
     </DashboardLayout>
   );

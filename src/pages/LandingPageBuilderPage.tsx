@@ -11,6 +11,7 @@ import {
   Typography,
   Divider,
   Tabs,
+  Dropdown,
 } from "antd";
 import {
   MdSave,
@@ -18,6 +19,8 @@ import {
   MdPreview,
   MdEdit,
   MdVisibility,
+  MdShare,
+  MdMoreVert,
 } from "react-icons/md";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "../components/DashboardLayout";
@@ -46,6 +49,7 @@ import { Toolbox, SettingsPanel } from "../components/landing-builder/Sidebar";
 import { LandingPageProvider } from "../contexts/LandingPageContext";
 import { PaymentProvider } from "../contexts/PaymentContext";
 import { CountdownProvider } from "../contexts/CountdownContext";
+import ShareDialog from "../components/ShareDialog";
 
 const { Content, Sider } = Layout;
 const { Title } = Typography;
@@ -67,8 +71,7 @@ const SaveButton = ({
       type="primary"
       icon={<MdSave />}
       onClick={() => onSave(query, currentStep)}
-      loading={loading}
-    >
+      loading={loading}>
       Lưu Bước {currentStep}
     </Button>
   );
@@ -80,6 +83,7 @@ export default function LandingPageBuilderPage() {
   const queryClient = useQueryClient();
   const [enabled, setEnabled] = useState(true);
   const [currentStep, setCurrentStep] = useState<PageStep>("1");
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   // Fetch landing page data
   const { data: landingPage, isLoading } = useQuery({
@@ -206,8 +210,7 @@ export default function LandingPageBuilderPage() {
           height: "calc(100vh - 120px)",
           display: "flex",
           flexDirection: "column",
-        }}
-      >
+        }}>
         <LandingPageProvider landingPage={landingPage || null}>
           <PaymentProvider>
             <CountdownProvider>
@@ -235,8 +238,7 @@ export default function LandingPageBuilderPage() {
                 enabled={enabled}
                 onRender={({ render }) => (
                   <div style={{ position: "relative" }}>{render}</div>
-                )}
-              >
+                )}>
                 {/* Top Control Bar */}
                 <Card size="small" style={{ marginBottom: 16 }}>
                   <div
@@ -244,13 +246,11 @@ export default function LandingPageBuilderPage() {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                    }}
-                  >
+                    }}>
                     <Space>
                       <Button
                         icon={<MdArrowBack />}
-                        onClick={() => navigate("/admin/landing-pages")}
-                      >
+                        onClick={() => navigate("/admin/landing-pages")}>
                         Quay lại
                       </Button>
                       <Title level={5} style={{ margin: 0 }}>
@@ -260,8 +260,7 @@ export default function LandingPageBuilderPage() {
                     <Space>
                       <Button
                         icon={enabled ? <MdVisibility /> : <MdEdit />}
-                        onClick={() => setEnabled(!enabled)}
-                      >
+                        onClick={() => setEnabled(!enabled)}>
                         {enabled ? "Chế độ xem trước" : "Chế độ chỉnh sửa"}
                       </Button>
                       <SaveButton
@@ -271,8 +270,9 @@ export default function LandingPageBuilderPage() {
                       />
                       <Button
                         icon={<MdPreview />}
-                        onClick={() => navigate(`/admin/landing-preview/${id}`)}
-                      >
+                        onClick={() =>
+                          navigate(`/admin/landing-preview/${id}`)
+                        }>
                         Xem trước
                       </Button>
                       <Button
@@ -284,10 +284,23 @@ export default function LandingPageBuilderPage() {
                               "_blank",
                             );
                           }
-                        }}
-                      >
+                        }}>
                         Mở trong tab mới
                       </Button>
+                      <Dropdown
+                        menu={{
+                          items: [
+                            {
+                              key: "share",
+                              label: "Chia sẻ",
+                              icon: <MdShare />,
+                              onClick: () => setIsShareDialogOpen(true),
+                            },
+                          ],
+                        }}
+                        trigger={["click"]}>
+                        <Button icon={<MdMoreVert />} />
+                      </Dropdown>
                     </Space>
                   </div>
 
@@ -342,8 +355,7 @@ export default function LandingPageBuilderPage() {
                     flex: 1,
                     background: "#f0f2f5",
                     overflow: "hidden",
-                  }}
-                >
+                  }}>
                   {/* Main Canvas Area */}
                   <Content
                     style={{
@@ -351,8 +363,7 @@ export default function LandingPageBuilderPage() {
                       overflowY: "auto",
                       display: "flex",
                       justifyContent: "center",
-                    }}
-                  >
+                    }}>
                     <div
                       style={{
                         width: "100%",
@@ -361,16 +372,14 @@ export default function LandingPageBuilderPage() {
                         minHeight: "100%",
                         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                       }}
-                      className="landing-builder-content"
-                    >
+                      className="landing-builder-content">
                       <Frame
                         key={currentStep}
                         data={
                           getCurrentPageContent()
                             ? JSON.stringify(getCurrentPageContent())
                             : undefined
-                        }
-                      >
+                        }>
                         {!getCurrentPageContent() &&
                           getDefaultStepSections(currentStep)}
                       </Frame>
@@ -384,8 +393,7 @@ export default function LandingPageBuilderPage() {
                     style={{
                       borderLeft: "1px solid #f0f0f0",
                       overflowY: "auto",
-                    }}
-                  >
+                    }}>
                     <Toolbox />
                     <Divider style={{ margin: 0 }} />
                     <SettingsPanel />
@@ -396,6 +404,14 @@ export default function LandingPageBuilderPage() {
           </PaymentProvider>
         </LandingPageProvider>
       </div>
+
+      {/* Share Dialog */}
+      <ShareDialog
+        open={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+        landingPageSlug={landingPage?.slug}
+        landingPageTitle={landingPage?.title}
+      />
     </DashboardLayout>
   );
 }

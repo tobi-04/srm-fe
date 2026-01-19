@@ -62,6 +62,7 @@ interface Lesson {
   video: string;
   status: "draft" | "published";
   order: number;
+  chapter_index?: number;
   created_at: string;
   updated_at: string;
   is_deleted: boolean;
@@ -135,7 +136,7 @@ export default function CourseDetailPage() {
       if (!currentCourse?._id) throw new Error("Course ID not found in store");
       const response = await apiClient.put(
         `/courses/${currentCourse._id}`,
-        values
+        values,
       );
       return response.data;
     },
@@ -159,7 +160,7 @@ export default function CourseDetailPage() {
     },
     onError: (error: any) => {
       message.error(
-        error.response?.data?.message || "Không thể cập nhật khóa học"
+        error.response?.data?.message || "Không thể cập nhật khóa học",
       );
     },
   });
@@ -198,7 +199,7 @@ export default function CourseDetailPage() {
     mutationFn: async () => {
       if (!currentCourse?._id) throw new Error("Course ID not found in store");
       const response = await apiClient.put(
-        `/courses/${currentCourse._id}/restore`
+        `/courses/${currentCourse._id}/restore`,
       );
       return response.data;
     },
@@ -256,7 +257,7 @@ export default function CourseDetailPage() {
     },
     onError: (error: any) => {
       message.error(
-        error.response?.data?.message || "Không thể cập nhật bài học"
+        error.response?.data?.message || "Không thể cập nhật bài học",
       );
     },
   });
@@ -273,7 +274,7 @@ export default function CourseDetailPage() {
     },
     onError: (error: any) => {
       message.error(
-        error.response?.data?.message || "Không thể cập nhật trạng thái"
+        error.response?.data?.message || "Không thể cập nhật trạng thái",
       );
     },
   });
@@ -328,7 +329,7 @@ export default function CourseDetailPage() {
     },
     onSuccess: async () => {
       message.success(
-        `Đã chuyển ${selectedLessonKeys.length} bài học vào thùng rác`
+        `Đã chuyển ${selectedLessonKeys.length} bài học vào thùng rác`,
       );
       setSelectedLessonKeys([]);
       await queryClient.invalidateQueries({ queryKey: ["course", slug] });
@@ -360,7 +361,7 @@ export default function CourseDetailPage() {
     },
     onSuccess: async () => {
       message.success(
-        `Đã cập nhật trạng thái ${selectedLessonKeys.length} bài học`
+        `Đã cập nhật trạng thái ${selectedLessonKeys.length} bài học`,
       );
       setSelectedLessonKeys([]);
       await queryClient.invalidateQueries({ queryKey: ["course", slug] });
@@ -368,7 +369,7 @@ export default function CourseDetailPage() {
     },
     onError: (error: any) => {
       message.error(
-        error.response?.data?.message || "Không thể cập nhật trạng thái"
+        error.response?.data?.message || "Không thể cập nhật trạng thái",
       );
     },
   });
@@ -570,8 +571,7 @@ export default function CourseDetailPage() {
             fontWeight: 700,
             fontSize: 14,
             border: "1px solid #2564eb27 !important",
-          }}
-        >
+          }}>
           {order}
         </div>
       ),
@@ -580,32 +580,68 @@ export default function CourseDetailPage() {
       title: "Tiêu đề",
       dataIndex: "title",
       key: "title",
-      render: (title: string, record: Lesson) => (
-        <Space direction="vertical" size={4} style={{ width: "100%" }}>
-          <Tooltip title={title}>
-            <Text
-              strong
-              ellipsis
-              style={{ fontSize: 14, display: "block", maxWidth: 400 }}
-            >
-              {title}
-            </Text>
-          </Tooltip>
-          {record.video && (
-            <Tag
-              icon={<MdPlayCircleOutline />}
-              style={{
-                color: "#6366f1",
-                background: "#eef2ff",
-                border: "none",
-                fontSize: 11,
-              }}
-            >
-              Video
-            </Tag>
-          )}
-        </Space>
-      ),
+      render: (title: string, record: Lesson) => {
+        const chapterName =
+          course?.syllabus && record.chapter_index !== undefined
+            ? course.syllabus[record.chapter_index]
+            : null;
+
+        return (
+          <Space direction="vertical" size={4} style={{ width: "100%" }}>
+            <Tooltip title={title}>
+              <Text
+                strong
+                ellipsis
+                style={{ fontSize: 14, display: "block", maxWidth: 400 }}>
+                {title}
+              </Text>
+            </Tooltip>
+            <Space size={4} wrap>
+              {chapterName && (
+                <Tag
+                  color="blue"
+                  style={{
+                    fontSize: 10,
+                    border: "none",
+                    background: "#e6f7ff",
+                  }}>
+                  Chương {(record.chapter_index || 0) + 1}
+                </Tag>
+              )}
+              {record.video && (
+                <Tag
+                  icon={<MdPlayCircleOutline />}
+                  style={{
+                    color: "#6366f1",
+                    background: "#eef2ff",
+                    border: "none",
+                    fontSize: 11,
+                  }}>
+                  Video
+                </Tag>
+              )}
+            </Space>
+          </Space>
+        );
+      },
+    },
+    {
+      title: "Chương",
+      dataIndex: "chapter_index",
+      key: "chapter_index",
+      width: 150,
+      render: (index: number) => {
+        const chapterName = course?.syllabus?.[index];
+        return chapterName ? (
+          <Text ellipsis style={{ maxWidth: 140, fontSize: 13 }}>
+            {index + 1}. {chapterName}
+          </Text>
+        ) : (
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            Mặc định
+          </Text>
+        );
+      },
     },
     {
       title: "Trạng thái",
@@ -642,8 +678,7 @@ export default function CourseDetailPage() {
               alignItems: "center",
               gap: 6,
               width: "fit-content",
-            }}
-          >
+            }}>
             <StatusIcon size={14} />
             {statusConfig.label}
           </Tag>
@@ -708,7 +743,7 @@ export default function CourseDetailPage() {
               icon: <MdDeleteForever size={16} />,
               onClick: () => handleHardDeleteLesson(record._id),
               danger: true,
-            }
+            },
           );
         } else {
           menuItems.push({
@@ -723,8 +758,7 @@ export default function CourseDetailPage() {
           <Dropdown
             menu={{ items: menuItems }}
             trigger={["click"]}
-            placement="bottomRight"
-          >
+            placement="bottomRight">
             <Button
               type="text"
               icon={<MdMoreVert size={20} />}
@@ -806,8 +840,7 @@ export default function CourseDetailPage() {
             marginBottom: 24,
             alignItems: "flex-start",
             flexWrap: "wrap",
-          }}
-        >
+          }}>
           <div style={{ flex: 1, minWidth: 250 }}>
             <Tooltip title={course.title}>
               <Title
@@ -818,8 +851,7 @@ export default function CourseDetailPage() {
                   fontSize: "clamp(24px, 5vw, 32px)",
                   fontWeight: 800,
                   letterSpacing: "-0.02em",
-                }}
-              >
+                }}>
                 {course.title}
               </Title>
             </Tooltip>
@@ -835,8 +867,7 @@ export default function CourseDetailPage() {
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
-                }}
-              >
+                }}>
                 <StatusIcon size={16} />
                 {config.label}
               </Tag>
@@ -854,22 +885,19 @@ export default function CourseDetailPage() {
                 <Button
                   type="primary"
                   icon={<MdEdit size={18} />}
-                  onClick={handleEdit}
-                >
+                  onClick={handleEdit}>
                   Chỉnh sửa
                 </Button>
                 <Button
                   icon={<MdDelete size={18} />}
                   onClick={handleDelete}
-                  style={{ color: "#faad14", borderColor: "#faad14" }}
-                >
+                  style={{ color: "#faad14", borderColor: "#faad14" }}>
                   Thùng rác
                 </Button>
                 <Button
                   danger
                   icon={<MdDeleteForever size={18} />}
-                  onClick={handleHardDelete}
-                >
+                  onClick={handleHardDelete}>
                   Xóa vĩnh viễn
                 </Button>
               </>
@@ -879,15 +907,13 @@ export default function CourseDetailPage() {
                   type="primary"
                   icon={<MdRestore size={18} />}
                   onClick={() => restoreMutation.mutate()}
-                  style={{ background: "#10b981", borderColor: "#10b981" }}
-                >
+                  style={{ background: "#10b981", borderColor: "#10b981" }}>
                   Khôi phục
                 </Button>
                 <Button
                   danger
                   icon={<MdDeleteForever size={18} />}
-                  onClick={handleHardDelete}
-                >
+                  onClick={handleHardDelete}>
                   Xóa vĩnh viễn
                 </Button>
               </>
@@ -900,8 +926,7 @@ export default function CourseDetailPage() {
           <Col xs={24} sm={12} lg={6}>
             <Card
               variant="borderless"
-              style={{ background: "#f0f9ff", borderRadius: 16 }}
-            >
+              style={{ background: "#f0f9ff", borderRadius: 16 }}>
               <Statistic
                 title={
                   <Text style={{ color: "#64748b", fontWeight: 500 }}>
@@ -925,8 +950,7 @@ export default function CourseDetailPage() {
           <Col xs={24} sm={12} lg={6}>
             <Card
               variant="borderless"
-              style={{ background: "#fef3c7", borderRadius: 16 }}
-            >
+              style={{ background: "#fef3c7", borderRadius: 16 }}>
               <Statistic
                 title={
                   <Text style={{ color: "#64748b", fontWeight: 500 }}>
@@ -942,8 +966,7 @@ export default function CourseDetailPage() {
           <Col xs={24} sm={12} lg={6}>
             <Card
               variant="borderless"
-              style={{ background: "#f3e8ff", borderRadius: 16 }}
-            >
+              style={{ background: "#f3e8ff", borderRadius: 16 }}>
               <Statistic
                 title={
                   <Text style={{ color: "#64748b", fontWeight: 500 }}>
@@ -959,8 +982,7 @@ export default function CourseDetailPage() {
           <Col xs={24} sm={12} lg={6}>
             <Card
               variant="borderless"
-              style={{ background: "#dcfce7", borderRadius: 16 }}
-            >
+              style={{ background: "#dcfce7", borderRadius: 16 }}>
               <Statistic
                 title={
                   <Text style={{ color: "#64748b", fontWeight: 500 }}>
@@ -988,8 +1010,7 @@ export default function CourseDetailPage() {
               <Card
                 title={
                   <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <MdList style={{ color: "#667eea", fontSize: 20 }} />
                     <Text strong style={{ fontSize: 18, fontWeight: 700 }}>
                       Mô tả khóa học
@@ -997,8 +1018,7 @@ export default function CourseDetailPage() {
                   </div>
                 }
                 variant="borderless"
-                style={{ borderRadius: 16 }}
-              >
+                style={{ borderRadius: 16 }}>
                 {course.description ? (
                   <Paragraph
                     style={{
@@ -1006,8 +1026,7 @@ export default function CourseDetailPage() {
                       lineHeight: 1.8,
                       color: "#475569",
                       marginBottom: 0,
-                    }}
-                  >
+                    }}>
                     {course.description}
                   </Paragraph>
                 ) : (
@@ -1019,8 +1038,7 @@ export default function CourseDetailPage() {
               <Card
                 title={
                   <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <MdList style={{ color: "#667eea", fontSize: 20 }} />
                     <Text strong style={{ fontSize: 18, fontWeight: 700 }}>
                       Chương trình học
@@ -1028,8 +1046,7 @@ export default function CourseDetailPage() {
                   </div>
                 }
                 variant="borderless"
-                style={{ borderRadius: 16, minHeight: "100% !important" }}
-              >
+                style={{ borderRadius: 16, minHeight: "100% !important" }}>
                 {course.syllabus && course.syllabus.length > 0 ? (
                   <div
                     style={{
@@ -1037,8 +1054,7 @@ export default function CourseDetailPage() {
                       borderRadius: 8,
                       border: "1px solid #e2e8f0",
                       padding: "5px",
-                    }}
-                  >
+                    }}>
                     <ul style={{ paddingLeft: 20, margin: 0 }}>
                       {course.syllabus.map((item, index) => (
                         <li
@@ -1047,8 +1063,7 @@ export default function CourseDetailPage() {
                             fontSize: 15,
                             color: "#334155",
                             lineHeight: 1.6,
-                          }}
-                        >
+                          }}>
                           {item}
                         </li>
                       ))}
@@ -1073,21 +1088,18 @@ export default function CourseDetailPage() {
                 </div>
               }
               variant="borderless"
-              style={{ borderRadius: 16, height: "100%" }}
-            >
+              style={{ borderRadius: 16, height: "100%" }}>
               <Descriptions column={1} size="small">
                 <Descriptions.Item
                   label={
                     <div
-                      style={{ display: "flex", alignItems: "center", gap: 6 }}
-                    >
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <MdCalendarToday size={16} style={{ color: "#94a3b8" }} />
                       <Text style={{ color: "#64748b", fontWeight: 500 }}>
                         Ngày tạo
                       </Text>
                     </div>
-                  }
-                >
+                  }>
                   <Text strong style={{ fontWeight: 600 }}>
                     {new Date(course.created_at).toLocaleString("vi-VN", {
                       year: "numeric",
@@ -1102,15 +1114,13 @@ export default function CourseDetailPage() {
                 <Descriptions.Item
                   label={
                     <div
-                      style={{ display: "flex", alignItems: "center", gap: 6 }}
-                    >
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <MdUpdate size={16} style={{ color: "#94a3b8" }} />
                       <Text style={{ color: "#64748b", fontWeight: 500 }}>
                         Ngày cập nhật
                       </Text>
                     </div>
-                  }
-                >
+                  }>
                   <Text strong style={{ fontWeight: 600 }}>
                     {new Date(course.updated_at).toLocaleString("vi-VN", {
                       year: "numeric",
@@ -1125,15 +1135,13 @@ export default function CourseDetailPage() {
                 <Descriptions.Item
                   label={
                     <div
-                      style={{ display: "flex", alignItems: "center", gap: 6 }}
-                    >
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <MdPublish size={16} style={{ color: "#94a3b8" }} />
                       <Text style={{ color: "#64748b", fontWeight: 500 }}>
                         Slug
                       </Text>
                     </div>
-                  }
-                >
+                  }>
                   <Tooltip title={course.slug}>
                     <Text
                       code
@@ -1146,8 +1154,7 @@ export default function CourseDetailPage() {
                         borderRadius: 4,
                         fontWeight: 500,
                         display: "inline-block",
-                      }}
-                    >
+                      }}>
                       {course.slug}
                     </Text>
                   </Tooltip>
@@ -1156,15 +1163,13 @@ export default function CourseDetailPage() {
                 <Descriptions.Item
                   label={
                     <div
-                      style={{ display: "flex", alignItems: "center", gap: 6 }}
-                    >
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <MdDelete size={16} style={{ color: "#94a3b8" }} />
                       <Text style={{ color: "#64748b", fontWeight: 500 }}>
                         Đã xóa
                       </Text>
                     </div>
-                  }
-                >
+                  }>
                   {course.is_deleted ? (
                     <Tag color="red" style={{ fontWeight: 600 }}>
                       Có
@@ -1198,14 +1203,12 @@ export default function CourseDetailPage() {
               type="primary"
               icon={<MdAdd size={18} />}
               onClick={handleCreateLesson}
-              style={{ background: "#667eea", borderColor: "#667eea" }}
-            >
+              style={{ background: "#667eea", borderColor: "#667eea" }}>
               Thêm bài học
             </Button>
           }
           variant="borderless"
-          style={{ borderRadius: 16, marginTop: 24 }}
-        >
+          style={{ borderRadius: 16, marginTop: 24 }}>
           {/* Bulk Actions */}
           {selectedLessonKeys.length > 0 && (
             <Space style={{ marginBottom: 16 }} wrap>
@@ -1213,29 +1216,25 @@ export default function CourseDetailPage() {
               <Button
                 icon={<MdPublish size={16} />}
                 onClick={handleBulkPublish}
-                style={{ color: "#10b981", borderColor: "#10b981" }}
-              >
+                style={{ color: "#10b981", borderColor: "#10b981" }}>
                 Công khai
               </Button>
               <Button
                 icon={<MdLock size={16} />}
                 onClick={handleBulkUnpublish}
-                style={{ color: "#f59e0b", borderColor: "#f59e0b" }}
-              >
+                style={{ color: "#f59e0b", borderColor: "#f59e0b" }}>
                 Riêng tư
               </Button>
               <Button
                 icon={<MdDelete size={16} />}
                 onClick={handleBulkDelete}
-                style={{ color: "#faad14", borderColor: "#faad14" }}
-              >
+                style={{ color: "#faad14", borderColor: "#faad14" }}>
                 Thùng rác
               </Button>
               <Button
                 danger
                 icon={<MdDeleteForever size={16} />}
-                onClick={handleBulkHardDelete}
-              >
+                onClick={handleBulkHardDelete}>
                 Xóa vĩnh viễn
               </Button>
             </Space>
@@ -1277,8 +1276,7 @@ export default function CourseDetailPage() {
         cancelText="Hủy"
         width="90%"
         style={{ maxWidth: 700 }}
-        confirmLoading={updateMutation.isPending}
-      >
+        confirmLoading={updateMutation.isPending}>
         <Form form={form} layout="vertical" style={{ marginTop: 24 }}>
           <Form.Item
             name="title"
@@ -1286,8 +1284,7 @@ export default function CourseDetailPage() {
             rules={[
               { required: true, message: "Vui lòng nhập tiêu đề" },
               { min: 3, message: "Tối thiểu 3 ký tự" },
-            ]}
-          >
+            ]}>
             <Input placeholder="Ví dụ: Lập trình React nâng cao" />
           </Form.Item>
           <Form.Item name="description" label="Mô tả">
@@ -1296,8 +1293,7 @@ export default function CourseDetailPage() {
           <Form.Item
             name="price"
             label="Giá (VNĐ)"
-            rules={[{ required: true, message: "Vui lòng nhập giá" }]}
-          >
+            rules={[{ required: true, message: "Vui lòng nhập giá" }]}>
             <InputNumber
               style={{ width: "100%" }}
               min={0}
@@ -1315,8 +1311,7 @@ export default function CourseDetailPage() {
           </Form.Item>
           <Form.Item
             name="syllabus"
-            label="Chương trình học (mỗi chủ đề một dòng)"
-          >
+            label="Chương trình học (mỗi chủ đề một dòng)">
             <TextArea
               rows={6}
               placeholder="React Hooks&#10;Context API&#10;Performance Optimization"
@@ -1341,8 +1336,7 @@ export default function CourseDetailPage() {
         style={{ maxWidth: 700 }}
         confirmLoading={
           createLessonMutation.isPending || updateLessonMutation.isPending
-        }
-      >
+        }>
         <Form form={lessonForm} layout="vertical" style={{ marginTop: 24 }}>
           <Form.Item
             name="title"
@@ -1350,8 +1344,7 @@ export default function CourseDetailPage() {
             rules={[
               { required: true, message: "Vui lòng nhập tiêu đề" },
               { min: 3, message: "Tối thiểu 3 ký tự" },
-            ]}
-          >
+            ]}>
             <Input placeholder="Ví dụ: Giới thiệu về React Hooks" />
           </Form.Item>
           <Form.Item name="description" label="Mô tả">
@@ -1362,8 +1355,7 @@ export default function CourseDetailPage() {
           </Form.Item>
           <Form.Item
             name="main_content"
-            label="Nội dung chính (mỗi mục một dòng)"
-          >
+            label="Nội dung chính (mỗi mục một dòng)">
             <TextArea
               rows={6}
               placeholder="What is React?&#10;Why use React?&#10;Setting up development environment"
@@ -1374,8 +1366,7 @@ export default function CourseDetailPage() {
               <Form.Item
                 name="order"
                 label="Thứ tự"
-                rules={[{ required: true, message: "Vui lòng nhập thứ tự" }]}
-              >
+                rules={[{ required: true, message: "Vui lòng nhập thứ tự" }]}>
                 <InputNumber
                   style={{ width: "100%" }}
                   min={1}
@@ -1392,6 +1383,25 @@ export default function CourseDetailPage() {
               </Form.Item>
             </Col>
           </Row>
+          <Form.Item
+            name="chapter_index"
+            label="Chương (thuộc phần nào?)"
+            initialValue={0}
+            extra="Chọn chương mà bài học này thuộc về (từ danh sách Chương trình học)">
+            <Select placeholder="Chọn chương">
+              {course.syllabus && course.syllabus.length > 0 ? (
+                course.syllabus.map((chapterName, index) => (
+                  <Select.Option key={index} value={index}>
+                    Chương {index + 1}: {chapterName}
+                  </Select.Option>
+                ))
+              ) : (
+                <Select.Option value={0}>
+                  Mặc định (Nội dung khóa học)
+                </Select.Option>
+              )}
+            </Select>
+          </Form.Item>
         </Form>
       </Modal>
 

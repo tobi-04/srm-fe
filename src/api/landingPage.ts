@@ -29,8 +29,7 @@ export interface CreateLandingPageInput {
   };
 }
 
-export interface UpdateLandingPageInput
-  extends Partial<CreateLandingPageInput> {}
+export interface UpdateLandingPageInput extends Partial<CreateLandingPageInput> {}
 
 export interface LandingPageListResponse {
   data: LandingPage[];
@@ -58,7 +57,7 @@ export interface SubmitUserFormResponse {
 
 // Create landing page
 export const createLandingPage = async (
-  data: CreateLandingPageInput
+  data: CreateLandingPageInput,
 ): Promise<LandingPage> => {
   const response = await apiClient.post("/landing-pages", data);
   return response.data;
@@ -83,7 +82,7 @@ export const getLandingPageById = async (id: string): Promise<LandingPage> => {
 
 // Get landing page by slug (public)
 export const getLandingPageBySlug = async (
-  slug: string
+  slug: string,
 ): Promise<LandingPage> => {
   const response = await apiClient.get(`/landing-pages/slug/${slug}`);
   return response.data;
@@ -91,16 +90,28 @@ export const getLandingPageBySlug = async (
 
 // Get landing pages by course ID
 export const getLandingPagesByCourse = async (
-  courseId: string
+  courseId: string,
 ): Promise<LandingPage[]> => {
   const response = await apiClient.get(`/landing-pages/course/${courseId}`);
   return response.data;
 };
 
+// Get single landing page by course ID (for checking if one exists)
+export const getLandingPageByCourseId = async (
+  courseId: string,
+): Promise<LandingPage | null> => {
+  try {
+    const landingPages = await getLandingPagesByCourse(courseId);
+    return landingPages.length > 0 ? landingPages[0] : null;
+  } catch {
+    return null;
+  }
+};
+
 // Update landing page
 export const updateLandingPage = async (
   id: string,
-  data: UpdateLandingPageInput
+  data: UpdateLandingPageInput,
 ): Promise<LandingPage> => {
   const response = await apiClient.put(`/landing-pages/${id}`, data);
   return response.data;
@@ -130,11 +141,11 @@ export const restoreLandingPage = async (id: string): Promise<LandingPage> => {
 // Submit user form
 export const submitUserForm = async (
   slug: string,
-  data: SubmitUserFormInput
+  data: SubmitUserFormInput,
 ): Promise<SubmitUserFormResponse> => {
   const response = await apiClient.post(
     `/landing-pages/slug/${slug}/submit-form`,
-    data
+    data,
   );
   return response.data;
 };
