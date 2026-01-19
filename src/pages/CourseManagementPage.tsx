@@ -29,7 +29,6 @@ import {
   MdDeleteForever,
   MdAttachMoney,
   MdCategory,
-  MdList,
   MdMoreVert,
   MdPublish,
   MdDrafts,
@@ -38,7 +37,7 @@ import {
 } from "react-icons/md";
 import DashboardLayout from "../components/DashboardLayout";
 import apiClient from "../api/client";
-import { getAvatarStyles } from "../utils/color";
+
 import { getLandingPagesByCourse, createLandingPage } from "../api/landingPage";
 import type { LandingPage } from "../stores/landingPageStore";
 
@@ -291,14 +290,6 @@ export default function CourseManagementPage() {
 
   const handleViewDetail = (course: Course) => {
     navigate(`/admin/courses/${course.slug}`);
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedRowKeys.length === 0) {
-      message.warning("Vui lòng chọn ít nhất một khóa học");
-      return;
-    }
-    bulkDeleteMutation.mutate(selectedRowKeys);
   };
 
   const rowSelection = {

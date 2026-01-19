@@ -18,6 +18,7 @@ import LandingPageManagementPage from "./pages/LandingPageManagementPage";
 import LandingPageBuilderPage from "./pages/LandingPageBuilderPage";
 import LandingPagePreviewPage from "./pages/LandingPagePreviewPage";
 import EmailAutomationPage from "./pages/EmailAutomationPage";
+import StudentProgressPage from "./pages/StudentProgressPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
 
@@ -142,6 +143,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <EmailAutomationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/progress"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <StudentProgressPage />
               </ProtectedRoute>
             }
           />

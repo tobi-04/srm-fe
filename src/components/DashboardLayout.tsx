@@ -91,19 +91,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           label: "Landing Page Builder",
         },
         {
-          key: "/admin/stats",
-          icon: <MdApps size={20} />,
-          label: "Thống kê & Phân tích",
-        },
-        {
           key: "/admin/progress",
           icon: <MdApps size={20} />,
           label: "Tiến độ học tập",
-        },
-        {
-          key: "/admin/settings",
-          icon: <MdSettings size={20} />,
-          label: "Cài đặt nâng cao",
         },
       ],
     },
