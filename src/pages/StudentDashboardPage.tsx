@@ -7,6 +7,7 @@ import {
   Progress,
   Spin,
   Empty,
+  Table,
 } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -39,7 +40,8 @@ export default function StudentDashboardPage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-          }}>
+          }}
+        >
           <Spin size="large" />
         </div>
       </StudentDashboardLayout>
@@ -71,13 +73,15 @@ export default function StudentDashboardPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                  }}>
+                  }}
+                >
                   <MdPlayCircleFilled size={28} color="#2563eb" />
                 </div>
                 <div>
                   <Text
                     type="secondary"
-                    style={{ display: "block", fontSize: 13 }}>
+                    style={{ display: "block", fontSize: 13 }}
+                  >
                     Tổng khóa học
                   </Text>
                   <Title level={3} style={{ margin: 0 }}>
@@ -100,13 +104,15 @@ export default function StudentDashboardPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                  }}>
+                  }}
+                >
                   <MdTrendingUp size={28} color="#f59e0b" />
                 </div>
                 <div>
                   <Text
                     type="secondary"
-                    style={{ display: "block", fontSize: 13 }}>
+                    style={{ display: "block", fontSize: 13 }}
+                  >
                     Đang học
                   </Text>
                   <Title level={3} style={{ margin: 0 }}>
@@ -129,13 +135,15 @@ export default function StudentDashboardPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                  }}>
+                  }}
+                >
                   <MdCheckCircle size={28} color="#10b981" />
                 </div>
                 <div>
                   <Text
                     type="secondary"
-                    style={{ display: "block", fontSize: 13 }}>
+                    style={{ display: "block", fontSize: 13 }}
+                  >
                     Hoàn thành
                   </Text>
                   <Title level={3} style={{ margin: 0 }}>
@@ -158,13 +166,15 @@ export default function StudentDashboardPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                  }}>
+                  }}
+                >
                   <MdCheckCircle size={28} color="#ec4899" />
                 </div>
                 <div>
                   <Text
                     type="secondary"
-                    style={{ display: "block", fontSize: 13 }}>
+                    style={{ display: "block", fontSize: 13 }}
+                  >
                     Bài đã học
                   </Text>
                   <Title level={3} style={{ margin: 0 }}>
@@ -189,94 +199,117 @@ export default function StudentDashboardPage() {
             <Button
               type="link"
               onClick={() => navigate("/student/courses")}
-              style={{ padding: 0 }}>
+              style={{ padding: 0 }}
+            >
               Xem tất cả
             </Button>
-          }>
-          {!dashboard?.recent_courses?.length ? (
-            <Empty description="Bạn chưa đăng ký khóa học nào" />
-          ) : (
-            <Row gutter={[16, 16]}>
-              {dashboard.recent_courses.map((course) => (
-                <Col xs={24} sm={24} md={8} key={course._id}>
-                  <Card
-                    variant="borderless"
-                    style={{
-                      border: "1px solid #f1f5f9",
-                      borderRadius: 12,
-                      overflow: "hidden",
-                    }}
-                    styles={{ body: { padding: 0 } }}>
+          }
+        >
+          <Table
+            dataSource={dashboard?.recent_courses || []}
+            rowKey="_id"
+            locale={{
+              emptyText: <Empty description="Bạn chưa đăng ký khóa học nào" />,
+            }}
+            scroll={{ x: 800 }}
+            pagination={false}
+            columns={[
+              {
+                title: "Khóa học",
+                dataIndex: "title",
+                key: "title",
+                width: 250,
+                render: (text: string, record: any) => (
+                  <div>
+                    <Text
+                      strong
+                      style={{
+                        color: "#1e293b",
+                        display: "block",
+                        marginBottom: 4,
+                      }}
+                    >
+                      {text}
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Slug: {record.slug}
+                    </Text>
+                  </div>
+                ),
+              },
+              {
+                title: "Mô tả",
+                dataIndex: "description",
+                key: "description",
+                width: 200,
+                ellipsis: true,
+              },
+              {
+                title: "Tiến độ",
+                dataIndex: "progress_percent",
+                key: "progress_percent",
+                width: 180,
+                render: (percent: number) => (
+                  <div>
                     <div
                       style={{
-                        height: 160,
-                        background: `linear-gradient(135deg, ${
-                          Math.random() > 0.5 ? "#667eea" : "#f093fb"
-                        } 0%, ${Math.random() > 0.5 ? "#764ba2" : "#4facfe"} 100%)`,
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}>
-                      <MdPlayCircleFilled size={48} color="white" />
-                    </div>
-                    <div style={{ padding: 16 }}>
-                      <Title
-                        level={5}
-                        style={{
-                          margin: "0 0 8px 0",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                        }}>
-                        {course.title}
-                      </Title>
-                      <div style={{ marginBottom: 12 }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            marginBottom: 4,
-                          }}>
-                          <Text type="secondary" style={{ fontSize: 13 }}>
-                            Tiến độ
-                          </Text>
-                          <Text strong style={{ fontSize: 13 }}>
-                            {Math.round(course.progress_percent)}%
-                          </Text>
-                        </div>
-                        <Progress
-                          percent={course.progress_percent}
-                          showInfo={false}
-                          strokeColor="#2563eb"
-                        />
-                      </div>
-                      <Text
-                        type="secondary"
-                        style={{
-                          fontSize: 12,
-                          display: "block",
-                          marginBottom: 12,
-                        }}>
-                        {course.completed_lessons}/{course.total_lessons} bài
-                        học
+                        justifyContent: "space-between",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 13 }}>
+                        Hoàn thành
                       </Text>
-                      <Button
-                        type="primary"
-                        block
-                        icon={<MdPlayCircleFilled />}
-                        onClick={() =>
-                          navigate(`/student/course/${course.slug}`)
-                        }>
-                        Học tiếp
-                      </Button>
+                      <Text strong style={{ fontSize: 13 }}>
+                        {Math.round(percent)}%
+                      </Text>
                     </div>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-          )}
+                    <Progress
+                      percent={percent}
+                      showInfo={false}
+                      strokeColor="#2563eb"
+                      size="small"
+                    />
+                  </div>
+                ),
+              },
+              {
+                title: "Bài học",
+                key: "lessons",
+                width: 120,
+                render: (_: any, record: any) => (
+                  <Text style={{ fontSize: 13 }}>
+                    {record.completed_lessons}/{record.total_lessons} bài
+                  </Text>
+                ),
+              },
+              {
+                title: "Ngày đăng ký",
+                dataIndex: "enrolled_at",
+                key: "enrolled_at",
+                width: 130,
+                render: (date: Date) =>
+                  new Date(date).toLocaleDateString("vi-VN"),
+              },
+              {
+                title: "Hành động",
+                key: "action",
+                width: 150,
+                render: (_: any, record: any) => (
+                  <Button
+                    type="primary"
+                    icon={<MdPlayCircleFilled />}
+                    onClick={() =>
+                      window.open(`/learn/${record._id}`, "_blank")
+                    }
+                  >
+                    Học tiếp
+                  </Button>
+                ),
+              },
+            ]}
+          />
         </Card>
       </div>
     </StudentDashboardLayout>
