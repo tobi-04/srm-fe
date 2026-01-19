@@ -1,20 +1,32 @@
-import { Row, Col, Card, Typography, Progress, Spin, Empty } from "antd";
-import { useQuery } from "@tanstack/react-query";
 import {
-  MdCheckCircle,
+  Row,
+  Col,
+  Card,
+  Typography,
+  Button,
+  Progress,
+  Spin,
+  Empty,
+} from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import {
   MdPlayCircleFilled,
   MdTrendingUp,
+  MdCheckCircle,
 } from "react-icons/md";
 import StudentDashboardLayout from "../components/StudentDashboardLayout";
 import { studentApi } from "../api/studentApi";
 
 const { Title, Text } = Typography;
 
-export default function StudentProgressPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["student-progress"],
-    queryFn: () => studentApi.getProgress(),
-    staleTime: 5 * 60 * 1000,
+export default function StudentDashboardPage() {
+  const navigate = useNavigate();
+
+  const { data: dashboard, isLoading } = useQuery({
+    queryKey: ["student-dashboard"],
+    queryFn: () => studentApi.getDashboard(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
   });
 
@@ -37,15 +49,15 @@ export default function StudentProgressPage() {
   return (
     <StudentDashboardLayout>
       <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-        {/* Header */}
-        <div style={{ marginBottom: 24 }}>
+        {/* Greeting */}
+        <div style={{ marginBottom: 32 }}>
           <Title level={2} style={{ margin: 0 }}>
-            Tiến độ học tập
+            Xin chào, {dashboard?.student.name || "Học viên"}! 👋
           </Title>
-          <Text type="secondary">Theo dõi quá trình học tập của bạn</Text>
+          <Text type="secondary">Chào mừng bạn quay trở lại</Text>
         </div>
 
-        {/* Overall Stats */}
+        {/* Stats */}
         <Row gutter={[16, 16]} style={{ marginBottom: 32 }}>
           <Col xs={24} sm={12} lg={6}>
             <Card variant="borderless" style={{ borderRadius: 12 }}>
@@ -69,36 +81,7 @@ export default function StudentProgressPage() {
                     Tổng khóa học
                   </Text>
                   <Title level={3} style={{ margin: 0 }}>
-                    {data?.overall_progress.total_courses || 0}
-                  </Title>
-                </div>
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={6}>
-            <Card variant="borderless" style={{ borderRadius: 12 }}>
-              <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                <div
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 12,
-                    background: "#d1fae5",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}>
-                  <MdCheckCircle size={28} color="#10b981" />
-                </div>
-                <div>
-                  <Text
-                    type="secondary"
-                    style={{ display: "block", fontSize: 13 }}>
-                    Đã hoàn thành
-                  </Text>
-                  <Title level={3} style={{ margin: 0 }}>
-                    {data?.overall_progress.completed_courses || 0}
+                    {dashboard?.stats.total_courses || 0}
                   </Title>
                 </div>
               </div>
@@ -124,10 +107,39 @@ export default function StudentProgressPage() {
                   <Text
                     type="secondary"
                     style={{ display: "block", fontSize: 13 }}>
-                    Tỷ lệ hoàn thành
+                    Đang học
                   </Text>
                   <Title level={3} style={{ margin: 0 }}>
-                    {Math.round(data?.overall_progress.completion_rate || 0)}%
+                    {dashboard?.stats.in_progress_courses || 0}
+                  </Title>
+                </div>
+              </div>
+            </Card>
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <Card variant="borderless" style={{ borderRadius: 12 }}>
+              <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 12,
+                    background: "#d1fae5",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}>
+                  <MdCheckCircle size={28} color="#10b981" />
+                </div>
+                <div>
+                  <Text
+                    type="secondary"
+                    style={{ display: "block", fontSize: 13 }}>
+                    Hoàn thành
+                  </Text>
+                  <Title level={3} style={{ margin: 0 }}>
+                    {dashboard?.stats.completed_courses || 0}
                   </Title>
                 </div>
               </div>
@@ -156,8 +168,7 @@ export default function StudentProgressPage() {
                     Bài đã học
                   </Text>
                   <Title level={3} style={{ margin: 0 }}>
-                    {data?.overall_progress.completed_lessons || 0}/
-                    {data?.overall_progress.total_lessons || 0}
+                    {dashboard?.stats.total_lessons_completed || 0}
                   </Title>
                 </div>
               </div>
@@ -165,90 +176,101 @@ export default function StudentProgressPage() {
           </Col>
         </Row>
 
-        {/* Course Progress */}
+        {/* Recent Courses */}
         <Card
           variant="borderless"
-          style={{ borderRadius: 12 }}
+          style={{ borderRadius: 12, marginBottom: 24 }}
           title={
             <Title level={4} style={{ margin: 0 }}>
-              Chi tiết tiến độ
+              Khóa học của bạn
             </Title>
+          }
+          extra={
+            <Button
+              type="link"
+              onClick={() => navigate("/student/courses")}
+              style={{ padding: 0 }}>
+              Xem tất cả
+            </Button>
           }>
-          {!data?.courses?.length ? (
+          {!dashboard?.recent_courses?.length ? (
             <Empty description="Bạn chưa đăng ký khóa học nào" />
           ) : (
             <Row gutter={[16, 16]}>
-              {data.courses.map((course) => (
-                <Col xs={24} sm={24} md={12} lg={8} key={course._id}>
+              {dashboard.recent_courses.map((course) => (
+                <Col xs={24} sm={24} md={8} key={course._id}>
                   <Card
                     variant="borderless"
                     style={{
                       border: "1px solid #f1f5f9",
                       borderRadius: 12,
-                    }}>
+                      overflow: "hidden",
+                    }}
+                    styles={{ body: { padding: 0 } }}>
                     <div
                       style={{
+                        height: 160,
+                        background: `linear-gradient(135deg, ${
+                          Math.random() > 0.5 ? "#667eea" : "#f093fb"
+                        } 0%, ${Math.random() > 0.5 ? "#764ba2" : "#4facfe"} 100%)`,
                         display: "flex",
                         alignItems: "center",
-                        gap: 12,
-                        marginBottom: 16,
+                        justifyContent: "center",
                       }}>
-                      <div
-                        style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: 10,
-                          background: course.is_completed
-                            ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                            : "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}>
-                        {course.is_completed ? (
-                          <MdCheckCircle size={24} color="white" />
-                        ) : (
-                          <MdPlayCircleFilled size={24} color="white" />
-                        )}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <Title
-                          level={5}
-                          style={{
-                            margin: 0,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}>
-                          {course.title}
-                        </Title>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {course.completed_lessons}/{course.total_lessons} bài
-                          học
-                        </Text>
-                      </div>
+                      <MdPlayCircleFilled size={48} color="white" />
                     </div>
-                    <div>
-                      <div
+                    <div style={{ padding: 16 }}>
+                      <Title
+                        level={5}
                         style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          marginBottom: 4,
+                          margin: "0 0 8px 0",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
                         }}>
-                        <Text type="secondary" style={{ fontSize: 13 }}>
-                          Tiến độ
-                        </Text>
-                        <Text strong style={{ fontSize: 13 }}>
-                          {Math.round(course.progress_percent)}%
-                        </Text>
+                        {course.title}
+                      </Title>
+                      <div style={{ marginBottom: 12 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            marginBottom: 4,
+                          }}>
+                          <Text type="secondary" style={{ fontSize: 13 }}>
+                            Tiến độ
+                          </Text>
+                          <Text strong style={{ fontSize: 13 }}>
+                            {Math.round(course.progress_percent)}%
+                          </Text>
+                        </div>
+                        <Progress
+                          percent={course.progress_percent}
+                          showInfo={false}
+                          strokeColor="#2563eb"
+                        />
                       </div>
-                      <Progress
-                        percent={course.progress_percent}
-                        showInfo={false}
-                        strokeColor={
-                          course.is_completed ? "#10b981" : "#2563eb"
-                        }
-                      />
+                      <Text
+                        type="secondary"
+                        style={{
+                          fontSize: 12,
+                          display: "block",
+                          marginBottom: 12,
+                        }}>
+                        {course.completed_lessons}/{course.total_lessons} bài
+                        học
+                      </Text>
+                      <Button
+                        type="primary"
+                        block
+                        icon={<MdPlayCircleFilled />}
+                        onClick={() =>
+                          navigate(`/student/course/${course.slug}`)
+                        }>
+                        Học tiếp
+                      </Button>
                     </div>
                   </Card>
                 </Col>

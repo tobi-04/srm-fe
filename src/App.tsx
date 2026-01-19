@@ -19,6 +19,11 @@ import LandingPageBuilderPage from "./pages/LandingPageBuilderPage";
 import LandingPagePreviewPage from "./pages/LandingPagePreviewPage";
 import EmailAutomationPage from "./pages/EmailAutomationPage";
 import StudentProgressPage from "./pages/StudentProgressPage";
+import StudentDashboardPage from "./pages/StudentDashboardPage";
+import StudentCoursesPage from "./pages/StudentCoursesPage";
+import StudentCoursePlayerPage from "./pages/StudentCoursePlayerPage";
+import StudentProfilePage from "./pages/StudentProfilePage";
+import StudentOrdersPage from "./pages/StudentOrdersPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
 
@@ -61,6 +66,60 @@ function App() {
             element={
               <ProtectedRoute>
                 <CourseViewerPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Student Dashboard Routes - Protected */}
+          <Route
+            path="/student"
+            element={<Navigate to="/student/dashboard" replace />}
+          />
+          <Route
+            path="/student/dashboard"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <StudentDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/courses"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <StudentCoursesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/course/:slug"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <StudentCoursePlayerPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/progress"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <StudentProgressPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/profile"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <StudentProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/orders"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <StudentOrdersPage />
               </ProtectedRoute>
             }
           />
