@@ -15,7 +15,6 @@ import {
 import {
   MdDashboard,
   MdPerson,
-  MdSettings,
   MdDescription,
   MdPeople,
   MdLogout,

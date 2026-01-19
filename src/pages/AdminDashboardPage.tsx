@@ -320,9 +320,13 @@ export default function AdminDashboardPage() {
                       axisLine={{ stroke: "#f1f5f9" }}
                       tickLine={{ stroke: "#f1f5f9" }}
                       tick={{ fill: "#64748b", fontSize: 12 }}
-                      tickFormatter={(value) =>
-                        `${(value / 1000000).toFixed(1)}Tr`
-                      }
+                      tickFormatter={(value) => {
+                        if (value >= 1000000)
+                          return `${(value / 1000000).toFixed(1)}Tr`;
+                        if (value >= 1000)
+                          return `${(value / 1000).toFixed(0)}k`;
+                        return value.toString();
+                      }}
                     />
                     <Tooltip
                       contentStyle={{

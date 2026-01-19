@@ -51,8 +51,8 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
   const bankCode = transaction?.bank_code || "MB";
   const bankName = transaction?.bank_name || "";
   const accountName = transaction?.account_name || "";
-  const transferContent = transaction?.transfer_code || "ZLP123456";
-  const totalAmount = transaction?.amount || 100700;
+  const transferContent = transaction?.transfer_code || "CHÀO MỪNG";
+  const totalAmount = transaction?.amount || 0;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("vi-VN", {

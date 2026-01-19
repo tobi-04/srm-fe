@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { Form, Input, Button, Card, message, Typography } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { useNavigate, Link } from "react-router-dom";
+import {
+  useNavigate,
+  Link,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
 import { authApi } from "../api/auth";
 import { useAuthStore } from "../stores/authStore";
 import { getDeviceInfo } from "../utils/device";
@@ -11,7 +16,13 @@ const { Title, Text } = Typography;
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const setAuth = useAuthStore((state) => state.setAuth);
+
+  // Determine redirection target
+  const from =
+    searchParams.get("from") || location.state?.from?.pathname || "/";
 
   const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
@@ -31,9 +42,9 @@ export default function LoginPage() {
       }
 
       if (response.user.role === "admin") {
-        navigate("/admin");
+        navigate(from === "/" ? "/admin" : from);
       } else {
-        navigate("/");
+        navigate(from);
       }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Login failed";

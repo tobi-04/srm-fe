@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Editor, Frame, Element } from "@craftjs/core";
 import {
@@ -67,6 +67,7 @@ const CRAFT_RESOLVER = {
 export default function LandingPageView() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const isAdmin = user?.role === "admin";
   const txId = searchParams.get("tx");
@@ -120,8 +121,7 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}
-      >
+        }}>
         <Spin size="large" />
       </Layout>
     );
@@ -135,8 +135,7 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}
-      >
+        }}>
         <Result
           status="404"
           title="Không tìm thấy Landing Page"
@@ -156,8 +155,7 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}
-      >
+        }}>
         <Result
           status="403"
           title="Trang không khả dụng"
@@ -224,8 +222,7 @@ export default function LandingPageView() {
                 padding: "40px 20px",
                 maxWidth: "800px",
                 margin: "0 auto",
-              }}
-            >
+              }}>
               <Element
                 is={Text}
                 text="Hoàn tất Thanh toán"
@@ -256,19 +253,60 @@ export default function LandingPageView() {
             alignItems: "center",
             justifyContent: "center",
             padding: "50px",
-          }}
-        >
+          }}>
           <Result
             status="success"
             icon={<MdCheckCircle size={72} style={{ color: "#52c41a" }} />}
             title="Thanh toán thành công!"
             subTitle={
-              landingPage.metadata?.success_message ||
-              "Cảm ơn bạn đã mua hàng! Chúng tôi đã gửi email xác nhận đến địa chỉ email đã đăng ký của bạn."
+              <div style={{ textAlign: "center" }}>
+                <p>
+                  {landingPage.metadata?.success_message ||
+                    "Cảm ơn bạn đã mua hàng! Giao dịch của bạn đã được xác nhận thành công."}
+                </p>
+                <Alert
+                  type="info"
+                  message="Thông tin đăng nhập"
+                  description={
+                    <div style={{ textAlign: "left" }}>
+                      <p style={{ margin: "4px 0" }}>
+                        1. Chúng tôi đã gửi <b>Email tài khoản & Mật khẩu</b>{" "}
+                        đến địa chỉ bạn đã đăng ký.
+                      </p>
+                      <p style={{ margin: "4px 0" }}>
+                        2. Vui lòng kiểm tra kỹ cả hộp thư <b>Spam (Thư rác)</b>{" "}
+                        nếu không thấy ở hộp thư đến.
+                      </p>
+                      <p style={{ margin: "4px 0" }}>
+                        3. Nhấn nút bên dưới để đăng nhập và bắt đầu học ngay.
+                      </p>
+                    </div>
+                  }
+                  showIcon
+                />
+              </div>
             }
             extra={[
-              <AntButton type="primary" key="home" size="large">
-                Đi đến khóa học
+              <AntButton
+                type="primary"
+                key="home"
+                size="large"
+                style={{
+                  height: "50px",
+                  padding: "0 40px",
+                  fontSize: "18px",
+                  borderRadius: "8px",
+                  background: "#f78404",
+                  border: "none",
+                }}
+                onClick={() => {
+                  const courseId =
+                    typeof landingPage.course_id === "object"
+                      ? landingPage.course_id._id
+                      : landingPage.course_id;
+                  navigate(`/login?from=/learn/${courseId}`);
+                }}>
+                ĐĂNG NHẬP & HỌC NGAY
               </AntButton>,
             ]}
           />
@@ -310,19 +348,16 @@ export default function LandingPageView() {
                     width: "100%",
                     display: "flex",
                     justifyContent: "center",
-                  }}
-                >
+                  }}>
                   <div
                     style={{ width: "100%" }}
-                    className="landing-builder-content"
-                  >
+                    className="landing-builder-content">
                     <Editor resolver={CRAFT_RESOLVER} enabled={false}>
                       <Frame
                         key={`step-${currentStep}`}
                         data={
                           hasContent ? JSON.stringify(pageContent) : undefined
-                        }
-                      >
+                        }>
                         {!hasContent && getDefaultStepSections(currentStep)}
                       </Frame>
                     </Editor>

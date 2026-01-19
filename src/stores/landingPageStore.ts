@@ -2,7 +2,15 @@ import { create } from "zustand";
 
 export interface LandingPage {
   _id: string;
-  course_id: string;
+  course_id:
+    | string
+    | {
+        _id: string;
+        title: string;
+        slug: string;
+        price: number;
+        [key: string]: any;
+      };
   title: string;
   slug: string;
   status: "draft" | "published";

@@ -57,7 +57,7 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
     // In builder mode, just show info
     if (!slug || !landingPage) {
       message.info(
-        "This button will navigate to payment page when viewing the published landing page."
+        "This button will navigate to payment page when viewing the published landing page.",
       );
       return;
     }
@@ -67,7 +67,7 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
     try {
       // Get user submission ID from localStorage (saved during form submission)
       const submissionId = localStorage.getItem(
-        `landing_${slug}_submission_id`
+        `landing_${slug}_submission_id`,
       );
 
       if (!submissionId) {
@@ -78,8 +78,15 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
       }
 
       // Get real course_id and course_price from landing page data
-      const courseId = landingPage.course_id;
-      const coursePrice = landingPage.course_price || 100000;
+      const courseId =
+        typeof landingPage.course_id === "string"
+          ? landingPage.course_id
+          : landingPage.course_id._id;
+
+      const coursePrice =
+        typeof landingPage.course_id === "object"
+          ? landingPage.course_id.price
+          : landingPage.course_price || 0;
 
       // Create payment transaction
       const response = await createPaymentTransaction({
@@ -96,7 +103,7 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
       console.error("Payment creation error:", error);
       message.error(
         error.response?.data?.message ||
-          "Failed to create payment. Please try again."
+          "Failed to create payment. Please try again.",
       );
     } finally {
       setIsCreatingPayment(false);
@@ -223,7 +230,7 @@ const SalesPageContentSettings = () => {
               (props: any) =>
                 (props.benefits = e.target.value
                   .split(",")
-                  .map((b: string) => b.trim()))
+                  .map((b: string) => b.trim())),
             )
           }
           rows={3}
