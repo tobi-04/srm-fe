@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Editor, Frame, Element } from "@craftjs/core";
@@ -72,9 +72,8 @@ export default function LandingPageView() {
   const isAdmin = user?.role === "admin";
   const txId = searchParams.get("tx");
 
-  // Get step from URL params or default to 1
+  // Get step from URL params or default to 1 (Single source of truth)
   const urlStep = parseInt(searchParams.get("step") || "1") as FlowStep;
-  const [currentStep] = useState<FlowStep>(urlStep);
 
   // Fetch landing page data by slug
   const {
@@ -91,27 +90,38 @@ export default function LandingPageView() {
   const { data: transaction } = useQuery({
     queryKey: ["payment-transaction", txId],
     queryFn: () => getPaymentTransaction(txId!),
-    enabled: !!txId && currentStep === 3,
+    enabled: !!txId && urlStep === 3,
     refetchInterval: 5000, // Poll every 5 seconds
   });
 
   // Handle auto-redirect when payment is completed
   useEffect(() => {
-    if (currentStep === 3 && transaction?.status === "completed") {
+    if (urlStep === 3 && transaction?.status === "completed") {
       message.success("Thanh toán đã được xác nhận!");
-      setSearchParams({ step: "4", tx: txId || "" });
-      // Refresh currentStep logic since it's derived from URL
-      window.location.reload(); // Simplest way to force full refresh of step logic
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("step", "4");
+          return next;
+        },
+        { replace: true },
+      );
     }
-  }, [transaction?.status, currentStep, setSearchParams, txId]);
+  }, [transaction?.status, urlStep, setSearchParams]);
 
-  // Update URL when step changes
+  // Update URL to ensure step is present but avoid loops
   useEffect(() => {
-    setSearchParams({
-      step: currentStep.toString(),
-      ...(txId ? { tx: txId } : {}),
-    });
-  }, [currentStep, setSearchParams, txId]);
+    if (!searchParams.has("step")) {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("step", "1");
+          return next;
+        },
+        { replace: true },
+      );
+    }
+  }, [searchParams, setSearchParams]);
 
   if (isLoading) {
     return (
@@ -167,7 +177,7 @@ export default function LandingPageView() {
 
   // Get content for current step
   const getCurrentPageContent = () => {
-    switch (currentStep) {
+    switch (urlStep) {
       case 1:
         return landingPage.page_1_content;
       case 2:
@@ -244,7 +254,7 @@ export default function LandingPageView() {
   };
 
   // Render success page
-  if (currentStep === 4) {
+  if (urlStep === 4) {
     return (
       <Layout style={{ minHeight: "100vh", background: "#f0f2f5" }}>
         <Content
@@ -354,11 +364,11 @@ export default function LandingPageView() {
                     className="landing-builder-content">
                     <Editor resolver={CRAFT_RESOLVER} enabled={false}>
                       <Frame
-                        key={`step-${currentStep}`}
+                        key={`step-${urlStep}`}
                         data={
                           hasContent ? JSON.stringify(pageContent) : undefined
                         }>
-                        {!hasContent && getDefaultStepSections(currentStep)}
+                        {!hasContent && getDefaultStepSections(urlStep)}
                       </Frame>
                     </Editor>
                   </div>

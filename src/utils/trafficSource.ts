@@ -132,14 +132,17 @@ export function getTrafficSource(): TrafficSourceData | null {
 }
 
 /**
- * Save traffic source to localStorage (only if not exists - first-touch)
+ * Save traffic source to localStorage
  */
-export function saveTrafficSource(data: TrafficSourceData): void {
+export function saveTrafficSource(
+  data: TrafficSourceData,
+  force = false,
+): void {
   if (typeof window === "undefined") return;
 
-  // Only save if not already exists (first-touch attribution)
+  // Only save if not already exists (first-touch attribution) or if forced (last-touch)
   const existing = localStorage.getItem(TRAFFIC_SOURCE_KEY);
-  if (!existing) {
+  if (!existing || force) {
     localStorage.setItem(TRAFFIC_SOURCE_KEY, JSON.stringify(data));
   }
 }
@@ -163,9 +166,16 @@ export function getOrCreateTrafficSource(): TrafficSourceData {
     };
   }
 
+  // Parse UTM from URL
+  const utmParams = parseUtmParams();
+  const hasUtmInUrl = !!utmParams.utm_source;
+
   // Check if already exists in localStorage
   const existing = getTrafficSource();
-  if (existing) {
+
+  // If we have UTMs in the URL, we should prioritize them over existing storage
+  // (This allows a user to "click" a new link and have it recorded)
+  if (existing && !hasUtmInUrl) {
     // Update session_id for this visit (new session, same traffic source)
     const sessionId = getSessionId();
     return {
@@ -174,8 +184,6 @@ export function getOrCreateTrafficSource(): TrafficSourceData {
     };
   }
 
-  // Parse UTM from URL
-  const utmParams = parseUtmParams();
   const sessionId = getSessionId();
   const referrer = document.referrer || "";
 
@@ -197,8 +205,8 @@ export function getOrCreateTrafficSource(): TrafficSourceData {
     session_id: sessionId,
   };
 
-  // Save to localStorage (first-touch)
-  saveTrafficSource(trafficSource);
+  // Save to localStorage (use force if we have UTMs in URL)
+  saveTrafficSource(trafficSource, hasUtmInUrl);
 
   return trafficSource;
 }
