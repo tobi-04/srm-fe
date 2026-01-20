@@ -11,9 +11,9 @@ const { Option } = Select;
 export default function SalerOrdersPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [status, setStatus] = useState<
-    "pending" | "paid" | "refund" | undefined
-  >(undefined);
+  const [status, setStatus] = useState<"pending" | "paid" | undefined>(
+    undefined,
+  );
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Fetch orders
@@ -49,7 +49,6 @@ export default function SalerOrdersPage() {
     const statusMap = {
       pending: { color: "warning", text: "Chờ thanh toán" },
       paid: { color: "success", text: "Đã thanh toán" },
-      refund: { color: "error", text: "Hoàn tiền" },
     };
     const config = statusMap[orderStatus as keyof typeof statusMap] || {
       color: "default",
@@ -183,7 +182,6 @@ export default function SalerOrdersPage() {
               placeholder="Tất cả">
               <Option value="pending">Chờ thanh toán</Option>
               <Option value="paid">Đã thanh toán</Option>
-              <Option value="refund">Hoàn tiền</Option>
             </Select>
           </div>
           {data && (

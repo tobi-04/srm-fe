@@ -29,7 +29,7 @@ export interface SalerOrder {
   course_id: any; // populated
   user_submission_id: any; // populated
   amount: number;
-  status: "pending" | "paid" | "refund";
+  status: "pending" | "paid";
   paid_at?: string;
   created_at: string;
 }
@@ -89,7 +89,7 @@ const salerApi = {
   async getOrders(params: {
     page?: number;
     limit?: number;
-    status?: "pending" | "paid" | "refund";
+    status?: "pending" | "paid";
   }): Promise<SalerOrdersResponse> {
     const response = await apiClient.get<SalerOrdersResponse>("/saler/orders", {
       params,

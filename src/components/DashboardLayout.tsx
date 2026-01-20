@@ -347,7 +347,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 justifyContent: "center",
               }}
             />
-            {!isMobile && (
+            {!isMobile && user?.role === "admin" && (
               <div style={{ maxWidth: 400, width: "100%" }}>
                 <Input
                   prefix={<MdSearch size={20} style={{ color: "#94a3b8" }} />}
@@ -365,22 +365,24 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <Space size={isMobile ? 12 : 24}>
-            <Button
-              type="primary"
-              icon={<MdPlayArrow size={20} />}
-              className=""
-              style={{
-                border: "none",
-                fontWeight: 600,
-                borderRadius: 10,
-                height: 40,
-                display: isMobile ? "none" : "inline-flex",
-                boxShadow: "none",
-              }}>
-              Màn hình học tập
-            </Button>
+            {user?.role === "admin" && (
+              <Button
+                type="primary"
+                icon={<MdPlayArrow size={20} />}
+                className=""
+                style={{
+                  border: "none",
+                  fontWeight: 600,
+                  borderRadius: 10,
+                  height: 40,
+                  display: isMobile ? "none" : "inline-flex",
+                  boxShadow: "none",
+                }}>
+                Màn hình học tập
+              </Button>
+            )}
 
-            {!isMobile && (
+            {!isMobile && user?.role === "admin" && (
               <Badge
                 count={5}
                 offset={[-2, 2]}
