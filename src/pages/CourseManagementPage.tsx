@@ -468,7 +468,7 @@ export default function CourseManagementPage() {
                         style: { color: "#06b6d4" },
                         onClick: () =>
                           window.open(
-                            `/landing/${courseLandingPages[record._id].slug}`,
+                            `/landing/${courseLandingPages[record._id]._id}`,
                             "_blank",
                           ),
                       },

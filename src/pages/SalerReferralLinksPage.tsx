@@ -91,34 +91,37 @@ export default function SalerReferralLinksPage() {
       title: "Link giới thiệu",
       dataIndex: "referral_link",
       key: "referral_link",
-      render: (link: string, record: SalerCourse) => (
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Tooltip title={link}>
-            <div
-              style={{
-                maxWidth: isMobile ? 120 : 250,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                background: "#f8fafc",
-                padding: "4px 8px",
-                borderRadius: 4,
-                border: "1px solid #e2e8f0",
-                fontSize: 12,
-                color: "#64748b",
-              }}>
-              {link}
-            </div>
-          </Tooltip>
-          <Button
-            size="small"
-            type="text"
-            icon={<MdContentCopy size={16} />}
-            onClick={() => handleCopy(link, record.title)}
-            style={{ color: "#3b82f6" }}
-          />
-        </div>
-      ),
+      render: (_: string, record: SalerCourse) => {
+        const link = `${window.location.origin}/landing/${record._id}?ref=${record.referral_code}`;
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Tooltip title={link}>
+              <div
+                style={{
+                  maxWidth: isMobile ? 120 : 250,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  background: "#f8fafc",
+                  padding: "4px 8px",
+                  borderRadius: 4,
+                  border: "1px solid #e2e8f0",
+                  fontSize: 12,
+                  color: "#64748b",
+                }}>
+                {link}
+              </div>
+            </Tooltip>
+            <Button
+              size="small"
+              type="text"
+              icon={<MdContentCopy size={16} />}
+              onClick={() => handleCopy(link, record.title)}
+              style={{ color: "#3b82f6" }}
+            />
+          </div>
+        );
+      },
     },
   ];
 

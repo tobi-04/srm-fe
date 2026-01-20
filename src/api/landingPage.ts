@@ -59,6 +59,7 @@ export interface SubmitUserFormInput {
     session_id?: string;
   };
   session_id?: string;
+  referral_code?: string;
 }
 
 export interface SubmitUserFormResponse {

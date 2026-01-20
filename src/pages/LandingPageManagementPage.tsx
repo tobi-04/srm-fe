@@ -359,7 +359,7 @@ export default function LandingPageManagementPage() {
             setShareDialogOpen(false);
             setShareItem(null);
           }}
-          landingPageSlug={shareItem?.slug}
+          landingPageSlug={shareItem?._id}
           landingPageTitle={shareItem?.title}
         />
       </Card>

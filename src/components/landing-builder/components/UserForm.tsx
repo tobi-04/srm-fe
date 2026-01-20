@@ -52,7 +52,7 @@ export const UserForm: React.FC<UserFormProps> = ({
 
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuthStore();
-  const [_, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
@@ -62,6 +62,7 @@ export const UserForm: React.FC<UserFormProps> = ({
     phone: "",
     address: "",
     birthday: "",
+    ref: "",
   });
 
   // Auto-fill name and email if user is logged in
@@ -75,8 +76,32 @@ export const UserForm: React.FC<UserFormProps> = ({
     }
   }, [user]);
 
+  // Sync ref from URL on mount and when URL changes
+  useEffect(() => {
+    const urlRef = searchParams.get("ref");
+    if (urlRef) {
+      setFormData((prev) => ({ ...prev, ref: urlRef }));
+    }
+  }, [searchParams]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // If ref changes, update the URL
+    if (field === "ref") {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (value) {
+            next.set("ref", value);
+          } else {
+            next.delete("ref");
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -98,6 +123,11 @@ export const UserForm: React.FC<UserFormProps> = ({
 
     if (!formData.email.trim()) {
       message.error("Please enter your email");
+      return;
+    }
+
+    if (!formData.ref.trim()) {
+      message.error("Vui lòng nhập mã giới thiệu");
       return;
     }
 
@@ -130,6 +160,7 @@ export const UserForm: React.FC<UserFormProps> = ({
       const submitData: SubmitUserFormInput = {
         name: formData.name,
         email: formData.email,
+        referral_code: formData.ref,
         traffic_source: trafficSourceData,
         session_id: trafficSourceData.session_id,
       };
@@ -168,6 +199,7 @@ export const UserForm: React.FC<UserFormProps> = ({
         phone: "",
         address: "",
         birthday: "",
+        ref: "",
       });
     } catch (error: any) {
       console.error("Form submission error:", error);
@@ -274,6 +306,28 @@ export const UserForm: React.FC<UserFormProps> = ({
               Email is locked for logged-in users
             </small>
           )}
+
+          <div style={{ marginBottom: "12px" }}>
+            <label
+              style={{
+                fontSize: "14px",
+                color: "#666",
+                marginBottom: "4px",
+                display: "block",
+              }}>
+              Mã giới thiệu *
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập mã giới thiệu"
+              style={inputStyle}
+              required
+              value={formData.ref}
+              onChange={(e) => handleInputChange("ref", e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+
           {showPhone && (
             <input
               type="tel"

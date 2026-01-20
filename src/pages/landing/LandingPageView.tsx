@@ -102,6 +102,9 @@ export default function LandingPageView() {
         (prev) => {
           const next = new URLSearchParams(prev);
           next.set("step", "4");
+          // Ensure ref is preserved if present
+          const ref = prev.get("ref");
+          if (ref) next.set("ref", ref);
           return next;
         },
         { replace: true },
@@ -116,6 +119,9 @@ export default function LandingPageView() {
         (prev) => {
           const next = new URLSearchParams(prev);
           next.set("step", "1");
+          // Ensure ref is preserved if present
+          const ref = prev.get("ref");
+          if (ref) next.set("ref", ref);
           return next;
         },
         { replace: true },

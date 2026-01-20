@@ -17,6 +17,7 @@ export interface SalerCourse {
   price: number;
   commission_rate: number;
   referral_link: string;
+  referral_code: string;
 }
 
 export interface SalerCoursesResponse {
