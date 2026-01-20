@@ -87,15 +87,28 @@ export default function LandingPageView() {
   });
 
   // Fetch transaction if in step 3
-  const { data: transaction } = useQuery({
+  const { data: transaction, error: transactionError } = useQuery({
     queryKey: ["payment-transaction", txId],
     queryFn: () => getPaymentTransaction(txId!),
     enabled: !!txId && urlStep === 3,
     refetchInterval: 5000, // Poll every 5 seconds
+    retry: false, // Don't retry on enrollment error
   });
 
-  // Handle auto-redirect when payment is completed
+  // Handle auto-redirect when payment is completed or already enrolled
   useEffect(() => {
+    // Check for enrollment error from query
+    const errorMessage = (transactionError as any)?.response?.data?.message;
+    if (errorMessage === "ALREADY_ENROLLED") {
+      message.info("Bạn đã sở hữu khóa học này!");
+      const courseId =
+        typeof landingPage.course_id === "object"
+          ? landingPage.course_id._id
+          : landingPage.course_id;
+      navigate(`/login?from=/learn/${courseId}`);
+      return;
+    }
+
     if (urlStep === 3 && transaction?.status === "completed") {
       message.success("Thanh toán đã được xác nhận!");
       setSearchParams(
@@ -110,7 +123,14 @@ export default function LandingPageView() {
         { replace: true },
       );
     }
-  }, [transaction?.status, urlStep, setSearchParams]);
+  }, [
+    transaction?.status,
+    transactionError,
+    urlStep,
+    setSearchParams,
+    landingPage,
+    navigate,
+  ]);
 
   // Update URL to ensure step is present but avoid loops
   useEffect(() => {

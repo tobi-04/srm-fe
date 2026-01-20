@@ -26,12 +26,25 @@ export interface SalerCoursesResponse {
 
 export interface SalerOrder {
   _id: string;
-  course_id: any; // populated
-  user_submission_id: any; // populated
-  amount: number;
+  submission_id: string;
+  student_name: string;
+  student_email: string;
+  student_phone?: string;
+  course: {
+    _id: string;
+    title: string;
+    slug: string;
+    price: number;
+  } | null;
+  landing_page: {
+    _id: string;
+    title: string;
+  };
+  amount: number | null;
   status: "pending" | "paid";
   paid_at?: string;
   created_at: string;
+  referral_code?: string;
 }
 
 export interface SalerOrdersResponse {

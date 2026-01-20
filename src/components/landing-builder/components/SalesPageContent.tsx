@@ -101,9 +101,21 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
       window.location.href = `${window.location.pathname}?step=3&tx=${response.transaction_id}`;
     } catch (error: any) {
       console.error("Payment creation error:", error);
+      const errorMessage = error.response?.data?.message;
+
+      if (errorMessage === "ALREADY_ENROLLED") {
+        message.info("Bạn đã sở hữu khóa học này!");
+        // If we are already enrolled, we can redirect to the learn page
+        const courseId =
+          typeof landingPage.course_id === "string"
+            ? landingPage.course_id
+            : landingPage.course_id._id;
+        window.location.href = `/login?from=/learn/${courseId}`;
+        return;
+      }
+
       message.error(
-        error.response?.data?.message ||
-          "Failed to create payment. Please try again.",
+        errorMessage || "Failed to create payment. Please try again.",
       );
     } finally {
       setIsCreatingPayment(false);

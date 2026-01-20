@@ -60,7 +60,7 @@ export default function SalerOrdersPage() {
   const columns = [
     {
       title: "Khóa học",
-      dataIndex: "course_id",
+      dataIndex: "course",
       key: "course",
       render: (course: any) => (
         <div>
@@ -74,14 +74,13 @@ export default function SalerOrdersPage() {
     },
     {
       title: "Học viên",
-      dataIndex: "user_submission_id",
       key: "student",
-      render: (submission: any) => (
+      render: (_: any, record: SalerOrder) => (
         <div>
-          <Text>{submission?.name || "N/A"}</Text>
+          <Text>{record.student_name || "N/A"}</Text>
           <br />
           <Text type="secondary" style={{ fontSize: 12 }}>
-            {submission?.email || ""}
+            {record.student_email || ""}
           </Text>
         </div>
       ),
@@ -117,16 +116,18 @@ export default function SalerOrdersPage() {
       key: "order",
       render: (_: any, record: SalerOrder) => (
         <div>
-          <Text strong>{record.course_id?.title || "N/A"}</Text>
+          <Text strong>{record.course?.title || "N/A"}</Text>
           <br />
           <Text type="secondary" style={{ fontSize: 12 }}>
-            {record.user_submission_id?.name || "N/A"}
+            {record.student_name || "N/A"}
           </Text>
           <br />
           <Space size={4} style={{ marginTop: 4 }}>
             {getStatusTag(record.status)}
             <Text strong style={{ color: "#3b82f6", fontSize: 12 }}>
-              {formatCurrency(record.amount)}
+              {record.amount
+                ? formatCurrency(record.amount)
+                : "Chưa thanh toán"}
             </Text>
           </Space>
           <br />

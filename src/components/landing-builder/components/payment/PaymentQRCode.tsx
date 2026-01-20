@@ -189,6 +189,48 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
             </span>
           </div>
         </div>
+
+        {/* Pricing Breakdown */}
+        <div
+          style={{
+            marginTop: "16px",
+            paddingTop: "16px",
+            borderTop: "1px solid #eee",
+            width: "100%",
+            maxWidth: "400px",
+          }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "4px",
+              color: "#666",
+            }}>
+            <span>Giá khóa học:</span>
+            <span>{formatCurrency(totalAmount - 700)}</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "8px",
+              color: "#666",
+            }}>
+            <span>Phí giao dịch:</span>
+            <span>{formatCurrency(700)}</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "18px",
+              fontWeight: "bold",
+              color: "#1890ff",
+            }}>
+            <span>Tổng cộng:</span>
+            <span>{formatCurrency(totalAmount)}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
