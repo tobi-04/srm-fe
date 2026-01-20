@@ -28,10 +28,12 @@ import {
   MdMenuBook,
   MdWebAsset,
   MdMail,
+  MdTrendingUp,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { getAvatarStyles } from "../utils/color";
+import ProfileDialog from "./ProfileDialog";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -44,6 +46,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -125,11 +128,49 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     },
   ];
 
+  const salerMenuItems: MenuProps["items"] = [
+    {
+      key: "/saler/dashboard",
+      icon: <MdDashboard size={20} />,
+      label: "Bảng điều khiển",
+    },
+    {
+      key: "saler-mgmt",
+      label: "KINH DOANH",
+      type: "group",
+      children: [
+        {
+          key: "/saler/orders",
+          icon: <MdDescription size={20} />,
+          label: "Đơn hàng của tôi",
+        },
+        {
+          key: "/saler/links",
+          icon: <MdApps size={20} />,
+          label: "Link giới thiệu",
+        },
+        {
+          key: "/saler/commissions",
+          icon: <MdDescription size={20} />,
+          label: "Hoa hồng",
+        },
+        {
+          key: "/saler/kpi",
+          icon: <MdTrendingUp size={20} />,
+          label: "KPI & Mục tiêu",
+        },
+      ],
+    },
+  ];
+
+  const currentMenuItems = user?.role === "admin" ? menuItems : salerMenuItems;
+
   const userMenuItems: MenuProps["items"] = [
     {
       key: "profile",
       icon: <MdPerson />,
       label: "Hồ sơ cá nhân",
+      onClick: () => setProfileDialogOpen(true),
     },
     {
       key: "logout",
@@ -184,7 +225,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           theme="light"
           mode="inline"
           selectedKeys={[location.pathname]}
-          items={menuItems}
+          items={currentMenuItems}
           onClick={({ key }) => {
             navigate(key);
             if (isMobile) setDrawerVisible(false);
@@ -398,7 +439,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         {user?.name || "Admin Profile"}
                       </Text>
                       <Text style={{ fontSize: 11, color: "#64748b" }}>
-                        Super Admin
+                        {user?.role === "admin"
+                          ? "Super Admin"
+                          : "Sales Representative"}
                       </Text>
                     </div>
                     <MdKeyboardArrowDown
@@ -420,6 +463,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {children}
         </Content>
       </Layout>
+
+      <ProfileDialog
+        open={profileDialogOpen}
+        onClose={() => setProfileDialogOpen(false)}
+      />
 
       <style>{`
         .modern-menu.ant-menu-light .ant-menu-item {

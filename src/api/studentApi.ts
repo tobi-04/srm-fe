@@ -71,17 +71,6 @@ export interface StudentCourseDetail {
   lessons: StudentLesson[];
 }
 
-export interface StudentProgress {
-  courses: StudentCourse[];
-  overall_progress: {
-    total_courses: number;
-    completed_courses: number;
-    completion_rate: number;
-    total_lessons: number;
-    completed_lessons: number;
-  };
-}
-
 // ========== API Functions ==========
 
 /**
@@ -134,14 +123,6 @@ export const getLesson = async (id: string): Promise<StudentLesson> => {
 };
 
 /**
- * Get overall progress
- */
-export const getProgress = async (): Promise<StudentProgress> => {
-  const response = await apiClient.get("/student/progress");
-  return response.data;
-};
-
-/**
  * Get student profile
  */
 export const getProfile = async (): Promise<any> => {
@@ -179,7 +160,6 @@ export const studentApi = {
   getCourseDetail,
   getCourseLessons,
   getLesson,
-  getProgress,
   getProfile,
   updateProfile,
   getOrders,

@@ -12,6 +12,12 @@ import {
   message,
   Popconfirm,
   Tag,
+  Drawer,
+  InputNumber,
+  Spin,
+  Divider,
+  Dropdown,
+  type MenuProps,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -23,16 +29,45 @@ import {
   MdCalendarToday,
   MdCheckCircle,
   MdCancel,
-  MdWarning,
   MdLock,
   MdLockOpen,
   MdDeleteForever,
+  MdAssignment,
+  MdTrendingUp,
+  MdAttachMoney,
+  MdMoreVert,
 } from "react-icons/md";
 import DashboardLayout from "../components/DashboardLayout";
-import { userApi, Saler, CreateSalerDto } from "../api/userApi";
+import {
+  userApi,
+  Saler,
+  CreateSalerDto,
+  UpdateKpiDto,
+  AssignCoursesDto,
+  UpdateCommissionsDto,
+  CourseCommission,
+  SalerDetails,
+} from "../api/userApi";
 import { getAvatarStyles } from "../utils/color";
+import apiClient from "../api/client";
+import { DragDropTransfer } from "../components/DragDropTransfer";
 
 const { Title, Text } = Typography;
+
+interface Course {
+  _id: string;
+  title: string;
+  slug: string;
+  description: string;
+  price: number;
+  status: string;
+}
+
+interface TransferItem {
+  key: string;
+  title: string;
+  description: string;
+}
 
 export default function SalerManagementPage() {
   const [searchText, setSearchText] = useState("");
@@ -41,7 +76,34 @@ export default function SalerManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+
+  // KPI Drawer
+  const [isKpiDrawerOpen, setIsKpiDrawerOpen] = useState(false);
+  const [selectedSalerForKpi, setSelectedSalerForKpi] = useState<Saler | null>(
+    null,
+  );
+  const [loadingKpi, setLoadingKpi] = useState(false);
+
+  // Course  Assignment Modal
+  const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
+  const [selectedSalerForCourse, setSelectedSalerForCourse] =
+    useState<Saler | null>(null);
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+  const [targetKeys, setTargetKeys] = useState<string[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [coursesPage, setCoursesPage] = useState(1);
+  const [hasMoreCourses, setHasMoreCourses] = useState(true);
+
+  // Commission Modal
+  const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
+  const [selectedSalerForCommission, setSelectedSalerForCommission] =
+    useState<Saler | null>(null);
+  const [salerDetails, setSalerDetails] = useState<SalerDetails | null>(null);
+  const [loadingCommission, setLoadingCommission] = useState(false);
+
   const [form] = Form.useForm();
+  const [kpiForm] = Form.useForm();
+  const [commissionForm] = Form.useForm();
   const queryClient = useQueryClient();
 
   // Detect mobile screen
@@ -133,6 +195,176 @@ export default function SalerManagementPage() {
     }
   };
 
+  // KPI Handlers
+  const handleOpenKpiDrawer = async (saler: Saler) => {
+    setSelectedSalerForKpi(saler);
+    setLoadingKpi(true);
+    setIsKpiDrawerOpen(true);
+
+    try {
+      const details = await userApi.getSalerDetails(saler._id);
+      kpiForm.setFieldsValue({
+        kpi_monthly_target: details.kpi_monthly_target || 0,
+        kpi_quarterly_target: details.kpi_quarterly_target || 0,
+        kpi_yearly_target: details.kpi_yearly_target || 0,
+      });
+    } catch (error) {
+      console.error("Error loading KPI:", error);
+    } finally {
+      setLoadingKpi(false);
+    }
+  };
+
+  const handleSaveKpi = async () => {
+    if (!selectedSalerForKpi) return;
+
+    try {
+      const values: UpdateKpiDto = await kpiForm.validateFields();
+      await userApi.updateSalerKpi(selectedSalerForKpi._id, values);
+      message.success("Cập nhật KPI thành công!");
+      setIsKpiDrawerOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["salers"] });
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || "Không thể cập nhật KPI";
+      message.error(msg);
+    }
+  };
+
+  // Course Assignment Handlers
+  const handleOpenCourseModal = async (saler: Saler) => {
+    setSelectedSalerForCourse(saler);
+    setLoadingCourses(true);
+    setIsCourseModalOpen(true);
+    setAllCourses([]);
+    setCoursesPage(1);
+    setHasMoreCourses(true);
+
+    try {
+      // Fetch first page of courses
+      const coursesResponse = await apiClient.get<{
+        data: Course[];
+        meta: { total: number; page: number; totalPages: number };
+      }>("/courses", { params: { page: 1, limit: 20 } });
+
+      setAllCourses(coursesResponse.data.data);
+      setHasMoreCourses(
+        coursesResponse.data.meta.page < coursesResponse.data.meta.totalPages,
+      );
+
+      // Fetch saler details to get assigned courses
+      const details = await userApi.getSalerDetails(saler._id);
+      setTargetKeys(details.assigned_courses || []);
+    } catch (error) {
+      console.error("Error loading courses:", error);
+      message.error("Không thể tải danh sách khóa học");
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
+  const handleLoadMoreCourses = async () => {
+    if (loadingCourses || !hasMoreCourses) return;
+
+    setLoadingCourses(true);
+    const nextPage = coursesPage + 1;
+
+    try {
+      const coursesResponse = await apiClient.get<{
+        data: Course[];
+        meta: { total: number; page: number; totalPages: number };
+      }>("/courses", { params: { page: nextPage, limit: 20 } });
+
+      setAllCourses((prev) => [...prev, ...coursesResponse.data.data]);
+      setCoursesPage(nextPage);
+      setHasMoreCourses(
+        coursesResponse.data.meta.page < coursesResponse.data.meta.totalPages,
+      );
+    } catch (error) {
+      console.error("Error loading more courses:", error);
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
+  const handleSaveCourses = async () => {
+    if (!selectedSalerForCourse) return;
+
+    try {
+      const dto: AssignCoursesDto = { course_ids: targetKeys };
+      await userApi.assignCourses(selectedSalerForCourse._id, dto);
+      message.success("Cập nhật khóa học thành công!");
+      setIsCourseModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["salers"] });
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message || "Không thể cập nhật khóa học";
+      message.error(msg);
+    }
+  };
+
+  // Commission Handlers
+  const handleOpenCommissionModal = async (saler: Saler) => {
+    setSelectedSalerForCommission(saler);
+    setLoadingCommission(true);
+    setIsCommissionModalOpen(true);
+
+    try {
+      const details = await userApi.getSalerDetails(saler._id);
+      setSalerDetails(details);
+
+      commissionForm.setFieldsValue({
+        default_commission_rate: details.default_commission_rate || 0,
+      });
+
+      // Set individual course commissions
+      details.course_commissions?.forEach((comm: CourseCommission) => {
+        commissionForm.setFieldValue(
+          `course_${comm.course_id}`,
+          comm.commission_rate,
+        );
+      });
+    } catch (error) {
+      console.error("Error loading commission:", error);
+      message.error("Không thể tải thông tin hoa hồng");
+    } finally {
+      setLoadingCommission(false);
+    }
+  };
+
+  const handleSaveCommission = async () => {
+    if (!selectedSalerForCommission || !salerDetails) return;
+
+    try {
+      const values = await commissionForm.validateFields();
+      const courseCommissions: CourseCommission[] = [];
+
+      // Build course commissions array
+      salerDetails.assigned_courses?.forEach((courseId: string) => {
+        const rate = values[`course_${courseId}`];
+        if (rate !== undefined) {
+          courseCommissions.push({
+            course_id: courseId,
+            commission_rate: rate,
+          });
+        }
+      });
+
+      const dto: UpdateCommissionsDto = {
+        default_commission_rate: values.default_commission_rate,
+        course_commissions: courseCommissions,
+      };
+
+      await userApi.updateCommissions(selectedSalerForCommission._id, dto);
+      message.success("Cập nhật hoa hồng thành công!");
+      setIsCommissionModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["salers"] });
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message || "Không thể cập nhật hoa hồng";
+      message.error(msg);
+    }
+  };
+
   const rowSelection = {
     selectedRowKeys,
     onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
@@ -181,6 +413,13 @@ export default function SalerManagementPage() {
                   style={{ fontSize: 11, wordBreak: "break-all" }}>
                   {record.email}
                 </Text>
+                {record.code_saler && (
+                  <Text
+                    type="secondary"
+                    style={{ display: "block", fontSize: 10 }}>
+                    {record.code_saler}
+                  </Text>
+                )}
               </div>
             </Space>
             <Space size={4}>
@@ -237,7 +476,7 @@ export default function SalerManagementPage() {
       title: "Saler",
       dataIndex: "name",
       key: "name",
-      width: 250,
+      width: 220,
       render: (text: string, record: Saler) => (
         <Space size="middle">
           <Avatar
@@ -263,6 +502,17 @@ export default function SalerManagementPage() {
             </Text>
           </div>
         </Space>
+      ),
+    },
+    {
+      title: "Code",
+      dataIndex: "code_saler",
+      key: "code_saler",
+      width: 150,
+      render: (text: string) => (
+        <Text code style={{ fontSize: 12, fontWeight: 600 }}>
+          {text || "N/A"}
+        </Text>
       ),
     },
     {
@@ -292,21 +542,6 @@ export default function SalerManagementPage() {
       ),
     },
     {
-      title: "Đổi MK",
-      dataIndex: "must_change_password",
-      key: "must_change_password",
-      width: 100,
-      render: (mustChange: boolean) =>
-        mustChange ? (
-          <Space size="small" style={{ color: "#f59e0b" }}>
-            <MdWarning />
-            Cần đổi
-          </Space>
-        ) : (
-          <Text type="secondary">Đã đổi</Text>
-        ),
-    },
-    {
       title: "Ngày tạo",
       dataIndex: "created_at",
       key: "created_at",
@@ -321,34 +556,77 @@ export default function SalerManagementPage() {
     {
       title: "Thao tác",
       key: "actions",
-      width: 130,
-      render: (_: any, record: Saler) => (
-        <Space size="small">
-          <Button
-            type="text"
-            size="small"
-            icon={record.is_active ? <MdLock /> : <MdLockOpen />}
-            onClick={() => toggleMutation.mutate(record._id)}>
-            {record.is_active ? "Khóa" : "Mở"}
-          </Button>
-          <Popconfirm
-            title="Xóa vĩnh viễn?"
-            description="Hành động này không thể hoàn tác!"
-            onConfirm={() => hardDeleteMutation.mutate([record._id])}
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true }}>
+      width: 100,
+      render: (_: any, record: Saler) => {
+        const menuItems: MenuProps["items"] = [
+          {
+            key: "kpi",
+            label: "Quản lý KPI",
+            icon: <MdTrendingUp size={16} />,
+            onClick: () => handleOpenKpiDrawer(record),
+          },
+          {
+            key: "courses",
+            label: "Phân bổ khóa học",
+            icon: <MdAssignment size={16} />,
+            onClick: () => handleOpenCourseModal(record),
+          },
+          {
+            key: "commission",
+            label: "Cấu hình hoa hồng",
+            icon: <MdAttachMoney size={16} />,
+            onClick: () => handleOpenCommissionModal(record),
+          },
+          {
+            type: "divider",
+          },
+          {
+            key: "toggle",
+            label: record.is_active ? "Khóa tài khoản" : "Mở khóa tài khoản",
+            icon: record.is_active ? (
+              <MdLock size={16} />
+            ) : (
+              <MdLockOpen size={16} />
+            ),
+            onClick: () => toggleMutation.mutate(record._id),
+          },
+          {
+            key: "delete",
+            label: "Xóa vĩnh viễn",
+            icon: <MdDeleteForever size={16} />,
+            danger: true,
+            onClick: () => {
+              Modal.confirm({
+                title: "Xóa vĩnh viễn?",
+                content: "Hành động này không thể hoàn tác!",
+                okText: "Xóa",
+                cancelText: "Hủy",
+                okButtonProps: { danger: true },
+                onOk: () => hardDeleteMutation.mutate([record._id]),
+              });
+            },
+          },
+        ];
+
+        return (
+          <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
             <Button
               type="text"
-              size="small"
-              danger
-              icon={<MdDeleteForever />}
+              icon={<MdMoreVert size={20} />}
+              style={{ padding: 4 }}
             />
-          </Popconfirm>
-        </Space>
-      ),
+          </Dropdown>
+        );
+      },
     },
   ];
+
+  // Transfer data source
+  const transferDataSource: TransferItem[] = allCourses.map((course) => ({
+    key: course._id,
+    title: course.title,
+    description: course.slug,
+  }));
 
   return (
     <DashboardLayout>
@@ -371,7 +649,7 @@ export default function SalerManagementPage() {
           <Text
             className="page-subtitle"
             style={{ fontSize: isMobile ? 13 : 14 }}>
-            Quản lý đội ngũ bán hàng và tạo tài khoản mới
+            Quản lý đội ngũ bán hàng, tạo tài khoản mới, và cấu hình KPI
           </Text>
         </div>
         <Button
@@ -471,7 +749,7 @@ export default function SalerManagementPage() {
           dataSource={salers}
           rowKey="_id"
           loading={isLoading}
-          scroll={{ x: isMobile ? undefined : 900 }}
+          scroll={{ x: isMobile ? undefined : 1200 }}
           size={isMobile ? "small" : "middle"}
           pagination={{
             current: page,
@@ -531,10 +809,170 @@ export default function SalerManagementPage() {
               { required: true, message: "Vui lòng nhập mật khẩu" },
               { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
             ]}
-            extra="Saler sẽ được yêu cầu đổi mật khẩu khi đăng nhập lần đầu">
+            extra="Saler sẽ được yêu cầu đổi mật khẩu khi đăng nhập lần đầu. Code affiliate sẽ được tạo tự động.">
             <Input.Password placeholder="Nhập mật khẩu tạm thời" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* KPI Drawer */}
+      <Drawer
+        title={`Quản lý KPI - ${selectedSalerForKpi?.name || ""}`}
+        open={isKpiDrawerOpen}
+        onClose={() => {
+          setIsKpiDrawerOpen(false);
+          kpiForm.resetFields();
+        }}
+        width={isMobile ? "95%" : 480}
+        extra={
+          <Button type="primary" onClick={handleSaveKpi} loading={loadingKpi}>
+            Lưu KPI
+          </Button>
+        }>
+        {loadingKpi ? (
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            <Spin tip="Đang tải dữ liệu KPI..." />
+          </div>
+        ) : (
+          <>
+            <Text
+              type="secondary"
+              style={{ display: "block", marginBottom: 16 }}>
+              Các trường KPI là tùy chọn. Bạn có thể để trống nếu chưa muốn gán
+              KPI.
+            </Text>
+            <Form form={kpiForm} layout="vertical">
+              <Form.Item
+                name="kpi_monthly_target"
+                label="KPI Tháng (Tùy chọn)"
+                tooltip="Mục tiêu doanh số tháng - Để trống nếu chưa có">
+                <InputNumber
+                  style={{ width: "100%" }}
+                  min={0}
+                  controls
+                  placeholder="VD: 10000000"
+                  addonAfter="VNĐ"
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="kpi_quarterly_target"
+                label="KPI Quý (Tùy chọn)"
+                tooltip="Mục tiêu doanh số quý - Để trống nếu chưa có">
+                <InputNumber
+                  style={{ width: "100%" }}
+                  min={0}
+                  controls
+                  placeholder="VD: 30000000"
+                  addonAfter="VNĐ"
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="kpi_yearly_target"
+                label="KPI Năm (Tùy chọn)"
+                tooltip="Mục tiêu doanh số năm - Để trống nếu chưa có">
+                <InputNumber
+                  style={{ width: "100%" }}
+                  min={0}
+                  controls
+                  placeholder="VD: 120000000"
+                  addonAfter="VNĐ"
+                />
+              </Form.Item>
+            </Form>
+          </>
+        )}
+      </Drawer>
+
+      {/* Course Assignment Modal */}
+      <Modal
+        title={`Phân bổ khóa học - ${selectedSalerForCourse?.name || ""}`}
+        open={isCourseModalOpen}
+        onCancel={() => {
+          setIsCourseModalOpen(false);
+          setTargetKeys([]);
+        }}
+        onOk={handleSaveCourses}
+        okText="Lưu"
+        cancelText="Hủy"
+        width={isMobile ? "95%" : 800}>
+        {loadingCourses && !allCourses.length ? (
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            <Spin tip="Đang tải danh sách khóa học..." />
+          </div>
+        ) : (
+          <DragDropTransfer
+            dataSource={transferDataSource}
+            targetKeys={targetKeys}
+            onChange={(keys) => setTargetKeys(keys)}
+            titles={["Khóa học có sẵn", "Khóa học được gán"]}
+            height={400}
+            onLoadMore={handleLoadMoreCourses}
+            loading={loadingCourses}
+            hasMore={hasMoreCourses}
+          />
+        )}
+      </Modal>
+
+      {/* Commission Modal */}
+      <Modal
+        title={`Cấu hình hoa hồng - ${selectedSalerForCommission?.name || ""}`}
+        open={isCommissionModalOpen}
+        onCancel={() => {
+          setIsCommissionModalOpen(false);
+          commissionForm.resetFields();
+        }}
+        onOk={handleSaveCommission}
+        okText="Lưu"
+        cancelText="Hủy"
+        width={isMobile ? "95%" : 600}>
+        {loadingCommission ? (
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            <Spin tip="Đang tải dữ liệu hoa hồng..." />
+          </div>
+        ) : (
+          <Form form={commissionForm} layout="vertical">
+            <Form.Item
+              name="default_commission_rate"
+              label="Tỷ lệ hoa hồng mặc định"
+              tooltip="Áp dụng cho các khóa học chưa được cấu hình riêng">
+              <InputNumber
+                style={{ width: "100%" }}
+                min={0}
+                max={100}
+                addonAfter="%"
+                placeholder="VD: 15"
+              />
+            </Form.Item>
+
+            {salerDetails && salerDetails.assigned_courses.length > 0 && (
+              <>
+                <Divider />
+                <Text strong>Hoa hồng theo từng khóa học:</Text>
+                <div style={{ marginTop: 16 }}>
+                  {salerDetails.assigned_courses.map((courseId: string) => {
+                    const course = allCourses.find((c) => c._id === courseId);
+                    return (
+                      <Form.Item
+                        key={courseId}
+                        name={`course_${courseId}`}
+                        label={course?.title || courseId}>
+                        <InputNumber
+                          style={{ width: "100%" }}
+                          min={0}
+                          max={100}
+                          addonAfter="%"
+                          placeholder="Tỷ lệ hoa hồng"
+                        />
+                      </Form.Item>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </Form>
+        )}
       </Modal>
     </DashboardLayout>
   );

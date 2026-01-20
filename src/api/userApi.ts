@@ -16,6 +16,44 @@ export interface Saler {
   is_active: boolean;
   must_change_password: boolean;
   created_at: string;
+  code_saler?: string;
+  kpi_monthly_target?: number;
+  kpi_quarterly_target?: number;
+  kpi_yearly_target?: number;
+}
+
+export interface CourseCommission {
+  course_id: string;
+  commission_rate: number;
+}
+
+export interface SalerDetails {
+  _id: string;
+  user_id: string;
+  code_saler: string;
+  kpi_monthly_target: number;
+  kpi_quarterly_target: number;
+  kpi_yearly_target: number;
+  assigned_courses: string[];
+  course_commissions: CourseCommission[];
+  default_commission_rate: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateKpiDto {
+  kpi_monthly_target?: number;
+  kpi_quarterly_target?: number;
+  kpi_yearly_target?: number;
+}
+
+export interface AssignCoursesDto {
+  course_ids: string[];
+}
+
+export interface UpdateCommissionsDto {
+  default_commission_rate?: number;
+  course_commissions?: CourseCommission[];
 }
 
 export interface PaginatedResponse<T> {
@@ -81,7 +119,7 @@ export const userApi = {
    */
   async updateUser(
     id: string,
-    data: Partial<{ name: string; email: string; is_active: boolean }>
+    data: Partial<{ name: string; email: string; is_active: boolean }>,
   ): Promise<any> {
     const response = await apiClient.put(`/users/${id}`, data);
     return response.data;
@@ -99,7 +137,7 @@ export const userApi = {
    * Lock multiple users
    */
   async lockMany(
-    ids: string[]
+    ids: string[],
   ): Promise<{ message: string; modifiedCount: number }> {
     const response = await apiClient.patch("/users/bulk/lock", { ids });
     return response.data;
@@ -109,7 +147,7 @@ export const userApi = {
    * Unlock multiple users
    */
   async unlockMany(
-    ids: string[]
+    ids: string[],
   ): Promise<{ message: string; modifiedCount: number }> {
     const response = await apiClient.patch("/users/bulk/unlock", { ids });
     return response.data;
@@ -127,11 +165,73 @@ export const userApi = {
    * Hard delete multiple users (permanent)
    */
   async hardDeleteMany(
-    ids: string[]
+    ids: string[],
   ): Promise<{ message: string; deletedCount: number }> {
     const response = await apiClient.delete("/users/bulk/hard", {
       data: { ids },
     });
+    return response.data;
+  },
+
+  // ===== SALER DETAILS ENDPOINTS =====
+
+  /**
+   * Get saler details
+   */
+  async getSalerDetails(userId: string): Promise<SalerDetails> {
+    const response = await apiClient.get(`/saler-details/${userId}`);
+    return response.data;
+  },
+
+  /**
+   * Update saler KPI
+   */
+  async updateSalerKpi(
+    userId: string,
+    dto: UpdateKpiDto,
+  ): Promise<SalerDetails> {
+    const response = await apiClient.patch(`/saler-details/${userId}/kpi`, dto);
+    return response.data;
+  },
+
+  /**
+   * Assign courses to saler
+   */
+  async assignCourses(
+    userId: string,
+    dto: AssignCoursesDto,
+  ): Promise<SalerDetails> {
+    const response = await apiClient.post(
+      `/saler-details/${userId}/courses`,
+      dto,
+    );
+    return response.data;
+  },
+
+  /**
+   * Unassign a course from saler
+   */
+  async unassignCourse(
+    userId: string,
+    courseId: string,
+  ): Promise<SalerDetails> {
+    const response = await apiClient.delete(
+      `/saler-details/${userId}/courses/${courseId}`,
+    );
+    return response.data;
+  },
+
+  /**
+   * Update saler commissions
+   */
+  async updateCommissions(
+    userId: string,
+    dto: UpdateCommissionsDto,
+  ): Promise<SalerDetails> {
+    const response = await apiClient.patch(
+      `/saler-details/${userId}/commissions`,
+      dto,
+    );
     return response.data;
   },
 };

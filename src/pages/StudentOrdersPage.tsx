@@ -32,13 +32,13 @@ export default function StudentOrdersPage() {
     },
     {
       title: "KHÓA HỌC",
-      dataIndex: "landing_page_id",
+      dataIndex: "course_id",
       key: "course",
-      render: (landingPage: any) => <Text>{landingPage?.title || "N/A"}</Text>,
+      render: (course: any) => <Text>{course?.title || "N/A"}</Text>,
     },
     {
       title: "SỐ TIỀN",
-      dataIndex: "total_amount",
+      dataIndex: "amount",
       key: "amount",
       render: (amount: number) => (
         <Text strong style={{ color: "#10b981" }}>

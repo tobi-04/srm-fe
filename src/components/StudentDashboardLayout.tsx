@@ -16,13 +16,15 @@ import {
   MdPerson,
   MdLogout,
   MdMenu,
-  MdTrendingUp,
   MdShoppingCart,
   MdPlayCircleFilled,
+  MdMenuOpen,
+  MdKeyboardArrowDown,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { getAvatarStyles } from "../utils/color";
+import ProfileDialog from "./ProfileDialog";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -37,6 +39,7 @@ export default function StudentDashboardLayout({
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,16 +76,6 @@ export default function StudentDashboardLayout({
       label: "Khóa học của tôi",
     },
     {
-      key: "/student/progress",
-      icon: <MdTrendingUp size={20} />,
-      label: "Tiến độ học tập",
-    },
-    {
-      key: "/student/profile",
-      icon: <MdPerson size={20} />,
-      label: "Hồ sơ cá nhân",
-    },
-    {
       key: "/student/orders",
       icon: <MdShoppingCart size={20} />,
       label: "Lịch sử đơn hàng",
@@ -94,7 +87,7 @@ export default function StudentDashboardLayout({
       key: "profile",
       icon: <MdPerson />,
       label: "Hồ sơ cá nhân",
-      onClick: () => navigate("/student/profile"),
+      onClick: () => setProfileDialogOpen(true),
     },
     {
       key: "logout",
@@ -163,15 +156,17 @@ export default function StudentDashboardLayout({
           type="text"
           icon={<MdLogout size={20} />}
           block
+          danger
           onClick={handleLogout}
           style={{
-            color: "#64748b",
-            fontWeight: 600,
+            textAlign: "left",
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            gap: 12,
+            height: 40,
+            borderRadius: 8,
           }}>
-          Đăng xuất
+          {(!collapsed || isMobile) && "Đăng xuất"}
         </Button>
       </div>
     </>
@@ -219,61 +214,71 @@ export default function StudentDashboardLayout({
         }}>
         <Header
           style={{
-            padding: "0 24px",
-            background: "#ffffff",
-            borderBottom: "1px solid #f1f5f9",
+            padding: isMobile ? "0 16px" : "0 32px",
+            background: "rgba(255, 255, 255, 0.8)",
+            backdropFilter: "blur(8px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            height: 72,
             position: "sticky",
             top: 0,
             zIndex: 99,
+            borderBottom: "1px solid #f1f5f9",
           }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {isMobile && (
-              <Button
-                type="text"
-                icon={<MdMenu size={24} />}
-                onClick={() => setDrawerVisible(true)}
-              />
-            )}
-            {!isMobile && (
-              <Button
-                type="text"
-                icon={<MdMenu size={24} />}
-                onClick={() => setCollapsed(!collapsed)}
-              />
-            )}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: isMobile ? 12 : 24,
+              flex: 1,
+            }}>
+            <Button
+              type="text"
+              icon={
+                isMobile ? (
+                  <MdMenu size={24} />
+                ) : collapsed ? (
+                  <MdMenu size={24} />
+                ) : (
+                  <MdMenuOpen size={24} />
+                )
+              }
+              onClick={() =>
+                isMobile ? setDrawerVisible(true) : setCollapsed(!collapsed)
+              }
+              style={{
+                fontSize: 20,
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            />
           </div>
 
-          <Space size="middle">
-            <Dropdown menu={{ items: userMenuItems }} trigger={["click"]}>
+          <Space size={isMobile ? 12 : 24}>
+            <Dropdown
+              menu={{ items: userMenuItems }}
+              placement="bottomRight"
+              arrow>
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
                   cursor: "pointer",
-                  padding: "8px 12px",
-                  borderRadius: 12,
-                  transition: "background 0.2s",
+                  padding: "4px 8px",
+                  borderRadius: 8,
+                  transition: "all 0.2s",
                 }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#f8fafc")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "transparent")
-                }>
+                className="user-profile-trigger">
                 <Avatar
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 10,
                     ...getAvatarStyles(user?.name || user?.email || "Student"),
                     fontWeight: "bold",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    boxShadow: "none",
                   }}>
                   {user?.name ? (
                     user.name.substring(0, 2).toUpperCase()
@@ -281,39 +286,70 @@ export default function StudentDashboardLayout({
                     <MdPerson />
                   )}
                 </Avatar>
-                <div style={{ display: isMobile ? "none" : "block" }}>
-                  <Text strong style={{ display: "block", fontSize: 14 }}>
-                    {user?.name || "Học viên"}
-                  </Text>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Student
-                  </Text>
-                </div>
+                {!isMobile && (
+                  <>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        lineHeight: 1.2,
+                      }}>
+                      <Text strong style={{ fontSize: 14, color: "#1e293b" }}>
+                        {user?.name || "Học viên"}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: "#64748b" }}>
+                        Student
+                      </Text>
+                    </div>
+                    <MdKeyboardArrowDown
+                      size={20}
+                      style={{ color: "#94a3b8" }}
+                    />
+                  </>
+                )}
               </div>
             </Dropdown>
           </Space>
         </Header>
 
-        <Content style={{ padding: isMobile ? "16px" : "24px" }}>
+        <Content
+          style={{
+            margin: isMobile ? "16px" : "32px",
+            minHeight: 280,
+          }}>
           {children}
         </Content>
       </Layout>
 
+      <ProfileDialog
+        open={profileDialogOpen}
+        onClose={() => setProfileDialogOpen(false)}
+      />
+
       <style>{`
-        .modern-menu .ant-menu-item {
-          border-radius: 8px;
-          margin: 4px 0;
+        .modern-menu.ant-menu-light .ant-menu-item {
           height: 44px;
           line-height: 44px;
-          transition: all 0.2s;
+          border-radius: 8px;
+          margin: 4px 8px;
+          color: #64748b;
+          font-weight: 700;
+          width: calc(100% - 16px);
         }
-        .modern-menu .ant-menu-item-selected {
-          background: #eff6ff !important;
+        .modern-menu.ant-menu-light .ant-menu-item-selected {
+          background-color: #eef2ff !important;
           color: #2563eb !important;
-          font-weight: 600;
         }
-        .modern-menu .ant-menu-item:hover:not(.ant-menu-item-selected) {
-          background: #f8fafc;
+        .modern-menu.ant-menu-light .ant-menu-item:hover {
+          background-color: #f1f5f9 !important;
+          color: #1e293b;
+        }
+        .ant-layout-sider-children {
+          display: flex;
+          flex-direction: column;
+        }
+        .user-profile-trigger:hover {
+          background: #f1f5f9;
         }
       `}</style>
     </Layout>

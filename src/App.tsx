@@ -18,12 +18,16 @@ import LandingPageManagementPage from "./pages/LandingPageManagementPage";
 import LandingPageBuilderPage from "./pages/LandingPageBuilderPage";
 import LandingPagePreviewPage from "./pages/LandingPagePreviewPage";
 import EmailAutomationPage from "./pages/EmailAutomationPage";
-import StudentProgressPage from "./pages/StudentProgressPage";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentCoursesPage from "./pages/StudentCoursesPage";
 import StudentCoursePlayerPage from "./pages/StudentCoursePlayerPage";
-import StudentProfilePage from "./pages/StudentProfilePage";
 import StudentOrdersPage from "./pages/StudentOrdersPage";
+import SalerDashboardPage from "./pages/SalerDashboardPage";
+import SalerOrdersPage from "./pages/SalerOrdersPage";
+import SalerReferralLinksPage from "./pages/SalerReferralLinksPage";
+import SalerCommissionsPage from "./pages/SalerCommissionsPage";
+import SalerStudentsPage from "./pages/SalerStudentsPage";
+import SalerKPIPage from "./pages/SalerKPIPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
 
@@ -99,27 +103,66 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/student/progress"
-            element={
-              <ProtectedRoute requiredRole="user">
-                <StudentProgressPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/profile"
-            element={
-              <ProtectedRoute requiredRole="user">
-                <StudentProfilePage />
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path="/student/orders"
             element={
               <ProtectedRoute requiredRole="user">
                 <StudentOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Saler Dashboard Routes - Protected */}
+          <Route
+            path="/saler"
+            element={<Navigate to="/saler/dashboard" replace />}
+          />
+          <Route
+            path="/saler/dashboard"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/orders"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/links"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerReferralLinksPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/commissions"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerCommissionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/students"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerStudentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/kpi"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerKPIPage />
               </ProtectedRoute>
             }
           />
@@ -202,14 +245,6 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <EmailAutomationPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/progress"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <StudentProgressPage />
               </ProtectedRoute>
             }
           />

@@ -668,93 +668,16 @@ export default function CourseViewerPage() {
                                 </div>
                               ))}
                               {(!lesson.files || lesson.files.length === 0) && (
-                                <>
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      padding: 16,
-                                      border: "1px solid #e2e8f0",
-                                      borderRadius: 12,
-                                      gap: 12,
-                                    }}>
-                                    <div
-                                      style={{
-                                        width: 44,
-                                        height: 44,
-                                        background: "#fef2f2",
-                                        borderRadius: 8,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                      }}>
-                                      <MdDescription
-                                        size={24}
-                                        color="#ef4444"
-                                      />
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                      <Text
-                                        strong
-                                        style={{
-                                          display: "block",
-                                          fontSize: 14,
-                                        }}>
-                                        Persona_Template_v2.pdf
-                                      </Text>
-                                      <Text
-                                        type="secondary"
-                                        style={{ fontSize: 12 }}>
-                                        PDF • 2.4 MB
-                                      </Text>
-                                    </div>
-                                    <Button
-                                      type="text"
-                                      icon={<MdFileDownload size={20} />}
-                                    />
-                                  </div>
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      padding: 16,
-                                      border: "1px solid #e2e8f0",
-                                      borderRadius: 12,
-                                      gap: 12,
-                                    }}>
-                                    <div
-                                      style={{
-                                        width: 44,
-                                        height: 44,
-                                        background: "#eff6ff",
-                                        borderRadius: 8,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                      }}>
-                                      <MdLink size={24} color="#3b82f6" />
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                      <Text
-                                        strong
-                                        style={{
-                                          display: "block",
-                                          fontSize: 14,
-                                        }}>
-                                        User_Research_Data.xlsx
-                                      </Text>
-                                      <Text
-                                        type="secondary"
-                                        style={{ fontSize: 12 }}>
-                                        Excel • 1.1 MB
-                                      </Text>
-                                    </div>
-                                    <Button
-                                      type="text"
-                                      icon={<MdFileDownload size={20} />}
-                                    />
-                                  </div>
-                                </>
+                                <Text
+                                  type="secondary"
+                                  style={{
+                                    display: "block",
+                                    padding: "40px 20px",
+                                    textAlign: "center",
+                                    fontSize: 14,
+                                  }}>
+                                  Không có tài liệu đính kèm
+                                </Text>
                               )}
                             </div>
                           </div>
