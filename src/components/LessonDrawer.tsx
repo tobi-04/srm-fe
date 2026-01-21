@@ -21,6 +21,7 @@ interface Lesson {
   video: string;
   status: "draft" | "published";
   order: number;
+  chapter_index?: number;
   created_at: string;
   updated_at: string;
   is_deleted: boolean;
@@ -78,8 +79,7 @@ export default function LessonDrawer({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-          }}
-        >
+          }}>
           <Text strong style={{ fontSize: 18, fontWeight: 700 }}>
             Chi tiết bài học
           </Text>
@@ -98,8 +98,7 @@ export default function LessonDrawer({
       width={isMobile ? "100%" : 600}
       height={isMobile ? "85vh" : "100%"}
       style={isMobile ? {} : { maxWidth: 800 }}
-      closable={false}
-    >
+      closable={false}>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         {/* Lesson Header */}
         <div>
@@ -118,8 +117,7 @@ export default function LessonDrawer({
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-              }}
-            >
+              }}>
               <StatusIcon size={16} />
               {config.label}
             </Tag>
@@ -138,8 +136,7 @@ export default function LessonDrawer({
                 <Space
                   direction="vertical"
                   size="large"
-                  style={{ width: "100%" }}
-                >
+                  style={{ width: "100%" }}>
                   {/* Video */}
                   {lesson.video && (
                     <Card
@@ -149,22 +146,19 @@ export default function LessonDrawer({
                             display: "flex",
                             alignItems: "center",
                             gap: 8,
-                          }}
-                        >
+                          }}>
                           <MdPlayCircleOutline
                             style={{ color: "#667eea", fontSize: 20 }}
                           />
                           <Text
                             strong
-                            style={{ fontSize: 16, fontWeight: 700 }}
-                          >
+                            style={{ fontSize: 16, fontWeight: 700 }}>
                             Video bài học
                           </Text>
                         </div>
                       }
                       variant="borderless"
-                      style={{ borderRadius: 16, background: "#f8fafc" }}
-                    >
+                      style={{ borderRadius: 16, background: "#f8fafc" }}>
                       <div
                         style={{
                           position: "relative",
@@ -172,8 +166,7 @@ export default function LessonDrawer({
                           height: 0,
                           overflow: "hidden",
                           borderRadius: 8,
-                        }}
-                      >
+                        }}>
                         <iframe
                           src={lesson.video.replace("watch?v=", "embed/")}
                           style={{
@@ -200,16 +193,14 @@ export default function LessonDrawer({
                         </Text>
                       }
                       variant="borderless"
-                      style={{ borderRadius: 16 }}
-                    >
+                      style={{ borderRadius: 16 }}>
                       <Paragraph
                         style={{
                           fontSize: 15,
                           lineHeight: 1.8,
                           color: "#475569",
                           marginBottom: 0,
-                        }}
-                      >
+                        }}>
                         {lesson.description}
                       </Paragraph>
                     </Card>
@@ -224,14 +215,12 @@ export default function LessonDrawer({
                         </Text>
                       }
                       variant="borderless"
-                      style={{ borderRadius: 16 }}
-                    >
+                      style={{ borderRadius: 16 }}>
                       <List
                         dataSource={lesson.main_content}
                         renderItem={(item, index) => (
                           <List.Item
-                            style={{ padding: "12px 0", border: "none" }}
-                          >
+                            style={{ padding: "12px 0", border: "none" }}>
                             <Space>
                               <div
                                 style={{
@@ -245,8 +234,7 @@ export default function LessonDrawer({
                                   justifyContent: "center",
                                   fontWeight: 700,
                                   fontSize: 14,
-                                }}
-                              >
+                                }}>
                                 {index + 1}
                               </div>
                               <Text style={{ fontSize: 15, color: "#334155" }}>
@@ -262,19 +250,16 @@ export default function LessonDrawer({
                   {/* Metadata */}
                   <Card
                     variant="borderless"
-                    style={{ borderRadius: 16, background: "#f8fafc" }}
-                  >
+                    style={{ borderRadius: 16, background: "#f8fafc" }}>
                     <Space
                       direction="vertical"
                       size="small"
-                      style={{ width: "100%" }}
-                    >
+                      style={{ width: "100%" }}>
                       <div
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
-                        }}
-                      >
+                        }}>
                         <Text type="secondary">Ngày tạo:</Text>
                         <Text strong>
                           {new Date(lesson.created_at).toLocaleString("vi-VN")}
@@ -284,8 +269,7 @@ export default function LessonDrawer({
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
-                        }}
-                      >
+                        }}>
                         <Text type="secondary">Cập nhật:</Text>
                         <Text strong>
                           {new Date(lesson.updated_at).toLocaleString("vi-VN")}

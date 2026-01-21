@@ -11,6 +11,7 @@ import {
   Typography,
   Divider,
   Tabs,
+  Dropdown,
 } from "antd";
 import {
   MdSave,
@@ -18,6 +19,8 @@ import {
   MdPreview,
   MdEdit,
   MdVisibility,
+  MdShare,
+  MdMoreVert,
 } from "react-icons/md";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "../components/DashboardLayout";
@@ -46,6 +49,7 @@ import { Toolbox, SettingsPanel } from "../components/landing-builder/Sidebar";
 import { LandingPageProvider } from "../contexts/LandingPageContext";
 import { PaymentProvider } from "../contexts/PaymentContext";
 import { CountdownProvider } from "../contexts/CountdownContext";
+import ShareDialog from "../components/ShareDialog";
 
 const { Content, Sider } = Layout;
 const { Title } = Typography;
@@ -68,7 +72,7 @@ const SaveButton = ({
       icon={<MdSave />}
       onClick={() => onSave(query, currentStep)}
       loading={loading}>
-      Save Step {currentStep}
+      Lưu Bước {currentStep}
     </Button>
   );
 };
@@ -79,6 +83,7 @@ export default function LandingPageBuilderPage() {
   const queryClient = useQueryClient();
   const [enabled, setEnabled] = useState(true);
   const [currentStep, setCurrentStep] = useState<PageStep>("1");
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   // Fetch landing page data
   const { data: landingPage, isLoading } = useQuery({
@@ -92,11 +97,11 @@ export default function LandingPageBuilderPage() {
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       updateLandingPage(id, data),
     onSuccess: () => {
-      message.success(`Step ${currentStep} saved successfully`);
+      message.success(`Bước ${currentStep} đã được lưu thành công`);
       queryClient.invalidateQueries({ queryKey: ["landing-page", id] });
     },
     onError: () => {
-      message.error("Failed to save landing page");
+      message.error("Không thể lưu landing page");
     },
   });
 
@@ -246,17 +251,17 @@ export default function LandingPageBuilderPage() {
                       <Button
                         icon={<MdArrowBack />}
                         onClick={() => navigate("/admin/landing-pages")}>
-                        Back
+                        Quay lại
                       </Button>
                       <Title level={5} style={{ margin: 0 }}>
-                        Builder: {landingPage?.title}
+                        Thiết kế: {landingPage?.title}
                       </Title>
                     </Space>
                     <Space>
                       <Button
                         icon={enabled ? <MdVisibility /> : <MdEdit />}
                         onClick={() => setEnabled(!enabled)}>
-                        {enabled ? "Preview Mode" : "Edit Mode"}
+                        {enabled ? "Chế độ xem trước" : "Chế độ chỉnh sửa"}
                       </Button>
                       <SaveButton
                         currentStep={currentStep}
@@ -265,16 +270,37 @@ export default function LandingPageBuilderPage() {
                       />
                       <Button
                         icon={<MdPreview />}
+                        onClick={() =>
+                          navigate(`/admin/landing-preview/${id}`)
+                        }>
+                        Xem trước
+                      </Button>
+                      <Button
+                        icon={<MdVisibility />}
                         onClick={() => {
                           if (landingPage?.slug) {
                             window.open(
                               `/landing/${landingPage.slug}`,
-                              "_blank"
+                              "_blank",
                             );
                           }
                         }}>
-                        Live Preview
+                        Mở trong tab mới
                       </Button>
+                      <Dropdown
+                        menu={{
+                          items: [
+                            {
+                              key: "share",
+                              label: "Chia sẻ",
+                              icon: <MdShare />,
+                              onClick: () => setIsShareDialogOpen(true),
+                            },
+                          ],
+                        }}
+                        trigger={["click"]}>
+                        <Button icon={<MdMoreVert />} />
+                      </Dropdown>
                     </Space>
                   </div>
 
@@ -288,10 +314,10 @@ export default function LandingPageBuilderPage() {
                         key: "1",
                         label: (
                           <span>
-                            <span style={{ fontWeight: 600 }}>Step 1</span>
+                            <span style={{ fontWeight: 600 }}>Bước 1</span>
                             <br />
                             <span style={{ fontSize: "12px", color: "#666" }}>
-                              User Info Form
+                              Form thông tin
                             </span>
                           </span>
                         ),
@@ -300,10 +326,10 @@ export default function LandingPageBuilderPage() {
                         key: "2",
                         label: (
                           <span>
-                            <span style={{ fontWeight: 600 }}>Step 2</span>
+                            <span style={{ fontWeight: 600 }}>Bước 2</span>
                             <br />
                             <span style={{ fontSize: "12px", color: "#666" }}>
-                              Sales Page
+                              Trang bán hàng
                             </span>
                           </span>
                         ),
@@ -312,10 +338,10 @@ export default function LandingPageBuilderPage() {
                         key: "3",
                         label: (
                           <span>
-                            <span style={{ fontWeight: 600 }}>Step 3</span>
+                            <span style={{ fontWeight: 600 }}>Bước 3</span>
                             <br />
                             <span style={{ fontSize: "12px", color: "#666" }}>
-                              Payment Page
+                              Trang thanh toán
                             </span>
                           </span>
                         ),
@@ -378,6 +404,14 @@ export default function LandingPageBuilderPage() {
           </PaymentProvider>
         </LandingPageProvider>
       </div>
+
+      {/* Share Dialog */}
+      <ShareDialog
+        open={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+        landingPageSlug={landingPage?.slug}
+        landingPageTitle={landingPage?.title}
+      />
     </DashboardLayout>
   );
 }

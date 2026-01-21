@@ -6,31 +6,20 @@ import {
   Dropdown,
   Space,
   Typography,
-  Badge,
   Button,
-  Input,
   Drawer,
   type MenuProps,
 } from "antd";
 import {
   MdDashboard,
-  MdPerson,
-  MdDescription,
-  MdPeople,
-  MdLogout,
-  MdNotifications,
-  MdApps,
-  MdMenuOpen,
-  MdMenu,
-  MdSearch,
-  MdKeyboardArrowDown,
-  MdPlayArrow,
   MdMenuBook,
-  MdWebAsset,
-  MdMail,
-  MdTrendingUp,
-  MdAccountBalanceWallet,
-  MdHistory,
+  MdPerson,
+  MdLogout,
+  MdMenu,
+  MdShoppingCart,
+  MdPlayCircleFilled,
+  MdMenuOpen,
+  MdKeyboardArrowDown,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -40,11 +29,13 @@ import ProfileDialog from "./ProfileDialog";
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
 
-interface DashboardLayoutProps {
+interface StudentDashboardLayoutProps {
   children: ReactNode;
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function StudentDashboardLayout({
+  children,
+}: StudentDashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -75,136 +66,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const menuItems: MenuProps["items"] = [
     {
-      key: "/admin/dashboard",
+      key: "/student/dashboard",
       icon: <MdDashboard size={20} />,
-      label: "Bảng điều khiển",
+      label: "Trang chủ",
     },
     {
-      key: "course-mgmt",
-      label: "QUẢN LÝ KHÓA HỌC",
-      type: "group",
-      children: [
-        {
-          key: "/admin/courses",
-          icon: <MdDescription size={20} />,
-          label: "Danh sách bài học",
-        },
-        {
-          key: "/admin/landing-pages",
-          icon: <MdWebAsset size={20} />,
-          label: "Landing Page Builder",
-        },
-        {
-          key: "/admin/progress",
-          icon: <MdApps size={20} />,
-          label: "Tiến độ học tập",
-        },
-      ],
+      key: "/student/courses",
+      icon: <MdPlayCircleFilled size={20} />,
+      label: "Khóa học của tôi",
     },
     {
-      key: "student-mgmt",
-      label: "HỌC VIÊN & CRM",
-      type: "group",
-      children: [
-        {
-          key: "/admin/students",
-          icon: <MdPeople size={20} />,
-          label: "Quản lý Học viên",
-        },
-        {
-          key: "/admin/salers",
-          icon: <MdPerson size={20} />,
-          label: "Quản lý Saler",
-        },
-        {
-          key: "/admin/email-automation",
-          icon: <MdMail size={20} />,
-          label: "Email Automation",
-        },
-        {
-          key: "/admin/reports",
-          icon: <MdDescription size={20} />,
-          label: "Báo cáo kinh doanh",
-        },
-      ],
-    },
-    {
-      key: "finance-mgmt",
-      label: "TÀI CHÍNH",
-      type: "group",
-      children: [
-        {
-          key: "/admin/orders",
-          icon: <MdHistory size={20} />,
-          label: "Lịch sử đơn hàng",
-        },
-        {
-          key: "/admin/withdrawals",
-          icon: <MdAccountBalanceWallet size={20} />,
-          label: "Yêu cầu rút tiền",
-        },
-        {
-          key: "/admin/withdrawal-config",
-          icon: <MdDescription size={20} />,
-          label: "Cấu hình rút tiền",
-        },
-      ],
+      key: "/student/orders",
+      icon: <MdShoppingCart size={20} />,
+      label: "Lịch sử đơn hàng",
     },
   ];
-
-  const salerMenuItems: MenuProps["items"] = [
-    {
-      key: "/saler/dashboard",
-      icon: <MdDashboard size={20} />,
-      label: "Bảng điều khiển",
-    },
-    {
-      key: "saler-mgmt",
-      label: "KINH DOANH",
-      type: "group",
-      children: [
-        {
-          key: "/saler/orders",
-          icon: <MdDescription size={20} />,
-          label: "Đơn hàng của tôi",
-        },
-        {
-          key: "/saler/links",
-          icon: <MdApps size={20} />,
-          label: "Link giới thiệu",
-        },
-        {
-          key: "/saler/commissions",
-          icon: <MdDescription size={20} />,
-          label: "Hoa hồng",
-        },
-        {
-          key: "/saler/kpi",
-          icon: <MdTrendingUp size={20} />,
-          label: "KPI & Mục tiêu",
-        },
-      ],
-    },
-    {
-      key: "saler-settings",
-      label: "TÀI KHOẢN",
-      type: "group",
-      children: [
-        {
-          key: "/saler/withdrawals",
-          icon: <MdAccountBalanceWallet size={20} />,
-          label: "Rút tiền",
-        },
-        {
-          key: "/saler/settings",
-          icon: <MdPerson size={20} />,
-          label: "Cài đặt",
-        },
-      ],
-    },
-  ];
-
-  const currentMenuItems = user?.role === "admin" ? menuItems : salerMenuItems;
 
   const userMenuItems: MenuProps["items"] = [
     {
@@ -253,10 +129,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 color: "#1e293b",
                 display: "block",
               }}>
-              CRM/LMS cá nhân
+              Học viên Portal
             </Text>
             <Text type="secondary" style={{ fontSize: 11 }}>
-              Hệ thống quản lý
+              Nền tảng học trực tuyến
             </Text>
           </div>
         )}
@@ -266,7 +142,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           theme="light"
           mode="inline"
           selectedKeys={[location.pathname]}
-          items={currentMenuItems}
+          items={menuItems}
           onClick={({ key }) => {
             navigate(key);
             if (isMobile) setDrawerVisible(false);
@@ -297,52 +173,44 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   );
 
   return (
-    <Layout style={{ minHeight: "100vh", background: "#f8fafc" }}>
-      {!isMobile ? (
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Desktop Sidebar */}
+      {!isMobile && (
         <Sider
           trigger={null}
           collapsible
           collapsed={collapsed}
           width={280}
           style={{
-            overflow: "hidden",
+            background: "#ffffff",
+            borderRight: "1px solid #f1f5f9",
+            overflow: "auto",
             height: "100vh",
             position: "fixed",
             left: 0,
-            top: 0,
-            bottom: 0,
-            boxShadow: "0 0 1px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.02)",
             zIndex: 100,
-            display: "flex",
-            flexDirection: "column",
-          }}
-          theme="light">
+          }}>
           {sidebarContent}
         </Sider>
-      ) : (
-        <Drawer
-          placement="left"
-          onClose={() => setDrawerVisible(false)}
-          open={drawerVisible}
-          width={280}
-          styles={{ body: { padding: 0 } }}
-          closable={false}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              height: "100%",
-            }}>
-            {sidebarContent}
-          </div>
-        </Drawer>
       )}
+
+      {/* Mobile Drawer */}
+      <Drawer
+        placement="left"
+        closable={false}
+        onClose={() => setDrawerVisible(false)}
+        open={drawerVisible}
+        width={280}
+        styles={{
+          body: { padding: 0, display: "flex", flexDirection: "column" },
+        }}>
+        {sidebarContent}
+      </Drawer>
 
       <Layout
         style={{
           marginLeft: isMobile ? 0 : collapsed ? 80 : 280,
-          transition: "all 0.2s",
-          background: "transparent",
+          transition: "margin-left 0.2s",
         }}>
         <Header
           style={{
@@ -408,7 +276,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 className="user-profile-trigger">
                 <Avatar
                   style={{
-                    ...getAvatarStyles(user?.name || "admin"),
+                    ...getAvatarStyles(user?.name || user?.email || "Student"),
                     fontWeight: "bold",
                     boxShadow: "none",
                   }}>
@@ -427,12 +295,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         lineHeight: 1.2,
                       }}>
                       <Text strong style={{ fontSize: 14, color: "#1e293b" }}>
-                        {user?.name || "Admin Profile"}
+                        {user?.name || "Học viên"}
                       </Text>
                       <Text style={{ fontSize: 11, color: "#64748b" }}>
-                        {user?.role === "admin"
-                          ? "Super Admin"
-                          : "Sales Representative"}
+                        Student
                       </Text>
                     </div>
                     <MdKeyboardArrowDown
@@ -478,23 +344,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           background-color: #f1f5f9 !important;
           color: #1e293b;
         }
-        .modern-menu.ant-menu-light .ant-menu-item-group-title {
-          font-size: 11px;
-          font-weight: 800;
-          color: #94a3b8;
-          padding: 24px 24px 8px;
-          letter-spacing: 0.05em;
-        }
-        .user-profile-trigger:hover {
-          background: #f1f5f9;
-        }
         .ant-layout-sider-children {
           display: flex;
           flex-direction: column;
         }
-        .learning-screen-btn:hover {
-          background: #e0e7ff !important;
-          color: #4f46e5 !important;
+        .user-profile-trigger:hover {
+          background: #f1f5f9;
         }
       `}</style>
     </Layout>

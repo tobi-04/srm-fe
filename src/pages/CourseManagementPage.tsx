@@ -29,14 +29,17 @@ import {
   MdDeleteForever,
   MdAttachMoney,
   MdCategory,
-  MdList,
   MdMoreVert,
   MdPublish,
   MdDrafts,
+  MdWeb,
+  MdPlayCircle,
 } from "react-icons/md";
 import DashboardLayout from "../components/DashboardLayout";
 import apiClient from "../api/client";
-import { getAvatarStyles } from "../utils/color";
+
+import { getLandingPagesByCourse, createLandingPage } from "../api/landingPage";
+import type { LandingPage } from "../stores/landingPageStore";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -60,7 +63,7 @@ export default function CourseManagementPage() {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>(
-    {}
+    {},
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -87,7 +90,56 @@ export default function CourseManagementPage() {
     gcTime: 0, // Don't cache in memory
   });
 
-  const courses = data?.data || [];
+  const courses: Course[] = data?.data || [];
+
+  // Fetch landing pages for all courses
+  const { data: landingPagesData } = useQuery({
+    queryKey: ["landing-pages-by-courses", courses.map((c) => c._id)],
+    queryFn: async () => {
+      const landingPagesMap: Record<string, LandingPage> = {};
+      await Promise.all(
+        courses.map(async (course) => {
+          try {
+            const landingPages = await getLandingPagesByCourse(course._id);
+            if (landingPages.length > 0) {
+              landingPagesMap[course._id] = landingPages[0];
+            }
+          } catch {
+            // Ignore errors for individual courses
+          }
+        }),
+      );
+      return landingPagesMap;
+    },
+    enabled: courses.length > 0,
+    staleTime: 30000, // Cache for 30 seconds
+  });
+
+  const courseLandingPages = landingPagesData || {};
+
+  // Create landing page mutation
+  const createLandingPageMutation = useMutation({
+    mutationFn: async (course: Course) => {
+      return createLandingPage({
+        course_id: course._id,
+        title: `Landing Page - ${course.title}`,
+        slug: course.slug,
+      });
+    },
+    onSuccess: async (landingPage) => {
+      message.success("Landing page đã được tạo thành công");
+      await queryClient.invalidateQueries({
+        queryKey: ["landing-pages-by-courses"],
+      });
+      // Navigate to the builder
+      navigate(`/admin/landing-builder/${landingPage._id}`);
+    },
+    onError: (error: any) => {
+      message.error(
+        error.response?.data?.message || "Không thể tạo landing page",
+      );
+    },
+  });
 
   const createMutation = useMutation({
     mutationFn: async (values: any) => {
@@ -121,7 +173,7 @@ export default function CourseManagementPage() {
     },
     onError: (error: any) => {
       message.error(
-        error.response?.data?.message || "Không thể cập nhật khóa học"
+        error.response?.data?.message || "Không thể cập nhật khóa học",
       );
     },
   });
@@ -174,7 +226,9 @@ export default function CourseManagementPage() {
       await apiClient.delete("/courses/bulk/delete", { data: { ids } });
     },
     onSuccess: async () => {
-      message.success(`Đã chuyển ${selectedRowKeys.length} khóa học vào thùng rác`);
+      message.success(
+        `Đã chuyển ${selectedRowKeys.length} khóa học vào thùng rác`,
+      );
       setSelectedRowKeys([]); // Clear selection
       await queryClient.invalidateQueries({ queryKey: ["courses"] });
       await refetch(); // Force immediate refetch
@@ -238,14 +292,6 @@ export default function CourseManagementPage() {
     navigate(`/admin/courses/${course.slug}`);
   };
 
-  const handleBulkDelete = () => {
-    if (selectedRowKeys.length === 0) {
-      message.warning("Vui lòng chọn ít nhất một khóa học");
-      return;
-    }
-    bulkDeleteMutation.mutate(selectedRowKeys);
-  };
-
   const rowSelection = {
     selectedRowKeys,
     onChange: (newSelectedRowKeys: React.Key[]) => {
@@ -272,8 +318,7 @@ export default function CourseManagementPage() {
               style={{
                 color: "#1e293b",
                 marginBottom: 0,
-              }}
-            >
+              }}>
               {text}
             </Paragraph>
           </Tooltip>
@@ -314,8 +359,7 @@ export default function CourseManagementPage() {
       render: (category: string) =>
         category ? (
           <Tag
-            style={{ background: "#f1f5f9", color: "#475569", border: "none" }}
-          >
+            style={{ background: "#f1f5f9", color: "#475569", border: "none" }}>
             <MdCategory style={{ marginRight: 4 }} />
             {category}
           </Tag>
@@ -344,8 +388,7 @@ export default function CourseManagementPage() {
               background: config.bg,
               border: "none",
               fontWeight: 600,
-            }}
-          >
+            }}>
             {config.label}
           </Tag>
         );
@@ -373,14 +416,28 @@ export default function CourseManagementPage() {
                   onClick: () => handleViewDetail(record),
                 },
                 {
+                  key: "learn",
+                  label: "Xem trang học",
+                  icon: <MdPlayCircle style={{ color: "#22c55e" }} />,
+                  style: { color: "#22c55e" },
+                  onClick: () => window.open(`/learn/${record._id}`, "_blank"),
+                },
+                {
                   key: "status",
-                  label: record.status === "published" ? "Gỡ xuất bản" : "Xuất bản",
-                  icon: record.status === "published" ? <MdDrafts /> : <MdPublish />,
+                  label:
+                    record.status === "published" ? "Gỡ xuất bản" : "Xuất bản",
+                  icon:
+                    record.status === "published" ? (
+                      <MdDrafts />
+                    ) : (
+                      <MdPublish />
+                    ),
                   onClick: () =>
                     updateMutation.mutate({
                       id: record._id,
                       values: {
-                        status: record.status === "published" ? "draft" : "published",
+                        status:
+                          record.status === "published" ? "draft" : "published",
                       },
                     }),
                 },
@@ -391,6 +448,40 @@ export default function CourseManagementPage() {
                   style: { color: "#6366f1" },
                   onClick: () => handleEdit(record),
                 },
+                // Landing Page actions
+                ...(courseLandingPages[record._id]
+                  ? [
+                      {
+                        key: "edit_landing",
+                        label: "Chỉnh sửa Landing Page",
+                        icon: <MdWeb style={{ color: "#8b5cf6" }} />,
+                        style: { color: "#8b5cf6" },
+                        onClick: () =>
+                          navigate(
+                            `/admin/landing-builder/${courseLandingPages[record._id]._id}`,
+                          ),
+                      },
+                      {
+                        key: "view_landing",
+                        label: "Xem Landing Page",
+                        icon: <MdVisibility style={{ color: "#06b6d4" }} />,
+                        style: { color: "#06b6d4" },
+                        onClick: () =>
+                          window.open(
+                            `/landing/${courseLandingPages[record._id]._id}`,
+                            "_blank",
+                          ),
+                      },
+                    ]
+                  : [
+                      {
+                        key: "create_landing",
+                        label: "Tạo Landing Page",
+                        icon: <MdWeb style={{ color: "#10b981" }} />,
+                        style: { color: "#10b981" },
+                        onClick: () => createLandingPageMutation.mutate(record),
+                      },
+                    ]),
                 {
                   key: "delete",
                   label: (
@@ -400,8 +491,7 @@ export default function CourseManagementPage() {
                       onConfirm={() => deleteMutation.mutate(record._id)}
                       okText="Chuyển"
                       cancelText="Hủy"
-                      okButtonProps={{ danger: true }}
-                    >
+                      okButtonProps={{ danger: true }}>
                       <span style={{ color: "#faad14", display: "block" }}>
                         Chuyển vào thùng rác
                       </span>
@@ -418,8 +508,7 @@ export default function CourseManagementPage() {
                       onConfirm={() => hardDeleteMutation.mutate(record._id)}
                       okText="Xóa vĩnh viễn"
                       cancelText="Hủy"
-                      okButtonProps={{ danger: true }}
-                    >
+                      okButtonProps={{ danger: true }}>
                       <span style={{ color: "#ff4d4f", display: "block" }}>
                         Xoá vĩnh viễn
                       </span>
@@ -445,8 +534,7 @@ export default function CourseManagementPage() {
                       onConfirm={() => hardDeleteMutation.mutate(record._id)}
                       okText="Xóa vĩnh viễn"
                       cancelText="Hủy"
-                      okButtonProps={{ danger: true }}
-                    >
+                      okButtonProps={{ danger: true }}>
                       <span style={{ color: "#ff4d4f", display: "block" }}>
                         Xóa vĩnh viễn
                       </span>
@@ -461,8 +549,7 @@ export default function CourseManagementPage() {
           <Dropdown
             menu={{ items }}
             trigger={["click"]}
-            placement="bottomRight"
-          >
+            placement="bottomRight">
             <Button
               type="text"
               icon={<MdMoreVert size={20} />}
@@ -482,14 +569,12 @@ export default function CourseManagementPage() {
           flexDirection: "row",
           gap: "16px",
           alignItems: "flex-start",
-        }}
-      >
+        }}>
         <div style={{ flex: 1 }}>
           <Title
             level={2}
             className="page-title"
-            style={{ fontSize: "clamp(20px, 5vw, 28px)" }}
-          >
+            style={{ fontSize: "clamp(20px, 5vw, 28px)" }}>
             Quản lý khóa học
           </Title>
           <Text className="page-subtitle" style={{ display: "block" }}>
@@ -501,8 +586,7 @@ export default function CourseManagementPage() {
           icon={<MdAdd size={20} />}
           size="large"
           onClick={handleCreate}
-          style={{ flexShrink: 0 }}
-        >
+          style={{ flexShrink: 0 }}>
           <span className="hide-on-mobile">Tạo khóa học mới</span>
           <span className="show-on-mobile">Tạo mới</span>
         </Button>
@@ -523,8 +607,7 @@ export default function CourseManagementPage() {
               className="filter-select"
               value={statusFilter || undefined}
               onChange={setStatusFilter}
-              allowClear
-            >
+              allowClear>
               <Select.Option value="draft">Nháp</Select.Option>
               <Select.Option value="published">Đã xuất bản</Select.Option>
             </Select>
@@ -549,8 +632,7 @@ export default function CourseManagementPage() {
             <Button
               icon={<MdRefresh size={20} />}
               onClick={() => refetch()}
-              className="refresh-btn"
-            >
+              className="refresh-btn">
               <span>Làm mới</span>
             </Button>
             {selectedRowKeys.length > 0 && (
@@ -560,29 +642,27 @@ export default function CourseManagementPage() {
                   description="Các khóa học này sẽ bị ẩn khỏi học viên."
                   onConfirm={() => bulkDeleteMutation.mutate(selectedRowKeys)}
                   okText="Chuyển"
-                  cancelText="Hủy"
-                >
+                  cancelText="Hủy">
                   <Button
                     icon={<MdDelete size={20} />}
                     loading={bulkDeleteMutation.isPending}
-                    style={{ color: "#faad14", borderColor: "#faad14" }}
-                  >
+                    style={{ color: "#faad14", borderColor: "#faad14" }}>
                     Thùng rác ({selectedRowKeys.length})
                   </Button>
                 </Popconfirm>
                 <Popconfirm
                   title={`Xóa vĩnh viễn ${selectedRowKeys.length} khóa học`}
                   description="Hành động này không thể hoàn tác và sẽ xóa sạch dữ liệu khỏi hệ thống!"
-                  onConfirm={() => bulkHardDeleteMutation.mutate(selectedRowKeys)}
+                  onConfirm={() =>
+                    bulkHardDeleteMutation.mutate(selectedRowKeys)
+                  }
                   okText="Xóa vĩnh viễn"
                   cancelText="Hủy"
-                  okButtonProps={{ danger: true }}
-                >
+                  okButtonProps={{ danger: true }}>
                   <Button
                     danger
                     icon={<MdDeleteForever size={20} />}
-                    loading={bulkHardDeleteMutation.isPending}
-                  >
+                    loading={bulkHardDeleteMutation.isPending}>
                     Xóa vĩnh viễn ({selectedRowKeys.length})
                   </Button>
                 </Popconfirm>
@@ -619,8 +699,7 @@ export default function CourseManagementPage() {
         cancelText="Hủy"
         width="90%"
         style={{ maxWidth: 700 }}
-        confirmLoading={createMutation.isPending || updateMutation.isPending}
-      >
+        confirmLoading={createMutation.isPending || updateMutation.isPending}>
         <Form form={form} layout="vertical" style={{ marginTop: 24 }}>
           <Form.Item
             name="title"
@@ -628,8 +707,7 @@ export default function CourseManagementPage() {
             rules={[
               { required: true, message: "Vui lòng nhập tiêu đề" },
               { min: 3, message: "Tối thiểu 3 ký tự" },
-            ]}
-          >
+            ]}>
             <Input placeholder="Ví dụ: Lập trình React nâng cao" />
           </Form.Item>
           <Form.Item name="description" label="Mô tả">
@@ -638,8 +716,7 @@ export default function CourseManagementPage() {
           <Form.Item
             name="price"
             label="Giá (VNĐ)"
-            rules={[{ required: true, message: "Vui lòng nhập giá" }]}
-          >
+            rules={[{ required: true, message: "Vui lòng nhập giá" }]}>
             <InputNumber
               style={{ width: "100%" }}
               min={0}
@@ -657,8 +734,7 @@ export default function CourseManagementPage() {
           </Form.Item>
           <Form.Item
             name="syllabus"
-            label="Chương trình học (mỗi chủ đề một dòng)"
-          >
+            label="Chương trình học (mỗi chủ đề một dòng)">
             <TextArea
               rows={6}
               placeholder="React Hooks&#10;Context API&#10;Performance Optimization"

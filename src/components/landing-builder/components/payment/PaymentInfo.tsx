@@ -1,7 +1,6 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
 import { Form, Input, Slider } from "antd";
-import { MdContentCopy, MdCheckCircle } from "react-icons/md";
 
 interface PaymentInfoProps {
   title?: string;
@@ -127,7 +126,7 @@ const PaymentInfoSettings = () => {
               (props: any) =>
                 (props.instructions = e.target.value
                   .split(",")
-                  .map((i: string) => i.trim()))
+                  .map((i: string) => i.trim())),
             )
           }
           rows={4}

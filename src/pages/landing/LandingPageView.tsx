@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Editor, Frame, Element } from "@craftjs/core";
 import {
@@ -67,13 +67,13 @@ const CRAFT_RESOLVER = {
 export default function LandingPageView() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const isAdmin = user?.role === "admin";
   const txId = searchParams.get("tx");
 
-  // Get step from URL params or default to 1
+  // Get step from URL params or default to 1 (Single source of truth)
   const urlStep = parseInt(searchParams.get("step") || "1") as FlowStep;
-  const [currentStep] = useState<FlowStep>(urlStep);
 
   // Fetch landing page data by slug
   const {
@@ -87,30 +87,67 @@ export default function LandingPageView() {
   });
 
   // Fetch transaction if in step 3
-  const { data: transaction } = useQuery({
+  const { data: transaction, error: transactionError } = useQuery({
     queryKey: ["payment-transaction", txId],
     queryFn: () => getPaymentTransaction(txId!),
-    enabled: !!txId && currentStep === 3,
+    enabled: !!txId && urlStep === 3,
     refetchInterval: 5000, // Poll every 5 seconds
+    retry: false, // Don't retry on enrollment error
   });
 
-  // Handle auto-redirect when payment is completed
+  // Handle auto-redirect when payment is completed or already enrolled
   useEffect(() => {
-    if (currentStep === 3 && transaction?.status === "completed") {
-      message.success("Payment confirmed!");
-      setSearchParams({ step: "4", tx: txId || "" });
-      // Refresh currentStep logic since it's derived from URL
-      window.location.reload(); // Simplest way to force full refresh of step logic
+    // Check for enrollment error from query
+    const errorMessage = (transactionError as any)?.response?.data?.message;
+    if (errorMessage === "ALREADY_ENROLLED") {
+      message.info("Bạn đã sở hữu khóa học này!");
+      const courseId =
+        typeof landingPage.course_id === "object"
+          ? landingPage.course_id._id
+          : landingPage.course_id;
+      navigate(`/login?from=/learn/${courseId}`);
+      return;
     }
-  }, [transaction?.status, currentStep, setSearchParams, txId]);
 
-  // Update URL when step changes
+    if (urlStep === 3 && transaction?.status === "completed") {
+      message.success("Thanh toán đã được xác nhận!");
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("step", "4");
+          // Ensure ref is preserved if present
+          const ref = prev.get("ref");
+          if (ref) next.set("ref", ref);
+          return next;
+        },
+        { replace: true },
+      );
+    }
+  }, [
+    transaction?.status,
+    transactionError,
+    urlStep,
+    setSearchParams,
+    landingPage,
+    navigate,
+  ]);
+
+  // Update URL to ensure step is present but avoid loops
   useEffect(() => {
-    setSearchParams({
-      step: currentStep.toString(),
-      ...(txId ? { tx: txId } : {}),
-    });
-  }, [currentStep, setSearchParams, txId]);
+    if (!searchParams.has("step")) {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("step", "1");
+          // Ensure ref is preserved if present
+          const ref = prev.get("ref");
+          if (ref) next.set("ref", ref);
+          return next;
+        },
+        { replace: true },
+      );
+    }
+  }, [searchParams, setSearchParams]);
 
   if (isLoading) {
     return (
@@ -137,8 +174,8 @@ export default function LandingPageView() {
         }}>
         <Result
           status="404"
-          title="Landing Page Not Found"
-          subTitle="Sorry, the landing page you are looking for does not exist."
+          title="Không tìm thấy Landing Page"
+          subTitle="Xin lỗi, landing page bạn đang tìm kiếm không tồn tại."
           icon={<MdError size={64} />}
         />
       </Layout>
@@ -157,8 +194,8 @@ export default function LandingPageView() {
         }}>
         <Result
           status="403"
-          title="Page Not Available"
-          subTitle="This landing page is not published yet."
+          title="Trang không khả dụng"
+          subTitle="Landing page này chưa được xuất bản."
         />
       </Layout>
     );
@@ -166,7 +203,7 @@ export default function LandingPageView() {
 
   // Get content for current step
   const getCurrentPageContent = () => {
-    switch (currentStep) {
+    switch (urlStep) {
       case 1:
         return landingPage.page_1_content;
       case 2:
@@ -224,7 +261,7 @@ export default function LandingPageView() {
               }}>
               <Element
                 is={Text}
-                text="Complete Your Payment"
+                text="Hoàn tất Thanh toán"
                 type="title"
                 level={1}
               />
@@ -243,7 +280,7 @@ export default function LandingPageView() {
   };
 
   // Render success page
-  if (currentStep === 4) {
+  if (urlStep === 4) {
     return (
       <Layout style={{ minHeight: "100vh", background: "#f0f2f5" }}>
         <Content
@@ -256,14 +293,56 @@ export default function LandingPageView() {
           <Result
             status="success"
             icon={<MdCheckCircle size={72} style={{ color: "#52c41a" }} />}
-            title="Payment Successful!"
+            title="Thanh toán thành công!"
             subTitle={
-              landingPage.metadata?.success_message ||
-              "Thank you for your purchase! We've sent a confirmation email to your registered email address."
+              <div style={{ textAlign: "center" }}>
+                <p>
+                  {landingPage.metadata?.success_message ||
+                    "Cảm ơn bạn đã mua hàng! Giao dịch của bạn đã được xác nhận thành công."}
+                </p>
+                <Alert
+                  type="info"
+                  message="Thông tin đăng nhập"
+                  description={
+                    <div style={{ textAlign: "left" }}>
+                      <p style={{ margin: "4px 0" }}>
+                        1. Chúng tôi đã gửi <b>Email tài khoản & Mật khẩu</b>{" "}
+                        đến địa chỉ bạn đã đăng ký.
+                      </p>
+                      <p style={{ margin: "4px 0" }}>
+                        2. Vui lòng kiểm tra kỹ cả hộp thư <b>Spam (Thư rác)</b>{" "}
+                        nếu không thấy ở hộp thư đến.
+                      </p>
+                      <p style={{ margin: "4px 0" }}>
+                        3. Nhấn nút bên dưới để đăng nhập và bắt đầu học ngay.
+                      </p>
+                    </div>
+                  }
+                  showIcon
+                />
+              </div>
             }
             extra={[
-              <AntButton type="primary" key="home" size="large">
-                Go to Course
+              <AntButton
+                type="primary"
+                key="home"
+                size="large"
+                style={{
+                  height: "50px",
+                  padding: "0 40px",
+                  fontSize: "18px",
+                  borderRadius: "8px",
+                  background: "#f78404",
+                  border: "none",
+                }}
+                onClick={() => {
+                  const courseId =
+                    typeof landingPage.course_id === "object"
+                      ? landingPage.course_id._id
+                      : landingPage.course_id;
+                  navigate(`/login?from=/learn/${courseId}`);
+                }}>
+                ĐĂNG NHẬP & HỌC NGAY
               </AntButton>,
             ]}
           />
@@ -288,8 +367,8 @@ export default function LandingPageView() {
                 {/* Draft preview banner for admins */}
                 {isAdmin && landingPage.status === "draft" && (
                   <Alert
-                    message="Draft Preview Mode"
-                    description="You are viewing a draft landing page. This page is not visible to the public yet."
+                    message="Chế độ xem trước bản nháp"
+                    description="Bạn đang xem landing page bản nháp. Trang này chưa hiển thị công khai."
                     type="warning"
                     showIcon
                     banner
@@ -311,11 +390,11 @@ export default function LandingPageView() {
                     className="landing-builder-content">
                     <Editor resolver={CRAFT_RESOLVER} enabled={false}>
                       <Frame
-                        key={`step-${currentStep}`}
+                        key={`step-${urlStep}`}
                         data={
                           hasContent ? JSON.stringify(pageContent) : undefined
                         }>
-                        {!hasContent && getDefaultStepSections(currentStep)}
+                        {!hasContent && getDefaultStepSections(urlStep)}
                       </Frame>
                     </Editor>
                   </div>

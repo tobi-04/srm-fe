@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNode } from "@craftjs/core";
 import { Form, Input, Checkbox, message, Slider } from "antd";
-import { useParams } from "react-router-dom";
-import { submitUserForm } from "../../../api/landingPage";
+import { useParams, useSearchParams } from "react-router-dom";
+import { submitUserForm, SubmitUserFormInput } from "../../../api/landingPage";
 import { useAuthStore } from "../../../stores/authStore";
+import { getOrCreateTrafficSource } from "../../../utils/trafficSource";
 
 interface UserFormProps {
   buttonText?: string;
@@ -51,6 +52,7 @@ export const UserForm: React.FC<UserFormProps> = ({
 
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuthStore();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
@@ -60,6 +62,7 @@ export const UserForm: React.FC<UserFormProps> = ({
     phone: "",
     address: "",
     birthday: "",
+    ref: "",
   });
 
   // Auto-fill name and email if user is logged in
@@ -73,8 +76,32 @@ export const UserForm: React.FC<UserFormProps> = ({
     }
   }, [user]);
 
+  // Sync ref from URL on mount and when URL changes
+  useEffect(() => {
+    const urlRef = searchParams.get("ref");
+    if (urlRef) {
+      setFormData((prev) => ({ ...prev, ref: urlRef }));
+    }
+  }, [searchParams]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // If ref changes, update the URL
+    if (field === "ref") {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (value) {
+            next.set("ref", value);
+          } else {
+            next.delete("ref");
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,7 +110,7 @@ export const UserForm: React.FC<UserFormProps> = ({
     // Check if we're in builder/preview mode (no slug available)
     if (!slug) {
       message.info(
-        "Form submission is disabled in preview mode. Publish the landing page to enable form submission."
+        "Form submission is disabled in preview mode. Publish the landing page to enable form submission.",
       );
       return;
     }
@@ -96,6 +123,11 @@ export const UserForm: React.FC<UserFormProps> = ({
 
     if (!formData.email.trim()) {
       message.error("Please enter your email");
+      return;
+    }
+
+    if (!formData.ref.trim()) {
+      message.error("Vui lòng nhập mã giới thiệu");
       return;
     }
 
@@ -112,7 +144,7 @@ export const UserForm: React.FC<UserFormProps> = ({
       const phoneRegex = /^0\d{9}$/;
       if (!phoneRegex.test(formData.phone.replace(/\s/g, ""))) {
         message.error(
-          "Please enter a valid phone number (10 digits, starts with 0)"
+          "Please enter a valid phone number (10 digits, starts with 0)",
         );
         return;
       }
@@ -121,10 +153,19 @@ export const UserForm: React.FC<UserFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      const submitData: any = {
+      // Capture traffic source data
+      const trafficSourceData = getOrCreateTrafficSource();
+      console.log("🚦 Captured traffic source data:", trafficSourceData);
+
+      const submitData: SubmitUserFormInput = {
         name: formData.name,
         email: formData.email,
+        referral_code: formData.ref,
+        traffic_source: trafficSourceData,
+        session_id: trafficSourceData.session_id,
       };
+
+      console.log("📤 Preparing to submit form data:", submitData);
 
       // Add optional fields if they have values
       if (showPhone && formData.phone) submitData.phone = formData.phone;
@@ -133,6 +174,7 @@ export const UserForm: React.FC<UserFormProps> = ({
       if (showBirthday && formData.birthday)
         submitData.birthday = formData.birthday;
 
+      console.log("🚀 Executing API call to submit form...");
       const response = await submitUserForm(slug, submitData);
 
       message.success("Form submitted successfully!");
@@ -140,13 +182,15 @@ export const UserForm: React.FC<UserFormProps> = ({
       // Save real submission ID to localStorage for payment creation later
       localStorage.setItem(
         `landing_${slug}_submission_id`,
-        response.submission_id
+        response.submission_id,
       );
 
-      // Navigate to step 2 using window.location
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set("step", "2");
-      window.location.href = currentUrl.toString();
+      // Navigate to step 2 by merging parameters
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("step", "2");
+        return next;
+      });
 
       // Reset form (will happen after navigation, but good practice)
       setFormData({
@@ -155,12 +199,13 @@ export const UserForm: React.FC<UserFormProps> = ({
         phone: "",
         address: "",
         birthday: "",
+        ref: "",
       });
     } catch (error: any) {
       console.error("Form submission error:", error);
       message.error(
         error.response?.data?.message ||
-          "Failed to submit form. Please try again."
+          "Failed to submit form. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -261,6 +306,28 @@ export const UserForm: React.FC<UserFormProps> = ({
               Email is locked for logged-in users
             </small>
           )}
+
+          <div style={{ marginBottom: "12px" }}>
+            <label
+              style={{
+                fontSize: "14px",
+                color: "#666",
+                marginBottom: "4px",
+                display: "block",
+              }}>
+              Mã giới thiệu *
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập mã giới thiệu"
+              style={inputStyle}
+              required
+              value={formData.ref}
+              onChange={(e) => handleInputChange("ref", e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+
           {showPhone && (
             <input
               type="tel"
@@ -396,7 +463,7 @@ const UserFormSettings = () => {
             value={props.addressPlaceholder}
             onChange={(e) =>
               setProp(
-                (props: any) => (props.addressPlaceholder = e.target.value)
+                (props: any) => (props.addressPlaceholder = e.target.value),
               )
             }
           />
@@ -417,7 +484,7 @@ const UserFormSettings = () => {
             value={props.birthdayPlaceholder}
             onChange={(e) =>
               setProp(
-                (props: any) => (props.birthdayPlaceholder = e.target.value)
+                (props: any) => (props.birthdayPlaceholder = e.target.value),
               )
             }
           />

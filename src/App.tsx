@@ -13,9 +13,27 @@ import StudentManagementPage from "./pages/StudentManagementPage";
 import SalerManagementPage from "./pages/SalerManagementPage";
 import CourseManagementPage from "./pages/CourseManagementPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
+import CourseViewerPage from "./pages/CourseViewerPage";
 import LandingPageManagementPage from "./pages/LandingPageManagementPage";
 import LandingPageBuilderPage from "./pages/LandingPageBuilderPage";
+import LandingPagePreviewPage from "./pages/LandingPagePreviewPage";
 import EmailAutomationPage from "./pages/EmailAutomationPage";
+import StudentDashboardPage from "./pages/StudentDashboardPage";
+import StudentCoursesPage from "./pages/StudentCoursesPage";
+import StudentCoursePlayerPage from "./pages/StudentCoursePlayerPage";
+import StudentOrdersPage from "./pages/StudentOrdersPage";
+import SalerDashboardPage from "./pages/SalerDashboardPage";
+import SalerOrdersPage from "./pages/SalerOrdersPage";
+import SalerReferralLinksPage from "./pages/SalerReferralLinksPage";
+import SalerCommissionsPage from "./pages/SalerCommissionsPage";
+import SalerStudentsPage from "./pages/SalerStudentsPage";
+import SalerKPIPage from "./pages/SalerKPIPage";
+import SalerSettingsPage from "./pages/SalerSettingsPage";
+import SalerWithdrawalPage from "./pages/SalerWithdrawalPage";
+import AdminWithdrawalConfigPage from "./pages/AdminWithdrawalConfigPage";
+import AdminWithdrawalListPage from "./pages/AdminWithdrawalListPage";
+import AdminProgressPage from "./pages/AdminProgressPage";
+import OrderHistoryPage from "./pages/OrderHistoryPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
 
@@ -43,6 +61,133 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/change-password" element={<ChangePasswordPage />} />
+
+          {/* Student Course Viewer Routes - Protected */}
+          <Route
+            path="/learn/:courseId"
+            element={
+              <ProtectedRoute>
+                <CourseViewerPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/learn/:courseId/lessons/:lessonId"
+            element={
+              <ProtectedRoute>
+                <CourseViewerPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Student Dashboard Routes - Protected */}
+          <Route
+            path="/student"
+            element={<Navigate to="/student/dashboard" replace />}
+          />
+          <Route
+            path="/student/dashboard"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <StudentDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/courses"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <StudentCoursesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/course/:slug"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <StudentCoursePlayerPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/student/orders"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <StudentOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Saler Dashboard Routes - Protected */}
+          <Route
+            path="/saler"
+            element={<Navigate to="/saler/dashboard" replace />}
+          />
+          <Route
+            path="/saler/dashboard"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/orders"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/links"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerReferralLinksPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/commissions"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerCommissionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/students"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerStudentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/kpi"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerKPIPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/settings"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerSettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/withdrawals"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerWithdrawalPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin Routes - Protected */}
           <Route
@@ -86,6 +231,14 @@ function App() {
             }
           />
           <Route
+            path="/admin/progress"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminProgressPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/courses/:slug"
             element={
               <ProtectedRoute requiredRole="admin">
@@ -110,10 +263,42 @@ function App() {
             }
           />
           <Route
+            path="/admin/landing-preview/:id"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <LandingPagePreviewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/email-automation"
             element={
               <ProtectedRoute requiredRole="admin">
                 <EmailAutomationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/withdrawal-config"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminWithdrawalConfigPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/withdrawals"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminWithdrawalListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <OrderHistoryPage />
               </ProtectedRoute>
             }
           />

@@ -49,15 +49,16 @@ export const Toolbox = () => {
   const collapseItems = [
     {
       key: "basic",
-      label: "Basic Components",
+      label: "Thành phần cơ bản",
       children: (
         <Space direction="vertical" style={{ width: "100%" }} size="small">
           <div
             ref={(ref) =>
-              ref && connectors.create(ref, <Text text="New Text" />)
-            }>
+              ref && connectors.create(ref, <Text text="Văn bản mới" />)
+            }
+          >
             <Button block icon={<MdTextFields />} style={{ cursor: "move" }}>
-              Text
+              Văn bản
             </Button>
           </div>
           <div
@@ -65,11 +66,12 @@ export const Toolbox = () => {
               ref &&
               connectors.create(
                 ref,
-                <BuilderButton text="Click Me" type="primary" />
+                <BuilderButton text="Nhấp vào đây" type="primary" />,
               )
-            }>
+            }
+          >
             <Button block icon={<MdSmartButton />} style={{ cursor: "move" }}>
-              Button
+              Nút bấm
             </Button>
           </div>
           <div
@@ -78,10 +80,11 @@ export const Toolbox = () => {
               connectors.create(
                 ref,
                 <Element is={Container} padding={20} canvas>
-                  <Text text="Empty Container" />
-                </Element>
+                  <Text text="Container trống" />
+                </Element>,
               )
-            }>
+            }
+          >
             <Button block icon={<MdCropSquare />} style={{ cursor: "move" }}>
               Container
             </Button>
@@ -91,11 +94,12 @@ export const Toolbox = () => {
               ref &&
               connectors.create(
                 ref,
-                <Image src="https://via.placeholder.com/150" />
+                <Image src="https://via.placeholder.com/150" />,
               )
-            }>
+            }
+          >
             <Button block icon={<MdImage />} style={{ cursor: "move" }}>
-              Image
+              Hình ảnh
             </Button>
           </div>
         </Space>
@@ -103,7 +107,7 @@ export const Toolbox = () => {
     },
     {
       key: "step1",
-      label: "Step 1: User Info Form",
+      label: "Bước 1: Form thông tin",
       children: (
         <Space direction="vertical" style={{ width: "100%" }} size="small">
           <div ref={(ref) => ref && connectors.create(ref, <Header />)}>
@@ -111,8 +115,9 @@ export const Toolbox = () => {
               block
               icon={<MdTitle />}
               style={{ cursor: "move" }}
-              size="small">
-              Header Banner
+              size="small"
+            >
+              Banner tiêu đề
             </Button>
           </div>
           <div ref={(ref) => ref && connectors.create(ref, <Headline />)}>
@@ -120,8 +125,9 @@ export const Toolbox = () => {
               block
               icon={<MdTitle />}
               style={{ cursor: "move" }}
-              size="small">
-              Headline
+              size="small"
+            >
+              Tiêu đề chính
             </Button>
           </div>
           <div ref={(ref) => ref && connectors.create(ref, <Subtitle />)}>
@@ -129,8 +135,9 @@ export const Toolbox = () => {
               block
               icon={<MdSubtitles />}
               style={{ cursor: "move" }}
-              size="small">
-              Subtitle
+              size="small"
+            >
+              Tiêu đề phụ
             </Button>
           </div>
           <div ref={(ref) => ref && connectors.create(ref, <UserForm />)}>
@@ -138,8 +145,9 @@ export const Toolbox = () => {
               block
               icon={<MdInput />}
               style={{ cursor: "move" }}
-              size="small">
-              User Form
+              size="small"
+            >
+              Form người dùng
             </Button>
           </div>
           <div ref={(ref) => ref && connectors.create(ref, <InstructorBio />)}>
@@ -147,8 +155,9 @@ export const Toolbox = () => {
               block
               icon={<MdPerson />}
               style={{ cursor: "move" }}
-              size="small">
-              Instructor Bio
+              size="small"
+            >
+              Giới thiệu giảng viên
             </Button>
           </div>
         </Space>
@@ -156,17 +165,19 @@ export const Toolbox = () => {
     },
     {
       key: "step2",
-      label: "Step 2: Sales Page",
+      label: "Bước 2: Trang bán hàng",
       children: (
         <Space direction="vertical" style={{ width: "100%" }} size="small">
           <div
-            ref={(ref) => ref && connectors.create(ref, <SuccessHeadline />)}>
+            ref={(ref) => ref && connectors.create(ref, <SuccessHeadline />)}
+          >
             <Button
               block
               icon={<MdCheckCircle />}
               style={{ cursor: "move" }}
-              size="small">
-              Success Headline
+              size="small"
+            >
+              Tiêu đề thành công
             </Button>
           </div>
           <div ref={(ref) => ref && connectors.create(ref, <VideoPlayer />)}>
@@ -174,8 +185,9 @@ export const Toolbox = () => {
               block
               icon={<MdPlayCircle />}
               style={{ cursor: "move" }}
-              size="small">
-              Video Player
+              size="small"
+            >
+              Trình phát video
             </Button>
           </div>
           <div ref={(ref) => ref && connectors.create(ref, <CountdownTimer />)}>
@@ -183,18 +195,21 @@ export const Toolbox = () => {
               block
               icon={<MdTimer />}
               style={{ cursor: "move" }}
-              size="small">
-              Countdown Timer
+              size="small"
+            >
+              Đồng hồ đếm ngược
             </Button>
           </div>
           <div
-            ref={(ref) => ref && connectors.create(ref, <SalesPageContent />)}>
+            ref={(ref) => ref && connectors.create(ref, <SalesPageContent />)}
+          >
             <Button
               block
               icon={<MdCheckCircle />}
               style={{ cursor: "move" }}
-              size="small">
-              Sales Content
+              size="small"
+            >
+              Nội dung bán hàng
             </Button>
           </div>
           <div
@@ -203,17 +218,19 @@ export const Toolbox = () => {
               connectors.create(
                 ref,
                 <Element is={TwoColumnLayout} canvas>
-                  <Text text="Left Column" />
-                  <Text text="Right Column" />
-                </Element>
+                  <Text text="Cột trái" />
+                  <Text text="Cột phải" />
+                </Element>,
               )
-            }>
+            }
+          >
             <Button
               block
               icon={<MdViewWeek />}
               style={{ cursor: "move" }}
-              size="small">
-              Two Columns
+              size="small"
+            >
+              Hai cột
             </Button>
           </div>
         </Space>
@@ -221,7 +238,7 @@ export const Toolbox = () => {
     },
     {
       key: "step3",
-      label: "Step 3: Payment",
+      label: "Bước 3: Thanh toán",
       children: (
         <Space direction="vertical" style={{ width: "100%" }} size="small">
           <div ref={(ref) => ref && connectors.create(ref, <PaymentQRCode />)}>
@@ -229,8 +246,9 @@ export const Toolbox = () => {
               block
               icon={<MdQrCode2 />}
               style={{ cursor: "move" }}
-              size="small">
-              Payment QR Code
+              size="small"
+            >
+              Mã QR thanh toán
             </Button>
           </div>
           <div ref={(ref) => ref && connectors.create(ref, <PaymentInfo />)}>
@@ -238,8 +256,9 @@ export const Toolbox = () => {
               block
               icon={<MdInfo />}
               style={{ cursor: "move" }}
-              size="small">
-              Payment Info
+              size="small"
+            >
+              Thông tin thanh toán
             </Button>
           </div>
           <div ref={(ref) => ref && connectors.create(ref, <PaymentStatus />)}>
@@ -247,8 +266,9 @@ export const Toolbox = () => {
               block
               icon={<MdPayment />}
               style={{ cursor: "move" }}
-              size="small">
-              Payment Status
+              size="small"
+            >
+              Trạng thái thanh toán
             </Button>
           </div>
         </Space>
@@ -256,7 +276,7 @@ export const Toolbox = () => {
     },
     {
       key: "common",
-      label: "Common Components",
+      label: "Thành phần chung",
       children: (
         <Space direction="vertical" style={{ width: "100%" }} size="small">
           <div ref={(ref) => ref && connectors.create(ref, <Footer />)}>
@@ -264,8 +284,9 @@ export const Toolbox = () => {
               block
               icon={<MdContactPage />}
               style={{ cursor: "move" }}
-              size="small">
-              Footer
+              size="small"
+            >
+              Chân trang
             </Button>
           </div>
         </Space>
@@ -276,7 +297,7 @@ export const Toolbox = () => {
   return (
     <div style={{ padding: "16px" }}>
       <AntText strong style={{ marginBottom: "16px", display: "block" }}>
-        Components
+        Thành phần
       </AntText>
       <Collapse defaultActiveKey={["basic"]} ghost items={collapseItems} />
     </div>
@@ -314,19 +335,21 @@ export const SettingsPanel = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-          }}>
+          }}
+        >
           <AntText strong>
             <MdSettings
               style={{ verticalAlign: "middle", marginRight: "4px" }}
             />
-            Settings: {selected.name}
+            Cài đặt: {selected.name}
           </AntText>
           {selected.isDeletable && (
             <Button
               danger
               size="small"
-              onClick={() => actions.delete(selected.id)}>
-              Delete
+              onClick={() => actions.delete(selected.id)}
+            >
+              Xóa
             </Button>
           )}
         </div>
@@ -336,7 +359,7 @@ export const SettingsPanel = () => {
     </div>
   ) : (
     <div style={{ padding: "32px 16px", textAlign: "center" }}>
-      <Empty description="Select a component to edit its properties" />
+      <Empty description="Chọn một thành phần để chỉnh sửa thuộc tính" />
     </div>
   );
 };

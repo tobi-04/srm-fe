@@ -51,8 +51,8 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
   const bankCode = transaction?.bank_code || "MB";
   const bankName = transaction?.bank_name || "";
   const accountName = transaction?.account_name || "";
-  const transferContent = transaction?.transfer_code || "ZLP123456";
-  const totalAmount = transaction?.amount || 100700;
+  const transferContent = transaction?.transfer_code || "CHÀO MỪNG";
+  const totalAmount = transaction?.amount || 0;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -187,6 +187,48 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
             <span style={{ color: "#ff4d4f", fontWeight: "bold" }}>
               {displayTransferContent}
             </span>
+          </div>
+        </div>
+
+        {/* Pricing Breakdown */}
+        <div
+          style={{
+            marginTop: "16px",
+            paddingTop: "16px",
+            borderTop: "1px solid #eee",
+            width: "100%",
+            maxWidth: "400px",
+          }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "4px",
+              color: "#666",
+            }}>
+            <span>Giá khóa học:</span>
+            <span>{formatCurrency(totalAmount - 700)}</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "8px",
+              color: "#666",
+            }}>
+            <span>Phí giao dịch:</span>
+            <span>{formatCurrency(700)}</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "18px",
+              fontWeight: "bold",
+              color: "#1890ff",
+            }}>
+            <span>Tổng cộng:</span>
+            <span>{formatCurrency(totalAmount)}</span>
           </div>
         </div>
       </div>
