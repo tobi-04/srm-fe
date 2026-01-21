@@ -17,9 +17,8 @@ import {
   Row,
   Col,
   Tabs,
-  TimePicker,
+  Divider,
 } from "antd";
-import dayjs from "dayjs";
 import {
   MdAdd,
   MdEdit,
@@ -53,20 +52,13 @@ export default function EmailAutomationPage() {
   const [automationDescription, setAutomationDescription] = useState("");
   const [triggerType, setTriggerType] = useState<"event" | "group">("event");
   const [targetGroup, setTargetGroup] = useState<string>("all_students");
-  const [scheduleType, setScheduleType] = useState<"once" | "recurring">(
-    "once"
-  );
-  const [scheduleInterval, setScheduleInterval] = useState<
-    "day" | "week" | "month" | "year"
-  >("day");
-  const [scheduleTime, setScheduleTime] = useState<string>("09:00");
   const [eventType, setEventType] = useState("user.registered");
   const [isActive, setIsActive] = useState(false);
 
   // Step editor modal
   const [stepModalVisible, setStepModalVisible] = useState(false);
   const [editingStep, setEditingStep] = useState<EmailAutomationStep | null>(
-    null
+    null,
   );
   const [stepForm] = Form.useForm();
   const [stepBodyContent, setStepBodyContent] = useState("");
@@ -123,12 +115,18 @@ export default function EmailAutomationPage() {
     setTriggerType(automation.trigger_type || "event");
     setEventType(automation.event_type || "");
     setTargetGroup(automation.target_group || "all_students");
-    setScheduleType(automation.schedule_type || "once");
-    const cron = automation.cron_expression || "0 9 * * *";
-    const { time, interval } = parseCron(cron);
-    setScheduleTime(time);
-    setScheduleInterval(interval);
     setIsActive(automation.is_active);
+  };
+
+  const handleNewAutomation = () => {
+    setSelectedAutomation(null);
+    setAutomationName("");
+    setAutomationDescription("");
+    setTriggerType("event");
+    setEventType("user.registered");
+    setTargetGroup("all_students");
+    setIsActive(false);
+    setSteps([]);
   };
 
   const loadSteps = async (automationId: string) => {
@@ -166,37 +164,6 @@ export default function EmailAutomationPage() {
     }
   };
 
-  const generateCron = (time: string, interval: string) => {
-    const [hour, minute] = time.split(":").map((s) => parseInt(s));
-    switch (interval) {
-      case "day":
-        return `${minute} ${hour} * * *`;
-      case "week":
-        return `${minute} ${hour} * * 0`; // Sunday
-      case "month":
-        return `${minute} ${hour} 1 * *`; // 1st of month
-      case "year":
-        return `${minute} ${hour} 1 1 *`; // Jan 1st
-      default:
-        return `${minute} ${hour} * * *`;
-    }
-  };
-
-  const parseCron = (cron: string) => {
-    const parts = cron.split(" ");
-    if (parts.length < 5) return { time: "09:00", interval: "day" as const };
-    const minute = parts[0].padStart(2, "0");
-    const hour = parts[1].padStart(2, "0");
-    const time = `${hour}:${minute}`;
-
-    let interval: "day" | "week" | "month" | "year" = "day";
-    if (parts[4] === "0") interval = "week";
-    else if (parts[2] === "1" && parts[3] === "*") interval = "month";
-    else if (parts[2] === "1" && parts[3] === "1") interval = "year";
-
-    return { time, interval };
-  };
-
   const handleCreateAutomation = async () => {
     if (!automationName || !eventType) {
       message.error("Vui lòng nhập tên và chọn sự kiện");
@@ -212,11 +179,6 @@ export default function EmailAutomationPage() {
         event_type: triggerType === "event" ? eventType : undefined,
         target_group:
           triggerType === "group" ? (targetGroup as any) : undefined,
-        schedule_type: triggerType === "group" ? scheduleType : "once",
-        cron_expression:
-          triggerType === "group" && scheduleType === "recurring"
-            ? generateCron(scheduleTime, scheduleInterval)
-            : undefined,
       });
       message.success("Tạo automation thành công");
       await loadAutomations();
@@ -240,11 +202,6 @@ export default function EmailAutomationPage() {
         event_type: triggerType === "event" ? eventType : undefined,
         target_group:
           triggerType === "group" ? (targetGroup as any) : undefined,
-        schedule_type: triggerType === "group" ? scheduleType : "once",
-        cron_expression:
-          triggerType === "group" && scheduleType === "recurring"
-            ? generateCron(scheduleTime, scheduleInterval)
-            : undefined,
       });
       message.success("Cập nhật automation thành công");
       await loadAutomations();
@@ -261,7 +218,7 @@ export default function EmailAutomationPage() {
     setLoading(true);
     try {
       const updated = await emailAutomationApi.toggleAutomation(
-        selectedAutomation._id
+        selectedAutomation._id,
       );
       setIsActive(updated.is_active);
       message.success(updated.is_active ? "Đã kích hoạt" : "Đã tạm dừng");
@@ -271,6 +228,33 @@ export default function EmailAutomationPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteAutomation = async () => {
+    if (!selectedAutomation) return;
+
+    Modal.confirm({
+      title: "Xác nhận xóa chiến dịch",
+      content:
+        "Bạn có chắc muốn xóa vĩnh viễn chiến dịch này và tất cả các bước liên quan? Hành động này không thể hoàn tác.",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: async () => {
+        setLoading(true);
+        try {
+          await emailAutomationApi.deleteAutomation(selectedAutomation._id);
+          message.success("Xóa chiến dịch thành công");
+          setSelectedAutomation(null);
+          handleNewAutomation();
+          await loadAutomations();
+        } catch (error) {
+          message.error("Không thể xóa chiến dịch");
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   const handleAddStep = () => {
@@ -359,11 +343,6 @@ export default function EmailAutomationPage() {
     { label: "Saler (Đội ngũ bán hàng)", value: "salers" },
   ];
 
-  const scheduleTypeOptions = [
-    { label: "Gửi một lần (Immediate Dispatch)", value: "once" },
-    { label: "Gửi lặp lại (Recurring - Cron)", value: "recurring" },
-  ];
-
   const logColumns = [
     {
       title: "Chiến dịch",
@@ -435,34 +414,92 @@ export default function EmailAutomationPage() {
       }
       extra={
         <Space>
-          <Switch checked={isActive} onChange={handleToggleActive} />
+          <Switch
+            checked={isActive}
+            onChange={handleToggleActive}
+            disabled={!selectedAutomation}
+          />
           <Text type="secondary">{isActive ? "Hoạt động" : "Tạm dừng"}</Text>
         </Space>
       }>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         {/* Automation selector */}
-        <div>
-          <Text strong>Chọn chiến dịch</Text>
-          <Select
-            style={{ width: "100%", marginTop: 8 }}
-            value={selectedAutomation?._id}
-            onChange={(value) => {
-              const automation = automations.find((a) => a._id === value);
-              if (automation) selectAutomation(automation);
-            }}
-            options={automations.map((a) => ({ label: a.name, value: a._id }))}
-          />
-        </div>
+        {/* Unified Campaign Information */}
+        <div
+          style={{
+            background: "#f8f9fa",
+            padding: 16,
+            borderRadius: 8,
+            border: "1px solid #e9ecef",
+          }}>
+          <div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 8,
+              }}>
+              <Space>
+                <Text strong>Chiến dịch</Text>
+                {selectedAutomation && (
+                  <Button
+                    type="text"
+                    danger
+                    size="small"
+                    icon={<MdDelete />}
+                    onClick={handleDeleteAutomation}>
+                    Xóa
+                  </Button>
+                )}
+              </Space>
+              {!selectedAutomation && automations.length > 0 && (
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={() => selectAutomation(automations[0])}>
+                  Quay lại chọn chiến dịch
+                </Button>
+              )}
+            </div>
 
-        {/* Campaign name */}
-        <div>
-          <Text strong>Tên chiến dịch</Text>
-          <Input
-            style={{ marginTop: 8 }}
-            value={automationName}
-            onChange={(e) => setAutomationName(e.target.value)}
-            placeholder="VD: Khuyến mãi tháng 11..."
-          />
+            {!selectedAutomation ? (
+              <Input
+                value={automationName}
+                onChange={(e) => setAutomationName(e.target.value)}
+                placeholder="Nhập tên chiến dịch mới..."
+                autoFocus
+              />
+            ) : (
+              <Select
+                style={{ width: "100%" }}
+                placeholder="Chọn chiến dịch hoặc tạo mới"
+                value={selectedAutomation?._id}
+                onChange={(value) => {
+                  const automation = automations.find((a) => a._id === value);
+                  if (automation) selectAutomation(automation);
+                }}
+                options={automations.map((a) => ({
+                  label: a.name,
+                  value: a._id,
+                }))}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider style={{ margin: "4px 0" }} />
+                    <Button
+                      type="text"
+                      block
+                      icon={<MdAdd />}
+                      onClick={handleNewAutomation}
+                      style={{ textAlign: "left", color: "#f78404" }}>
+                      Tạo chiến dịch mới
+                    </Button>
+                  </>
+                )}
+              />
+            )}
+          </div>
         </div>
 
         {/* Trigger type */}
@@ -498,126 +535,85 @@ export default function EmailAutomationPage() {
                 options={targetGroupOptions}
               />
             </div>
-            <div>
-              <Text strong>Loại lịch gửi</Text>
-              <Select
-                style={{ width: "100%", marginTop: 8 }}
-                value={scheduleType}
-                onChange={(val) => setScheduleType(val as any)}
-                options={scheduleTypeOptions}
-              />
-            </div>
-            {scheduleType === "recurring" && (
-              <Space direction="vertical" style={{ width: "100%" }}>
-                <div>
-                  <Text strong>Lặp lại mỗi</Text>
-                  <Select
-                    style={{ width: "100%", marginTop: 8 }}
-                    value={scheduleInterval}
-                    onChange={(val) => setScheduleInterval(val as any)}
-                    options={[
-                      { label: "Ngày", value: "day" },
-                      { label: "Tuần", value: "week" },
-                      { label: "Tháng", value: "month" },
-                      { label: "Năm", value: "year" },
-                    ]}
-                  />
-                </div>
-                <div>
-                  <Text strong>Vào lúc</Text>
-                  <TimePicker
-                    style={{ width: "100%", marginTop: 8 }}
-                    format="HH:mm"
-                    value={dayjs(scheduleTime, "HH:mm")}
-                    onChange={(time) =>
-                      setScheduleTime(time ? time.format("HH:mm") : "09:00")
-                    }
-                  />
-                </div>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Mẹo: Các email trong chuỗi sẽ được gửi dựa theo thời gian này
-                  cộng với độ trễ (delay) của từng bước.
-                </Text>
-              </Space>
-            )}
           </Space>
         )}
 
-        {/* Email steps */}
-        <div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 8,
-            }}>
-            <Text strong>Danh sách Email</Text>
-            <Button
-              type="primary"
-              size="small"
-              icon={<MdAdd />}
-              onClick={handleAddStep}
-              disabled={!selectedAutomation}>
-              Thêm bước
-            </Button>
-          </div>
+        {/* Email steps - only show if campaign exists */}
+        {selectedAutomation && (
+          <div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 8,
+              }}>
+              <Text strong>Danh sách Email</Text>
+              <Button
+                type="primary"
+                size="small"
+                icon={<MdAdd />}
+                onClick={handleAddStep}>
+                Thêm bước
+              </Button>
+            </div>
 
-          <List
-            dataSource={steps}
-            renderItem={(step) => (
-              <List.Item
-                actions={[
-                  <Button
-                    key="edit"
-                    type="text"
-                    size="small"
-                    icon={<MdEdit />}
-                    onClick={() => handleEditStep(step)}
-                  />,
-                  <Button
-                    key="delete"
-                    type="text"
-                    size="small"
-                    danger
-                    icon={<MdDelete />}
-                    onClick={() => handleDeleteStep(step._id)}
-                  />,
-                ]}>
-                <List.Item.Meta
-                  avatar={
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
-                        background: "#f78404",
-                        color: "white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: "bold",
-                      }}>
-                      {step.step_order}
-                    </div>
-                  }
-                  title={step.subject_template}
-                  description={
-                    <Space>
-                      <MdSchedule />
-                      <Text type="secondary">
-                        {step.delay_minutes === 0
-                          ? "Ngay lập tức"
-                          : `Sau ${step.delay_minutes} phút`}
-                      </Text>
-                    </Space>
-                  }
-                />
-              </List.Item>
-            )}
-            locale={{ emptyText: "Chưa có bước nào" }}
-          />
-        </div>
+            <List
+              dataSource={steps}
+              renderItem={(step) => (
+                <List.Item
+                  actions={[
+                    <Button
+                      key="edit"
+                      type="text"
+                      size="small"
+                      icon={<MdEdit />}
+                      onClick={() => handleEditStep(step)}
+                    />,
+                    <Button
+                      key="delete"
+                      type="text"
+                      size="small"
+                      danger
+                      icon={<MdDelete />}
+                      onClick={() => handleDeleteStep(step._id)}
+                    />,
+                  ]}>
+                  <List.Item.Meta
+                    avatar={
+                      <div
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: "50%",
+                          background: "#f78404",
+                          color: "white",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: "bold",
+                        }}>
+                        {step.step_order}
+                      </div>
+                    }
+                    title={step.subject_template}
+                    description={
+                      <Space>
+                        <MdSchedule />
+                        <Text type="secondary">
+                          {step.delay_minutes === 0
+                            ? "Ngay lập tức"
+                            : `Sau ${step.delay_minutes} phút`}
+                        </Text>
+                      </Space>
+                    }
+                  />
+                </List.Item>
+              )}
+              locale={{ emptyText: "Chưa có bước nào" }}
+            />
+          </div>
+        )}
 
         {/* Save button */}
         <Button

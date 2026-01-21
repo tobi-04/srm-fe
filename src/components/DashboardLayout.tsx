@@ -30,6 +30,7 @@ import {
   MdMail,
   MdTrendingUp,
   MdAccountBalanceWallet,
+  MdHistory,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -132,6 +133,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       label: "TÀI CHÍNH",
       type: "group",
       children: [
+        {
+          key: "/admin/orders",
+          icon: <MdHistory size={20} />,
+          label: "Lịch sử đơn hàng",
+        },
         {
           key: "/admin/withdrawals",
           icon: <MdAccountBalanceWallet size={20} />,
