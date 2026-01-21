@@ -88,10 +88,12 @@ export interface CommissionSummary {
 const salerApi = {
   /**
    * Get saler dashboard overview
+   * @param days - Number of days for chart data (default: 7)
    */
-  async getDashboard(): Promise<SalerDashboard> {
+  async getDashboard(days: number = 7): Promise<SalerDashboard> {
     const response = await apiClient.get<SalerDashboard>(
       "/saler/dashboard/overview",
+      { params: { days } },
     );
     return response.data;
   },

@@ -110,20 +110,20 @@ export default function SalerCommissionsPage() {
         <Col xs={24} sm={8}>
           <Card>
             <Statistic
-              title="Chờ duyệt"
-              value={formatCurrency(summary?.pending?.total || 0)}
-              valueStyle={{ color: "#f59e0b" }}
-              prefix={<MdAttachMoney />}
+              title="Khả dụng"
+              value={formatCurrency(summary?.available?.total || 0)}
+              valueStyle={{ color: "#10b981" }}
+              prefix={<MdAccountBalanceWallet />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card>
             <Statistic
-              title="Khả dụng"
-              value={formatCurrency(summary?.available?.total || 0)}
-              valueStyle={{ color: "#10b981" }}
-              prefix={<MdAccountBalanceWallet />}
+              title="Chờ duyệt"
+              value={formatCurrency(summary?.pending?.total || 0)}
+              valueStyle={{ color: "#f59e0b" }}
+              prefix={<MdAttachMoney />}
             />
           </Card>
         </Col>
