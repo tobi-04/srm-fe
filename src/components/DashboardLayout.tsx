@@ -29,6 +29,7 @@ import {
   MdWebAsset,
   MdMail,
   MdTrendingUp,
+  MdAccountBalanceWallet,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -126,6 +127,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         },
       ],
     },
+    {
+      key: "finance-mgmt",
+      label: "TÀI CHÍNH",
+      type: "group",
+      children: [
+        {
+          key: "/admin/withdrawals",
+          icon: <MdAccountBalanceWallet size={20} />,
+          label: "Yêu cầu rút tiền",
+        },
+        {
+          key: "/admin/withdrawal-config",
+          icon: <MdDescription size={20} />,
+          label: "Cấu hình rút tiền",
+        },
+      ],
+    },
   ];
 
   const salerMenuItems: MenuProps["items"] = [
@@ -158,6 +176,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "/saler/kpi",
           icon: <MdTrendingUp size={20} />,
           label: "KPI & Mục tiêu",
+        },
+      ],
+    },
+    {
+      key: "saler-settings",
+      label: "TÀI KHOẢN",
+      type: "group",
+      children: [
+        {
+          key: "/saler/withdrawals",
+          icon: <MdAccountBalanceWallet size={20} />,
+          label: "Rút tiền",
+        },
+        {
+          key: "/saler/settings",
+          icon: <MdPerson size={20} />,
+          label: "Cài đặt",
         },
       ],
     },

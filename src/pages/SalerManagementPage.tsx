@@ -18,6 +18,11 @@ import {
   Divider,
   Dropdown,
   type MenuProps,
+  Row,
+  Col,
+  Statistic,
+  Select,
+  Progress,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -36,7 +41,17 @@ import {
   MdTrendingUp,
   MdAttachMoney,
   MdMoreVert,
+  MdShoppingCart,
 } from "react-icons/md";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import DashboardLayout from "../components/DashboardLayout";
 import {
   userApi,
@@ -46,8 +61,9 @@ import {
   AssignCoursesDto,
   UpdateCommissionsDto,
   CourseCommission,
-  SalerDetails,
+  SalerDetails as SalerDetailsType,
 } from "../api/userApi";
+import { adminAnalyticsApi } from "../api/adminAnalyticsApi";
 import { getAvatarStyles } from "../utils/color";
 import apiClient from "../api/client";
 import { DragDropTransfer } from "../components/DragDropTransfer";
@@ -98,8 +114,21 @@ export default function SalerManagementPage() {
   const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
   const [selectedSalerForCommission, setSelectedSalerForCommission] =
     useState<Saler | null>(null);
-  const [salerDetails, setSalerDetails] = useState<SalerDetails | null>(null);
+  const [salerDetails, setSalerDetails] = useState<SalerDetailsType | null>(
+    null,
+  );
   const [loadingCommission, setLoadingCommission] = useState(false);
+
+  // Saler Detail Modal (Analytics)
+  const [isSalerDetailModalOpen, setIsSalerDetailModalOpen] = useState(false);
+  const [selectedSalerForDetail, setSelectedSalerForDetail] =
+    useState<Saler | null>(null);
+  const [salerDetailPeriod, setSalerDetailPeriod] = useState<
+    "month" | "quarter" | "year"
+  >("month");
+  const [kpiStatsPeriod, setKpiStatsPeriod] = useState<
+    "month" | "quarter" | "year"
+  >("month");
 
   const [form] = Form.useForm();
   const [kpiForm] = Form.useForm();
@@ -126,6 +155,35 @@ export default function SalerManagementPage() {
       }),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+  });
+
+  // KPI Statistics query
+  const { data: kpiStats } = useQuery({
+    queryKey: ["saler-kpi-stats", kpiStatsPeriod],
+    queryFn: () => adminAnalyticsApi.getSalerKPIStatistics(kpiStatsPeriod),
+  });
+
+  // KPI Chart query
+  const { data: kpiChart } = useQuery({
+    queryKey: ["saler-kpi-chart", kpiStatsPeriod],
+    queryFn: () => adminAnalyticsApi.getSalerKPIChart(kpiStatsPeriod, 6),
+  });
+
+  // Saler Detail query
+  const { data: salerAnalytics, isLoading: salerAnalyticsLoading } = useQuery({
+    queryKey: [
+      "saler-detail-analytics",
+      selectedSalerForDetail?._id,
+      salerDetailPeriod,
+    ],
+    queryFn: () =>
+      selectedSalerForDetail
+        ? adminAnalyticsApi.getSalerDetails(
+            selectedSalerForDetail._id,
+            salerDetailPeriod,
+          )
+        : null,
+    enabled: !!selectedSalerForDetail,
   });
 
   const createMutation = useMutation({
@@ -563,19 +621,28 @@ export default function SalerManagementPage() {
             key: "kpi",
             label: "Quản lý KPI",
             icon: <MdTrendingUp size={16} />,
-            onClick: () => handleOpenKpiDrawer(record),
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              handleOpenKpiDrawer(record);
+            },
           },
           {
             key: "courses",
             label: "Phân bổ khóa học",
             icon: <MdAssignment size={16} />,
-            onClick: () => handleOpenCourseModal(record),
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              handleOpenCourseModal(record);
+            },
           },
           {
             key: "commission",
             label: "Cấu hình hoa hồng",
             icon: <MdAttachMoney size={16} />,
-            onClick: () => handleOpenCommissionModal(record),
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              handleOpenCommissionModal(record);
+            },
           },
           {
             type: "divider",
@@ -588,14 +655,18 @@ export default function SalerManagementPage() {
             ) : (
               <MdLockOpen size={16} />
             ),
-            onClick: () => toggleMutation.mutate(record._id),
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              toggleMutation.mutate(record._id);
+            },
           },
           {
             key: "delete",
             label: "Xóa vĩnh viễn",
             icon: <MdDeleteForever size={16} />,
             danger: true,
-            onClick: () => {
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
               Modal.confirm({
                 title: "Xóa vĩnh viễn?",
                 content: "Hành động này không thể hoàn tác!",
@@ -614,6 +685,7 @@ export default function SalerManagementPage() {
               type="text"
               icon={<MdMoreVert size={20} />}
               style={{ padding: 4 }}
+              onClick={(e) => e.stopPropagation()}
             />
           </Dropdown>
         );
@@ -652,15 +724,119 @@ export default function SalerManagementPage() {
             Quản lý đội ngũ bán hàng, tạo tài khoản mới, và cấu hình KPI
           </Text>
         </div>
-        <Button
-          type="primary"
-          icon={<MdAdd size={isMobile ? 18 : 20} />}
-          size={isMobile ? "middle" : "large"}
-          onClick={() => setIsModalOpen(true)}
-          style={{ width: isMobile ? "100%" : "auto" }}>
-          Tạo Saler mới
-        </Button>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            width: isMobile ? "100%" : "auto",
+            justifyContent: isMobile ? "space-between" : "flex-end",
+          }}>
+          <Space>
+            <Text strong>Thống kê theo:</Text>
+            <Select
+              value={kpiStatsPeriod}
+              onChange={setKpiStatsPeriod}
+              style={{ width: 120 }}>
+              <Select.Option value="month">Tháng</Select.Option>
+              <Select.Option value="quarter">Quý</Select.Option>
+              <Select.Option value="year">Năm</Select.Option>
+            </Select>
+          </Space>
+          <Button
+            type="primary"
+            icon={<MdAdd size={isMobile ? 18 : 20} />}
+            size={isMobile ? "middle" : "large"}
+            onClick={() => setIsModalOpen(true)}>
+            Tạo Saler mới
+          </Button>
+        </div>
       </div>
+
+      {/* KPI Statistics */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title={<span style={{ fontWeight: 600 }}>Tổng Saler</span>}
+              value={kpiStats?.total_salers || 0}
+              valueStyle={{ color: "#2563eb", fontWeight: 700 }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title={<span style={{ fontWeight: 600 }}>Đạt KPI</span>}
+              value={kpiStats?.achieved_count || 0}
+              suffix={`/ ${kpiStats?.total_salers || 0}`}
+              valueStyle={{ color: "#10b981", fontWeight: 700 }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title={<span style={{ fontWeight: 600 }}>% Đạt KPI</span>}
+              value={kpiStats?.achieved_percentage || 0}
+              suffix="%"
+              precision={1}
+              valueStyle={{
+                color:
+                  (kpiStats?.achieved_percentage || 0) >= 50
+                    ? "#10b981"
+                    : "#f59e0b",
+                fontWeight: 700,
+              }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title={<span style={{ fontWeight: 600 }}>TB % Hoàn thành</span>}
+              value={kpiStats?.avg_completion || 0}
+              suffix="%"
+              precision={1}
+              valueStyle={{ color: "#3b82f6", fontWeight: 700 }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* KPI Chart */}
+      {kpiChart && kpiChart.length > 0 && (
+        <Card
+          size="small"
+          title={
+            <span style={{ fontWeight: 600 }}>
+              Số người đạt KPI theo{" "}
+              {kpiStatsPeriod === "month"
+                ? "tháng"
+                : kpiStatsPeriod === "quarter"
+                  ? "quý"
+                  : "năm"}
+            </span>
+          }
+          style={{ marginBottom: 24 }}>
+          <div style={{ height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={kpiChart}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="label" fontSize={12} />
+                <YAxis allowDecimals={false} fontSize={12} />
+                <Tooltip formatter={(value: any) => [value, "Đạt KPI"]} />
+                <Bar
+                  dataKey="achieved_count"
+                  fill="#10b981"
+                  radius={[4, 4, 0, 0]}
+                  name="Đạt KPI"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
 
       <Card variant="borderless" style={{ padding: isMobile ? 12 : undefined }}>
         {/* Search & Actions Bar */}
@@ -751,6 +927,13 @@ export default function SalerManagementPage() {
           loading={isLoading}
           scroll={{ x: isMobile ? undefined : 1200 }}
           size={isMobile ? "small" : "middle"}
+          onRow={(record) => ({
+            onClick: () => {
+              setSelectedSalerForDetail(record);
+              setIsSalerDetailModalOpen(true);
+            },
+            style: { cursor: "pointer" },
+          })}
           pagination={{
             current: page,
             pageSize: pageSize,
@@ -972,6 +1155,201 @@ export default function SalerManagementPage() {
               </>
             )}
           </Form>
+        )}
+      </Modal>
+
+      {/* Saler Detail Modal */}
+      <Modal
+        title={
+          <Space>
+            <Avatar
+              size={40}
+              style={{
+                ...getAvatarStyles(selectedSalerForDetail?.name || ""),
+                fontWeight: "bold",
+              }}>
+              {selectedSalerForDetail?.name?.substring(0, 2).toUpperCase()}
+            </Avatar>
+            <div>
+              <Text strong>{selectedSalerForDetail?.name}</Text>
+              <br />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {selectedSalerForDetail?.email}
+              </Text>
+            </div>
+          </Space>
+        }
+        open={isSalerDetailModalOpen}
+        onCancel={() => setIsSalerDetailModalOpen(false)}
+        footer={null}
+        width={700}>
+        <div style={{ marginBottom: 16 }}>
+          <Space>
+            <Text>Kỳ:</Text>
+            <Select
+              size="small"
+              value={salerDetailPeriod}
+              onChange={setSalerDetailPeriod}
+              style={{ width: 100 }}>
+              <Select.Option value="month">Tháng</Select.Option>
+              <Select.Option value="quarter">Quý</Select.Option>
+              <Select.Option value="year">Năm</Select.Option>
+            </Select>
+          </Space>
+        </div>
+
+        {salerAnalyticsLoading ? (
+          <div style={{ textAlign: "center", padding: 40 }}>
+            <Spin />
+          </div>
+        ) : salerAnalytics ? (
+          <>
+            {/* KPI Progress */}
+            <Card size="small" style={{ marginBottom: 16 }}>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Statistic
+                    title={
+                      <span style={{ fontWeight: 600 }}>Doanh thu thực tế</span>
+                    }
+                    value={salerAnalytics.actual_revenue}
+                    suffix="đ"
+                    valueStyle={{ fontWeight: 700 }}
+                    formatter={(value) =>
+                      (value as number).toLocaleString("vi-VN")
+                    }
+                  />
+                </Col>
+                <Col span={12}>
+                  <Statistic
+                    title={<span style={{ fontWeight: 600 }}>Mục tiêu</span>}
+                    value={salerAnalytics.target_revenue}
+                    suffix="đ"
+                    valueStyle={{ fontWeight: 700 }}
+                    formatter={(value) =>
+                      (value as number).toLocaleString("vi-VN")
+                    }
+                  />
+                </Col>
+              </Row>
+              <div style={{ marginTop: 16 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 4,
+                  }}>
+                  <Text type="secondary">% Hoàn thành KPI</Text>
+                  <Text
+                    strong
+                    style={{
+                      color:
+                        salerAnalytics.completion_percentage >= 100
+                          ? "#10b981"
+                          : "#f59e0b",
+                    }}>
+                    {salerAnalytics.completion_percentage.toFixed(1)}%
+                  </Text>
+                </div>
+                <Progress
+                  percent={Math.min(salerAnalytics.completion_percentage, 100)}
+                  status={
+                    salerAnalytics.completion_percentage >= 100
+                      ? "success"
+                      : "active"
+                  }
+                  showInfo={false}
+                />
+              </div>
+            </Card>
+
+            {/* Stats Row */}
+            <Row gutter={16} style={{ marginBottom: 16 }}>
+              <Col span={12}>
+                <Card size="small">
+                  <Statistic
+                    title={
+                      <span style={{ fontWeight: 600 }}>Tổng đơn hàng</span>
+                    }
+                    value={salerAnalytics.total_orders}
+                    valueStyle={{ fontWeight: 700 }}
+                    prefix={<MdShoppingCart />}
+                  />
+                </Card>
+              </Col>
+              <Col span={12}>
+                <Card size="small">
+                  <Statistic
+                    title={<span style={{ fontWeight: 600 }}>Kỳ thống kê</span>}
+                    value={
+                      salerDetailPeriod === "month"
+                        ? "Tháng này"
+                        : salerDetailPeriod === "quarter"
+                          ? "Quý này"
+                          : "Năm nay"
+                    }
+                    valueStyle={{ fontSize: 18, fontWeight: 700 }}
+                  />
+                </Card>
+              </Col>
+            </Row>
+
+            {/* Top Courses */}
+            {salerAnalytics.top_courses &&
+              salerAnalytics.top_courses.length > 0 && (
+                <Card
+                  size="small"
+                  title={
+                    <span style={{ fontWeight: 600 }}>
+                      Top 3 khóa học bán chạy
+                    </span>
+                  }>
+                  {salerAnalytics.top_courses.map((course, index) => (
+                    <div
+                      key={course.course_id}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        padding: "8px 0",
+                        borderBottom:
+                          index < salerAnalytics.top_courses.length - 1
+                            ? "1px solid #f1f5f9"
+                            : "none",
+                      }}>
+                      <Space>
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            fontWeight: "bold",
+                            color:
+                              index === 0
+                                ? "#f59e0b"
+                                : index === 1
+                                  ? "#94a3b8"
+                                  : "#d97706",
+                          }}>
+                          {index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉"}
+                        </Text>
+                        <div>
+                          <Text strong>{course.title}</Text>
+                          <br />
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {course.count} đơn
+                          </Text>
+                        </div>
+                      </Space>
+                      <Text strong style={{ color: "#10b981" }}>
+                        {course.revenue.toLocaleString("vi-VN")}đ
+                      </Text>
+                    </div>
+                  ))}
+                </Card>
+              )}
+          </>
+        ) : (
+          <div style={{ textAlign: "center", padding: 40 }}>
+            <Text type="secondary">Không có dữ liệu</Text>
+          </div>
         )}
       </Modal>
     </DashboardLayout>

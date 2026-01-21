@@ -122,4 +122,96 @@ export const adminAnalyticsApi = {
     });
     return response.data;
   },
+
+  // Saler KPI Analytics
+  getTopSalers: async (
+    period: "month" | "quarter" | "year" = "month",
+    limit: number = 3,
+  ): Promise<TopSaler[]> => {
+    const response = await axios.get(`${API_URL}/admin/saler-kpi/top`, {
+      headers: getAuthHeader(),
+      params: { period, limit },
+    });
+    return response.data;
+  },
+
+  getSalerKPIStatistics: async (
+    period: "month" | "quarter" | "year" = "month",
+  ): Promise<SalerKPIStatistics> => {
+    const response = await axios.get(`${API_URL}/admin/saler-kpi/statistics`, {
+      headers: getAuthHeader(),
+      params: { period },
+    });
+    return response.data;
+  },
+
+  getSalerKPIChart: async (
+    period: "month" | "quarter" | "year" = "month",
+    months: number = 6,
+  ): Promise<KPIChartData[]> => {
+    const response = await axios.get(`${API_URL}/admin/saler-kpi/chart`, {
+      headers: getAuthHeader(),
+      params: { period, months },
+    });
+    return response.data;
+  },
+
+  getSalerDetails: async (
+    salerId: string,
+    period: "month" | "quarter" | "year" = "month",
+  ): Promise<SalerDetailAnalytics | null> => {
+    const response = await axios.get(
+      `${API_URL}/admin/saler-kpi/${salerId}/details`,
+      {
+        headers: getAuthHeader(),
+        params: { period },
+      },
+    );
+    return response.data;
+  },
 };
+
+// Additional types for saler KPI analytics
+export interface TopSaler {
+  saler_id: string;
+  name: string;
+  email: string;
+  avatar: string | null;
+  target_revenue: number;
+  actual_revenue: number;
+  total_orders: number;
+  completion_percentage: number;
+  exceeded_by: number;
+}
+
+export interface SalerKPIStatistics {
+  total_salers: number;
+  achieved_count: number;
+  achieved_percentage: number;
+  avg_completion: number;
+}
+
+export interface KPIChartData {
+  period: string;
+  label: string;
+  achieved_count: number;
+  total_salers: number;
+}
+
+export interface SalerDetailAnalytics {
+  saler_id: string;
+  name: string;
+  email: string;
+  avatar: string | null;
+  target_revenue: number;
+  actual_revenue: number;
+  total_orders: number;
+  completion_percentage: number;
+  top_courses: {
+    course_id: string;
+    title: string;
+    count: number;
+    revenue: number;
+  }[];
+  period_type: string;
+}

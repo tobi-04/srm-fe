@@ -36,7 +36,8 @@ import {
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "../components/DashboardLayout";
-import { adminAnalyticsApi } from "../api/adminAnalyticsApi";
+import { adminAnalyticsApi, TopSaler } from "../api/adminAnalyticsApi";
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
@@ -45,6 +46,10 @@ const COLORS = ["#2563eb", "#60a5fa", "#93c5fd", "#bfdbfe"];
 
 export default function AdminDashboardPage() {
   const [timeRange, setTimeRange] = useState<number>(7);
+  const [salerPeriod, setSalerPeriod] = useState<"month" | "quarter" | "year">(
+    "month",
+  );
+  const navigate = useNavigate();
 
   // Fetch real data
   const { data: summary, isLoading: summaryLoading } = useQuery({
@@ -65,6 +70,11 @@ export default function AdminDashboardPage() {
   const { data: recentPayments, isLoading: paymentsLoading } = useQuery({
     queryKey: ["admin-recent-payments"],
     queryFn: adminAnalyticsApi.getRecentPayments,
+  });
+
+  const { data: topSalers, isLoading: topSalersLoading } = useQuery({
+    queryKey: ["admin-top-salers", salerPeriod],
+    queryFn: () => adminAnalyticsApi.getTopSalers(salerPeriod, 3),
   });
 
   const isLoading =
@@ -460,6 +470,144 @@ export default function AdminDashboardPage() {
             </Card>
           </Col>
         </Row>
+
+        {/* Top Salers Row */}
+        <Card
+          variant="borderless"
+          style={{ borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}
+          title={
+            <div style={{ padding: "8px 0" }}>
+              <Title level={4} style={{ margin: 0 }}>
+                Top Salers đạt KPI
+              </Title>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                Xếp hạng theo % vượt KPI
+              </Text>
+            </div>
+          }
+          extra={
+            <Space>
+              <Select
+                value={salerPeriod}
+                variant="borderless"
+                style={{ width: 100 }}
+                onChange={(val) => setSalerPeriod(val)}>
+                <Select.Option value="month">Tháng</Select.Option>
+                <Select.Option value="quarter">Quý</Select.Option>
+                <Select.Option value="year">Năm</Select.Option>
+              </Select>
+              <Button type="link" onClick={() => navigate("/admin/salers")}>
+                Xem tất cả
+              </Button>
+            </Space>
+          }>
+          {topSalersLoading ? (
+            <div style={{ textAlign: "center", padding: 40 }}>
+              <Spin />
+            </div>
+          ) : topSalers && topSalers.length > 0 ? (
+            <Row gutter={[24, 24]}>
+              {topSalers.map((saler: TopSaler, index: number) => (
+                <Col xs={24} md={8} key={saler.saler_id}>
+                  <Card
+                    size="small"
+                    style={{
+                      borderRadius: 12,
+                      background:
+                        index === 0
+                          ? "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)"
+                          : index === 1
+                            ? "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)"
+                            : "linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)",
+                    }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                      }}>
+                      <Avatar
+                        src={saler.avatar}
+                        size={48}
+                        style={{
+                          ...getAvatarStyles(saler.name),
+                          fontWeight: "bold",
+                          border: "2px solid white",
+                        }}>
+                        {saler.name?.substring(0, 2).toUpperCase()}
+                      </Avatar>
+                      <div style={{ flex: 1 }}>
+                        <Text strong style={{ display: "block" }}>
+                          {index === 0 ? "🥇 " : index === 1 ? "🥈 " : "🥉 "}
+                          {saler.name}
+                        </Text>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          {saler.total_orders} đơn hàng
+                        </Text>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 16 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: 4,
+                        }}>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          KPI
+                        </Text>
+                        <Text
+                          strong
+                          style={{
+                            color:
+                              saler.completion_percentage >= 100
+                                ? "#10b981"
+                                : "#f59e0b",
+                          }}>
+                          {saler.completion_percentage.toFixed(1)}%
+                        </Text>
+                      </div>
+                      <div
+                        style={{
+                          height: 8,
+                          background: "rgba(255,255,255,0.6)",
+                          borderRadius: 4,
+                          overflow: "hidden",
+                        }}>
+                        <div
+                          style={{
+                            height: "100%",
+                            width: `${Math.min(saler.completion_percentage, 100)}%`,
+                            background:
+                              saler.completion_percentage >= 100
+                                ? "#10b981"
+                                : "#f59e0b",
+                            borderRadius: 4,
+                          }}
+                        />
+                      </div>
+                      {saler.exceeded_by > 0 && (
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            color: "#10b981",
+                            marginTop: 4,
+                            display: "block",
+                          }}>
+                          Vượt +{saler.exceeded_by.toFixed(1)}%
+                        </Text>
+                      )}
+                    </div>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          ) : (
+            <div style={{ textAlign: "center", padding: 40 }}>
+              <Text type="secondary">Chưa có dữ liệu</Text>
+            </div>
+          )}
+        </Card>
 
         {/* Recent Orders Table */}
         <Card

@@ -28,6 +28,10 @@ import SalerReferralLinksPage from "./pages/SalerReferralLinksPage";
 import SalerCommissionsPage from "./pages/SalerCommissionsPage";
 import SalerStudentsPage from "./pages/SalerStudentsPage";
 import SalerKPIPage from "./pages/SalerKPIPage";
+import SalerSettingsPage from "./pages/SalerSettingsPage";
+import SalerWithdrawalPage from "./pages/SalerWithdrawalPage";
+import AdminWithdrawalConfigPage from "./pages/AdminWithdrawalConfigPage";
+import AdminWithdrawalListPage from "./pages/AdminWithdrawalListPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
 
@@ -166,6 +170,22 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/saler/settings"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerSettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saler/withdrawals"
+            element={
+              <ProtectedRoute requiredRole="sale">
+                <SalerWithdrawalPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin Routes - Protected */}
           <Route
@@ -245,6 +265,22 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <EmailAutomationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/withdrawal-config"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminWithdrawalConfigPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/withdrawals"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminWithdrawalListPage />
               </ProtectedRoute>
             }
           />

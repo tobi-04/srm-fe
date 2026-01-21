@@ -165,6 +165,105 @@ const salerApi = {
     });
     return response.data;
   },
+
+  /**
+   * Get saler bank account information
+   */
+  async getBankAccount(): Promise<{ bank_account: BankAccount | null }> {
+    const response = await apiClient.get<{ bank_account: BankAccount | null }>(
+      "/saler/bank-account",
+    );
+    return response.data;
+  },
+
+  /**
+   * Update saler bank account information
+   */
+  async updateBankAccount(data: BankAccount): Promise<{
+    message: string;
+    bank_account: BankAccount;
+  }> {
+    const response = await apiClient.put<{
+      message: string;
+      bank_account: BankAccount;
+    }>("/saler/bank-account", data);
+    return response.data;
+  },
+};
+
+export interface BankAccount {
+  account_holder: string;
+  account_number: string;
+  bank_code: string;
+  bank_name: string;
+}
+
+export interface WithdrawalConfig {
+  min_withdrawal_amount: number;
+  fee_rate: number;
+  is_active: boolean;
+}
+
+export interface WithdrawalRequest {
+  _id: string;
+  user_id: string;
+  amount: number;
+  fee_amount: number;
+  net_amount: number;
+  fee_rate: number;
+  status: "pending" | "approved" | "rejected" | "completed";
+  bank_account: BankAccount;
+  reject_reason?: string;
+  processed_at?: string;
+  created_at: string;
+}
+
+export interface WithdrawalRequestsResponse {
+  data: WithdrawalRequest[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+// Additional withdrawal API functions
+export const withdrawalApi = {
+  /**
+   * Get withdrawal config
+   */
+  async getConfig(): Promise<WithdrawalConfig> {
+    const response = await apiClient.get<WithdrawalConfig>(
+      "/saler/withdrawals/config",
+    );
+    return response.data;
+  },
+
+  /**
+   * Create withdrawal request
+   */
+  async createRequest(amount: number): Promise<WithdrawalRequest> {
+    const response = await apiClient.post<WithdrawalRequest>(
+      "/saler/withdrawals",
+      { amount },
+    );
+    return response.data;
+  },
+
+  /**
+   * Get my withdrawal requests
+   */
+  async getMyRequests(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<WithdrawalRequestsResponse> {
+    const response = await apiClient.get<WithdrawalRequestsResponse>(
+      "/saler/withdrawals",
+      { params: { page, limit } },
+    );
+    return response.data;
+  },
 };
 
 export default salerApi;
