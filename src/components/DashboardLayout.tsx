@@ -388,61 +388,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 justifyContent: "center",
               }}
             />
-            {!isMobile && user?.role === "admin" && (
-              <div style={{ maxWidth: 400, width: "100%" }}>
-                <Input
-                  prefix={<MdSearch size={20} style={{ color: "#94a3b8" }} />}
-                  placeholder="Tìm kiếm..."
-                  variant="filled"
-                  style={{
-                    borderRadius: 10,
-                    background: "#f1f5f9",
-                    border: "none",
-                    height: 40,
-                  }}
-                />
-              </div>
-            )}
           </div>
 
           <Space size={isMobile ? 12 : 24}>
-            {user?.role === "admin" && (
-              <Button
-                type="primary"
-                icon={<MdPlayArrow size={20} />}
-                className=""
-                style={{
-                  border: "none",
-                  fontWeight: 600,
-                  borderRadius: 10,
-                  height: 40,
-                  display: isMobile ? "none" : "inline-flex",
-                  boxShadow: "none",
-                }}>
-                Màn hình học tập
-              </Button>
-            )}
-
-            {!isMobile && user?.role === "admin" && (
-              <Badge
-                count={5}
-                offset={[-2, 2]}
-                style={{ backgroundColor: "#ef4444" }}>
-                <Button
-                  type="text"
-                  icon={<MdNotifications size={24} />}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#64748b",
-                  }}
-                />
-              </Badge>
-            )}
-
             <Dropdown
               menu={{ items: userMenuItems }}
               placement="bottomRight"

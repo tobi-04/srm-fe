@@ -32,6 +32,7 @@ import SalerSettingsPage from "./pages/SalerSettingsPage";
 import SalerWithdrawalPage from "./pages/SalerWithdrawalPage";
 import AdminWithdrawalConfigPage from "./pages/AdminWithdrawalConfigPage";
 import AdminWithdrawalListPage from "./pages/AdminWithdrawalListPage";
+import AdminProgressPage from "./pages/AdminProgressPage";
 import OrderHistoryPage from "./pages/OrderHistoryPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
@@ -226,6 +227,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <CourseManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/progress"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminProgressPage />
               </ProtectedRoute>
             }
           />
