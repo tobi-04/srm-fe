@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Checkbox, message, Slider } , Tabs } from "antd";
+import { Form, Input, Checkbox, message, Slider, Tabs } from "antd";
 import { useParams, useSearchParams } from "react-router-dom";
 import { submitUserForm, SubmitUserFormInput } from "../../../api/landingPage";
 import { useAuthStore } from "../../../stores/authStore";
+import { CSSEditor } from "./shared/CSSEditor";
 import { getOrCreateTrafficSource } from "../../../utils/trafficSource";
 
 interface UserFormProps {
@@ -393,148 +394,169 @@ const UserFormSettings = () => {
           label: "Cài đặt",
           children: (
             <Form layout="vertical">
-      <Form.Item label="Button Text">
-        <Input
-          value={props.buttonText}
-          onChange={(e) =>
-            setProp((props: any) => (props.buttonText = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Button Color">
-        <Input
-          type="color"
-          value={props.buttonColor}
-          onChange={(e) =>
-            setProp((props: any) => (props.buttonColor = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Button Text Color">
-        <Input
-          type="color"
-          value={props.buttonTextColor}
-          onChange={(e) =>
-            setProp((props: any) => (props.buttonTextColor = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Name Placeholder">
-        <Input
-          value={props.namePlaceholder}
-          onChange={(e) =>
-            setProp((props: any) => (props.namePlaceholder = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Email Placeholder">
-        <Input
-          value={props.emailPlaceholder}
-          onChange={(e) =>
-            setProp((props: any) => (props.emailPlaceholder = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item>
-        <Checkbox
-          checked={props.showPhone}
-          onChange={(e) =>
-            setProp((props: any) => (props.showPhone = e.target.checked))
-          }>
-          Show Phone Field
-        </Checkbox>
-      </Form.Item>
-      {props.showPhone && (
-        <Form.Item label="Phone Placeholder">
-          <Input
-            value={props.phonePlaceholder}
-            onChange={(e) =>
-              setProp((props: any) => (props.phonePlaceholder = e.target.value))
-            }
-          />
-        </Form.Item>
-      )}
-      <Form.Item>
-        <Checkbox
-          checked={props.showAddress}
-          onChange={(e) =>
-            setProp((props: any) => (props.showAddress = e.target.checked))
-          }>
-          Show Address Field
-        </Checkbox>
-      </Form.Item>
-      {props.showAddress && (
-        <Form.Item label="Address Placeholder">
-          <Input
-            value={props.addressPlaceholder}
-            onChange={(e) =>
-              setProp(
-                (props: any) => (props.addressPlaceholder = e.target.value),
-              )
-            }
-          />
-        </Form.Item>
-      )}
-      <Form.Item>
-        <Checkbox
-          checked={props.showBirthday}
-          onChange={(e) =>
-            setProp((props: any) => (props.showBirthday = e.target.checked))
-          }>
-          Show Birthday Field
-        </Checkbox>
-      </Form.Item>
-      {props.showBirthday && (
-        <Form.Item label="Birthday Placeholder">
-          <Input
-            value={props.birthdayPlaceholder}
-            onChange={(e) =>
-              setProp(
-                (props: any) => (props.birthdayPlaceholder = e.target.value),
-              )
-            }
-          />
-        </Form.Item>
-      )}
-      <Form.Item label={`Max Width (${props.maxWidth}px)`}>
-        <Slider
-          min={300}
-          max={1200}
-          value={props.maxWidth}
-          onChange={(value) =>
-            setProp((props: any) => (props.maxWidth = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Padding (${props.padding}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.padding}
-          onChange={(value) => setProp((props: any) => (props.padding = value))}
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Top (${props.marginTop}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginTop}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginTop = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginBottom}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginBottom = value))
-          }
-        />
-      </Form.Item>
-    </Form>
+              <Form.Item label="Button Text">
+                <Input
+                  value={props.buttonText}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.buttonText = e.target.value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Button Color">
+                <Input
+                  type="color"
+                  value={props.buttonColor}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.buttonColor = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Button Text Color">
+                <Input
+                  type="color"
+                  value={props.buttonTextColor}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.buttonTextColor = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Name Placeholder">
+                <Input
+                  value={props.namePlaceholder}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.namePlaceholder = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Email Placeholder">
+                <Input
+                  value={props.emailPlaceholder}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.emailPlaceholder = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item>
+                <Checkbox
+                  checked={props.showPhone}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.showPhone = e.target.checked),
+                    )
+                  }>
+                  Show Phone Field
+                </Checkbox>
+              </Form.Item>
+              {props.showPhone && (
+                <Form.Item label="Phone Placeholder">
+                  <Input
+                    value={props.phonePlaceholder}
+                    onChange={(e) =>
+                      setProp(
+                        (props: any) =>
+                          (props.phonePlaceholder = e.target.value),
+                      )
+                    }
+                  />
+                </Form.Item>
+              )}
+              <Form.Item>
+                <Checkbox
+                  checked={props.showAddress}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.showAddress = e.target.checked),
+                    )
+                  }>
+                  Show Address Field
+                </Checkbox>
+              </Form.Item>
+              {props.showAddress && (
+                <Form.Item label="Address Placeholder">
+                  <Input
+                    value={props.addressPlaceholder}
+                    onChange={(e) =>
+                      setProp(
+                        (props: any) =>
+                          (props.addressPlaceholder = e.target.value),
+                      )
+                    }
+                  />
+                </Form.Item>
+              )}
+              <Form.Item>
+                <Checkbox
+                  checked={props.showBirthday}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.showBirthday = e.target.checked),
+                    )
+                  }>
+                  Show Birthday Field
+                </Checkbox>
+              </Form.Item>
+              {props.showBirthday && (
+                <Form.Item label="Birthday Placeholder">
+                  <Input
+                    value={props.birthdayPlaceholder}
+                    onChange={(e) =>
+                      setProp(
+                        (props: any) =>
+                          (props.birthdayPlaceholder = e.target.value),
+                      )
+                    }
+                  />
+                </Form.Item>
+              )}
+              <Form.Item label={`Max Width (${props.maxWidth}px)`}>
+                <Slider
+                  min={300}
+                  max={1200}
+                  value={props.maxWidth}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.maxWidth = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Padding (${props.padding}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.padding}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.padding = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Top (${props.marginTop}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginTop}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginTop = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginBottom}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginBottom = value))
+                  }
+                />
+              </Form.Item>
+            </Form>
           ),
         },
         {
@@ -551,7 +573,6 @@ const UserFormSettings = () => {
         },
       ]}
     />
-  
   );
 };
 

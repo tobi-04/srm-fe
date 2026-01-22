@@ -1,6 +1,7 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Slider } , Tabs } from "antd";
+import { Form, Input, Slider, Tabs } from "antd";
+import { CSSEditor } from "./shared/CSSEditor";
 
 interface SuccessHeadlineProps {
   text?: string;
@@ -82,84 +83,86 @@ const SuccessHeadlineSettings = () => {
           label: "Cài đặt",
           children: (
             <Form layout="vertical">
-      <Form.Item label="Text">
-        <Input.TextArea
-          value={props.text}
-          onChange={(e) =>
-            setProp((props: any) => (props.text = e.target.value))
-          }
-          rows={2}
-        />
-      </Form.Item>
-      <Form.Item label={`Font Size (${props.fontSize}px)`}>
-        <Slider
-          min={10}
-          max={100}
-          value={props.fontSize}
-          onChange={(value) =>
-            setProp((props: any) => (props.fontSize = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Font Weight (${props.fontWeight})`}>
-        <Slider
-          min={100}
-          max={900}
-          step={100}
-          value={props.fontWeight}
-          onChange={(value) =>
-            setProp((props: any) => (props.fontWeight = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Color">
-        <Input
-          type="color"
-          value={props.color}
-          onChange={(e) =>
-            setProp((props: any) => (props.color = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Padding (${props.padding}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.padding}
-          onChange={(value) => setProp((props: any) => (props.padding = value))}
-        />
-      </Form.Item>
-      <Form.Item label={`Max Width (${props.maxWidth}px)`}>
-        <Slider
-          min={400}
-          max={2000}
-          value={props.maxWidth}
-          onChange={(value) =>
-            setProp((props: any) => (props.maxWidth = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Top (${props.marginTop}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginTop}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginTop = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginBottom}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginBottom = value))
-          }
-        />
-      </Form.Item>
-    </Form>
+              <Form.Item label="Text">
+                <Input.TextArea
+                  value={props.text}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.text = e.target.value))
+                  }
+                  rows={2}
+                />
+              </Form.Item>
+              <Form.Item label={`Font Size (${props.fontSize}px)`}>
+                <Slider
+                  min={10}
+                  max={100}
+                  value={props.fontSize}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.fontSize = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Font Weight (${props.fontWeight})`}>
+                <Slider
+                  min={100}
+                  max={900}
+                  step={100}
+                  value={props.fontWeight}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.fontWeight = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Color">
+                <Input
+                  type="color"
+                  value={props.color}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.color = e.target.value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Padding (${props.padding}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.padding}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.padding = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Max Width (${props.maxWidth}px)`}>
+                <Slider
+                  min={400}
+                  max={2000}
+                  value={props.maxWidth}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.maxWidth = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Top (${props.marginTop}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginTop}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginTop = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginBottom}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginBottom = value))
+                  }
+                />
+              </Form.Item>
+            </Form>
           ),
         },
         {
@@ -176,7 +179,6 @@ const SuccessHeadlineSettings = () => {
         },
       ]}
     />
-  
   );
 };
 

@@ -1,9 +1,10 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Slider, Switch, Button as AntButton } , Tabs } from "antd";
+import { Form, Input, Slider, Switch, Button as AntButton, Tabs } from "antd";
 import { MdQrCode2, MdDownload } from "react-icons/md";
 
 import { usePaymentData } from "../../../../contexts/PaymentContext";
+import { CSSEditor } from "../shared/CSSEditor";
 
 interface PaymentQRCodeProps {
   // Customizable labels
@@ -252,93 +253,105 @@ const PaymentQRCodeSettings = () => {
           label: "Cài đặt",
           children: (
             <Form layout="vertical">
-      <Form.Item label="Label: Ngân hàng">
-        <Input
-          value={props.bankLabel}
-          onChange={(e) =>
-            setProp((props: any) => (props.bankLabel = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Label: Số tài khoản">
-        <Input
-          value={props.accountLabel}
-          onChange={(e) =>
-            setProp((props: any) => (props.accountLabel = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Label: Nội dung CK">
-        <Input
-          value={props.contentLabel}
-          onChange={(e) =>
-            setProp((props: any) => (props.contentLabel = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Label: Số tiền">
-        <Input
-          value={props.amountLabel}
-          onChange={(e) =>
-            setProp((props: any) => (props.amountLabel = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Kích thước QR (px)">
-        <Slider
-          min={100}
-          max={500}
-          value={props.qrSize}
-          onChange={(value) => setProp((props: any) => (props.qrSize = value))}
-        />
-      </Form.Item>
-      <Form.Item label="Hiển thị nút tải QR">
-        <Switch
-          checked={props.showDownloadButton}
-          onChange={(checked) =>
-            setProp((props: any) => (props.showDownloadButton = checked))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Padding (${props.padding}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.padding}
-          onChange={(value) => setProp((props: any) => (props.padding = value))}
-        />
-      </Form.Item>
-      <Form.Item label={`Max Width (${props.maxWidth}px)`}>
-        <Slider
-          min={400}
-          max={2000}
-          value={props.maxWidth}
-          onChange={(value) =>
-            setProp((props: any) => (props.maxWidth = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Top (${props.marginTop}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginTop}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginTop = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginBottom}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginBottom = value))
-          }
-        />
-      </Form.Item>
-    </Form>
+              <Form.Item label="Label: Ngân hàng">
+                <Input
+                  value={props.bankLabel}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.bankLabel = e.target.value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Label: Số tài khoản">
+                <Input
+                  value={props.accountLabel}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.accountLabel = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Label: Nội dung CK">
+                <Input
+                  value={props.contentLabel}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.contentLabel = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Label: Số tiền">
+                <Input
+                  value={props.amountLabel}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.amountLabel = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Kích thước QR (px)">
+                <Slider
+                  min={100}
+                  max={500}
+                  value={props.qrSize}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.qrSize = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Hiển thị nút tải QR">
+                <Switch
+                  checked={props.showDownloadButton}
+                  onChange={(checked) =>
+                    setProp(
+                      (props: any) => (props.showDownloadButton = checked),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Padding (${props.padding}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.padding}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.padding = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Max Width (${props.maxWidth}px)`}>
+                <Slider
+                  min={400}
+                  max={2000}
+                  value={props.maxWidth}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.maxWidth = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Top (${props.marginTop}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginTop}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginTop = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginBottom}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginBottom = value))
+                  }
+                />
+              </Form.Item>
+            </Form>
           ),
         },
         {
@@ -355,7 +368,6 @@ const PaymentQRCodeSettings = () => {
         },
       ]}
     />
-  
   );
 };
 
