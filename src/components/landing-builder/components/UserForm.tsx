@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Checkbox, message, Slider } from "antd";
+import { Form, Input, Checkbox, message, Slider } , Tabs } from "antd";
 import { useParams, useSearchParams } from "react-router-dom";
 import { submitUserForm, SubmitUserFormInput } from "../../../api/landingPage";
 import { useAuthStore } from "../../../stores/authStore";
@@ -22,7 +22,7 @@ interface UserFormProps {
   marginTop?: number;
   marginBottom?: number;
   padding?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const UserForm: React.FC<UserFormProps> = ({
@@ -41,7 +41,7 @@ export const UserForm: React.FC<UserFormProps> = ({
   marginTop = 0,
   marginBottom = 40,
   padding = 0,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -253,7 +253,7 @@ export const UserForm: React.FC<UserFormProps> = ({
           margin: "0 auto",
           padding: 0,
           boxSizing: "border-box",
-          ...style,
+          ...customCSS,
         }}>
         <form onSubmit={handleSubmit}>
           <input
@@ -386,7 +386,13 @@ const UserFormSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
       <Form.Item label="Button Text">
         <Input
           value={props.buttonText}
@@ -529,6 +535,23 @@ const UserFormSettings = () => {
         />
       </Form.Item>
     </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
+  
   );
 };
 
@@ -550,6 +573,7 @@ const UserFormSettings = () => {
     marginTop: 0,
     marginBottom: 40,
     padding: 0,
+    customCSS: {},
   },
   related: {
     toolbar: UserFormSettings,

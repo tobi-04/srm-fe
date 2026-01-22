@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, message, Slider } from "antd";
+import { Form, Input, message, Slider } , Tabs } from "antd";
 import { MdCheckCircle } from "react-icons/md";
 import { useCountdown } from "../../../contexts/CountdownContext";
 import { useParams } from "react-router-dom";
@@ -20,7 +20,7 @@ interface SalesPageContentProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const SalesPageContent: React.FC<SalesPageContentProps> = ({
@@ -39,7 +39,7 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
   marginTop = 0,
   marginBottom = 30,
   maxWidth = 1200,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -224,7 +224,13 @@ const SalesPageContentSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
       <Form.Item label="Confirmation Text">
         <Input.TextArea
           value={props.confirmationText}
@@ -339,6 +345,23 @@ const SalesPageContentSettings = () => {
         />
       </Form.Item>
     </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
+  
   );
 };
 
@@ -360,6 +383,7 @@ const SalesPageContentSettings = () => {
     marginTop: 0,
     marginBottom: 30,
     maxWidth: 600,
+    customCSS: {},
   },
   related: {
     toolbar: SalesPageContentSettings,

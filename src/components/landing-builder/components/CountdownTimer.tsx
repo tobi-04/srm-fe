@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Slider } from "antd";
+import { Form, Input, Slider } , Tabs } from "antd";
 import { useCountdown } from "../../../contexts/CountdownContext";
 
 interface CountdownTimerProps {
@@ -17,7 +17,7 @@ interface CountdownTimerProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const CountdownTimer: React.FC<CountdownTimerProps> = ({
@@ -34,7 +34,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   marginTop = 0,
   marginBottom = 30,
   maxWidth = 1200,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -230,7 +230,13 @@ const CountdownTimerSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
       <Form.Item label="Label">
         <Input
           value={props.label}
@@ -359,6 +365,23 @@ const CountdownTimerSettings = () => {
         />
       </Form.Item>
     </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
+  
   );
 };
 
@@ -378,6 +401,7 @@ const CountdownTimerSettings = () => {
     marginTop: 0,
     marginBottom: 30,
     maxWidth: 1200,
+    customCSS: {},
   },
   related: {
     toolbar: CountdownTimerSettings,

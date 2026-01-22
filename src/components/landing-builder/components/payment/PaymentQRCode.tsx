@@ -1,6 +1,6 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Slider, Switch, Button as AntButton } from "antd";
+import { Form, Input, Slider, Switch, Button as AntButton } , Tabs } from "antd";
 import { MdQrCode2, MdDownload } from "react-icons/md";
 
 import { usePaymentData } from "../../../../contexts/PaymentContext";
@@ -20,7 +20,7 @@ interface PaymentQRCodeProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
@@ -34,7 +34,7 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
   marginTop = 0,
   marginBottom = 30,
   maxWidth = 1200,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -105,7 +105,7 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
         margin: `${marginTop}px auto ${marginBottom}px auto`,
         border: selected ? "2px dashed #1890ff" : "none",
         textAlign: "center",
-        ...style,
+        ...customCSS,
       }}>
       <div
         style={{
@@ -245,7 +245,13 @@ const PaymentQRCodeSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
       <Form.Item label="Label: Ngân hàng">
         <Input
           value={props.bankLabel}
@@ -333,6 +339,23 @@ const PaymentQRCodeSettings = () => {
         />
       </Form.Item>
     </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
+  
   );
 };
 
@@ -349,6 +372,7 @@ const PaymentQRCodeSettings = () => {
     marginTop: 0,
     marginBottom: 30,
     maxWidth: 1200,
+    customCSS: {},
   },
   related: {
     toolbar: PaymentQRCodeSettings,

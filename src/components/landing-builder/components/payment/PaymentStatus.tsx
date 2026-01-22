@@ -1,6 +1,6 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Slider, Select } from "antd";
+import { Form, Input, Slider, Select } , Tabs } from "antd";
 import { MdCheckCircle, MdPending, MdError } from "react-icons/md";
 import { usePaymentData } from "../../../../contexts/PaymentContext";
 
@@ -13,7 +13,7 @@ interface PaymentStatusProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const PaymentStatus: React.FC<PaymentStatusProps> = ({
@@ -25,7 +25,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = ({
   marginTop = 0,
   marginBottom = 30,
   maxWidth = 1200,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -81,7 +81,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = ({
         maxWidth: maxWidth ? `${maxWidth}px` : "100%",
         margin: `${marginTop}px auto ${marginBottom}px auto`,
         border: selected ? "2px dashed #1890ff" : "none",
-        ...style,
+        ...customCSS,
       }}>
       <div
         style={{
@@ -128,7 +128,13 @@ const PaymentStatusSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
       <Form.Item label="Status">
         <Select
           value={props.status}
@@ -206,6 +212,23 @@ const PaymentStatusSettings = () => {
         />
       </Form.Item>
     </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
+  
   );
 };
 
@@ -220,6 +243,7 @@ const PaymentStatusSettings = () => {
     marginTop: 0,
     marginBottom: 30,
     maxWidth: 600,
+    customCSS: {},
   },
   related: {
     toolbar: PaymentStatusSettings,

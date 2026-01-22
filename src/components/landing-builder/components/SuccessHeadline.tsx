@@ -1,6 +1,6 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Slider } from "antd";
+import { Form, Input, Slider } , Tabs } from "antd";
 
 interface SuccessHeadlineProps {
   text?: string;
@@ -12,7 +12,7 @@ interface SuccessHeadlineProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const SuccessHeadline: React.FC<SuccessHeadlineProps> = ({
@@ -25,7 +25,7 @@ export const SuccessHeadline: React.FC<SuccessHeadlineProps> = ({
   marginTop = 0,
   marginBottom = 30,
   maxWidth = 1200,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -58,7 +58,7 @@ export const SuccessHeadline: React.FC<SuccessHeadlineProps> = ({
           margin: 0,
           lineHeight: 1.2,
           padding: 0,
-          ...style,
+          ...customCSS,
         }}>
         {text}
       </h1>
@@ -75,7 +75,13 @@ const SuccessHeadlineSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
       <Form.Item label="Text">
         <Input.TextArea
           value={props.text}
@@ -154,6 +160,23 @@ const SuccessHeadlineSettings = () => {
         />
       </Form.Item>
     </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
+  
   );
 };
 
@@ -169,6 +192,7 @@ const SuccessHeadlineSettings = () => {
     marginTop: 0,
     marginBottom: 30,
     maxWidth: 1200,
+    customCSS: {},
   },
   related: {
     toolbar: SuccessHeadlineSettings,

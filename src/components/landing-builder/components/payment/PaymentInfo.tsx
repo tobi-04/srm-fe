@@ -1,6 +1,6 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Slider } from "antd";
+import { Form, Input, Slider } , Tabs } from "antd";
 
 interface PaymentInfoProps {
   title?: string;
@@ -9,7 +9,7 @@ interface PaymentInfoProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const PaymentInfo: React.FC<PaymentInfoProps> = ({
@@ -24,7 +24,7 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
   marginTop = 0,
   marginBottom = 30,
   maxWidth = 1200,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -44,7 +44,7 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
         maxWidth: maxWidth ? `${maxWidth}px` : "100%",
         margin: `${marginTop}px auto ${marginBottom}px auto`,
         border: selected ? "2px dashed #1890ff" : "none",
-        ...style,
+        ...customCSS,
       }}>
       <h3
         style={{ marginBottom: "16px", fontSize: "20px", fontWeight: "bold" }}>
@@ -109,7 +109,13 @@ const PaymentInfoSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
       <Form.Item label="Title">
         <Input
           value={props.title}
@@ -171,6 +177,23 @@ const PaymentInfoSettings = () => {
         />
       </Form.Item>
     </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
+  
   );
 };
 
@@ -188,6 +211,7 @@ const PaymentInfoSettings = () => {
     marginTop: 0,
     marginBottom: 30,
     maxWidth: 1200,
+    customCSS: {},
   },
   related: {
     toolbar: PaymentInfoSettings,

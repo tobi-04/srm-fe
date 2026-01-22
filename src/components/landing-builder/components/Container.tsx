@@ -1,6 +1,7 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Slider } from "antd";
+import { Form, Input, Slider, Tabs } from "antd";
+import { CSSEditor } from "./shared/CSSEditor";
 
 interface ContainerProps {
   children?: React.ReactNode;
@@ -10,7 +11,7 @@ interface ContainerProps {
   minHeight?: number;
   marginTop?: number;
   marginBottom?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const Container: React.FC<ContainerProps> = ({
@@ -21,7 +22,7 @@ export const Container: React.FC<ContainerProps> = ({
   minHeight = 100,
   marginTop = 0,
   marginBottom = 0,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -45,7 +46,7 @@ export const Container: React.FC<ContainerProps> = ({
         marginRight: "auto",
         boxSizing: "border-box",
         border: selected ? "1px dashed #1890ff" : "1px transparent solid",
-        ...style,
+        ...customCSS,
       }}>
       {children}
     </div>
@@ -61,69 +62,95 @@ const ContainerSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
-      <Form.Item label="Background Color">
-        <Input
-          type="color"
-          value={props.background}
-          onChange={(e) =>
-            setProp((props: any) => (props.background = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Padding: ${props.padding || 0}px`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.padding || 0}
-          onChange={(value) => setProp((props: any) => (props.padding = value))}
-        />
-      </Form.Item>
-      <Form.Item
-        label={`Max Width: ${
-          props.maxWidth === 1200 ? "Full" : (props.maxWidth || 1200) + "px"
-        }`}>
-        <Slider
-          min={400}
-          max={1200}
-          step={10}
-          value={props.maxWidth || 1200}
-          onChange={(value) =>
-            setProp((props: any) => (props.maxWidth = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Min Height: ${props.minHeight || 100}px`}>
-        <Slider
-          min={0}
-          max={1000}
-          value={props.minHeight || 100}
-          onChange={(value) =>
-            setProp((props: any) => (props.minHeight = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Top: ${props.marginTop || 0}px`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginTop || 0}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginTop = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Bottom: ${props.marginBottom || 0}px`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginBottom || 0}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginBottom = value))
-          }
-        />
-      </Form.Item>
-    </Form>
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
+              <Form.Item label="Background Color">
+                <Input
+                  type="color"
+                  value={props.background}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.background = e.target.value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Padding: ${props.padding || 0}px`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.padding || 0}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.padding = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item
+                label={`Max Width: ${
+                  props.maxWidth === 1200
+                    ? "Full"
+                    : (props.maxWidth || 1200) + "px"
+                }`}>
+                <Slider
+                  min={400}
+                  max={1200}
+                  step={10}
+                  value={props.maxWidth || 1200}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.maxWidth = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Min Height: ${props.minHeight || 100}px`}>
+                <Slider
+                  min={0}
+                  max={1000}
+                  value={props.minHeight || 100}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.minHeight = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Top: ${props.marginTop || 0}px`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginTop || 0}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginTop = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Bottom: ${props.marginBottom || 0}px`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginBottom || 0}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginBottom = value))
+                  }
+                />
+              </Form.Item>
+            </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
   );
 };
 
@@ -136,6 +163,7 @@ const ContainerSettings = () => {
     minHeight: 100,
     marginTop: 0,
     marginBottom: 0,
+    customCSS: {},
   },
   rules: {
     canDrag: () => true,
