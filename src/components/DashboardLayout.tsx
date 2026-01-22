@@ -31,6 +31,7 @@ import {
   MdTrendingUp,
   MdAccountBalanceWallet,
   MdHistory,
+  MdTableChart,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -115,6 +116,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "/admin/salers",
           icon: <MdPerson size={20} />,
           label: "Quản lý Saler",
+        },
+        {
+          key: "/admin/google-sheet",
+          icon: <MdTableChart size={20} />,
+          label: "Google Sheet",
         },
         {
           key: "/admin/email-automation",

@@ -34,6 +34,7 @@ import AdminWithdrawalConfigPage from "./pages/AdminWithdrawalConfigPage";
 import AdminWithdrawalListPage from "./pages/AdminWithdrawalListPage";
 import AdminProgressPage from "./pages/AdminProgressPage";
 import OrderHistoryPage from "./pages/OrderHistoryPage";
+import GoogleSheetPage from "./pages/GoogleSheetPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
 
@@ -299,6 +300,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <OrderHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/google-sheet"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <GoogleSheetPage />
               </ProtectedRoute>
             }
           />
