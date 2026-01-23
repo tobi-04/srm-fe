@@ -519,100 +519,107 @@ export default function AdminDashboardPage() {
             </div>
           ) : topSalers && topSalers.length > 0 ? (
             <Row gutter={[24, 24]}>
-              {topSalers.map((saler: TopSaler, index: number) => (
-                <Col xs={24} md={8} key={saler.saler_id}>
-                  <Card
-                    size="small"
-                    style={{
-                      borderRadius: 12,
-                      background:
-                        index === 0
-                          ? "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)"
-                          : index === 1
-                            ? "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)"
-                            : "linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)",
-                    }}>
-                    <div
+              {/* Reorder: 2nd, 1st, 3rd */}
+              {[
+                topSalers[1],
+                topSalers[0],
+                topSalers[2],
+              ].filter(Boolean).map((saler: TopSaler, displayIndex: number) => {
+                // Original index (0 = 1st place, 1 = 2nd place, 2 = 3rd place)
+                const originalIndex = displayIndex === 0 ? 1 : displayIndex === 1 ? 0 : 2;
+
+                // Color scheme based on ranking
+                const colorScheme = originalIndex === 0
+                  ? { bg: "#fff7ed", text: "#ea580c", border: "#fdba74" }  // Orange for 1st
+                  : originalIndex === 1
+                    ? { bg: "#dbeafe", text: "#2563eb", border: "#93c5fd" }  // Blue for 2nd
+                    : { bg: "#dbeafe", text: "#2563eb", border: "#93c5fd" }; // Blue for 3rd
+
+                return (
+                  <Col xs={24} md={8} key={saler.saler_id}>
+                    <Card
+                      size="small"
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
+                        borderRadius: 12,
+                        background: colorScheme.bg,
+                        border: `2px solid ${colorScheme.border}`,
                       }}>
-                      <Avatar
-                        src={saler.avatar}
-                        size={48}
-                        style={{
-                          ...getAvatarStyles(saler.name),
-                          fontWeight: "bold",
-                          border: "2px solid white",
-                        }}>
-                        {saler.name?.substring(0, 2).toUpperCase()}
-                      </Avatar>
-                      <div style={{ flex: 1 }}>
-                        <Text strong style={{ display: "block" }}>
-                          {index === 0 ? "🥇 " : index === 1 ? "🥈 " : "🥉 "}
-                          {saler.name}
-                        </Text>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {saler.total_orders} đơn hàng
-                        </Text>
-                      </div>
-                    </div>
-                    <div style={{ marginTop: 16 }}>
                       <div
                         style={{
                           display: "flex",
-                          justifyContent: "space-between",
-                          marginBottom: 4,
+                          alignItems: "center",
+                          gap: 12,
                         }}>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          KPI
-                        </Text>
-                        <Text
-                          strong
+                        <Avatar
+                          src={saler.avatar}
+                          size={48}
                           style={{
-                            color:
-                              saler.completion_percentage >= 100
-                                ? "#10b981"
-                                : "#f59e0b",
+                            ...getAvatarStyles(saler.name),
+                            fontWeight: "bold",
+                            border: `2px solid ${colorScheme.border}`,
                           }}>
-                          {saler.completion_percentage.toFixed(1)}%
-                        </Text>
+                          {saler.name?.substring(0, 2).toUpperCase()}
+                        </Avatar>
+                        <div style={{ flex: 1 }}>
+                          <Text strong style={{ display: "block", color: colorScheme.text }}>
+                            {originalIndex === 0 ? "🥇 " : originalIndex === 1 ? "🥈 " : "🥉 "}
+                            {saler.name}
+                          </Text>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {saler.total_orders} đơn hàng
+                          </Text>
+                        </div>
                       </div>
-                      <div
-                        style={{
-                          height: 8,
-                          background: "rgba(255,255,255,0.6)",
-                          borderRadius: 4,
-                          overflow: "hidden",
-                        }}>
+                      <div style={{ marginTop: 16 }}>
                         <div
                           style={{
-                            height: "100%",
-                            width: `${Math.min(saler.completion_percentage, 100)}%`,
-                            background:
-                              saler.completion_percentage >= 100
-                                ? "#10b981"
-                                : "#f59e0b",
-                            borderRadius: 4,
-                          }}
-                        />
-                      </div>
-                      {saler.exceeded_by > 0 && (
-                        <Text
-                          style={{
-                            fontSize: 11,
-                            color: "#10b981",
-                            marginTop: 4,
-                            display: "block",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            marginBottom: 4,
                           }}>
-                          Vượt +{saler.exceeded_by.toFixed(1)}%
-                        </Text>
-                      )}
-                    </div>
-                  </Card>
-                </Col>
-              ))}
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            KPI
+                          </Text>
+                          <Text
+                            strong
+                            style={{
+                              color: colorScheme.text,
+                            }}>
+                            {saler.completion_percentage.toFixed(1)}%
+                          </Text>
+                        </div>
+                        <div
+                          style={{
+                            height: 8,
+                            background: "#e5e7eb",
+                            borderRadius: 4,
+                            overflow: "hidden",
+                          }}>
+                          <div
+                            style={{
+                              height: "100%",
+                              width: `${Math.min(saler.completion_percentage, 100)}%`,
+                              background: colorScheme.text,
+                              borderRadius: 4,
+                            }}
+                          />
+                        </div>
+                        {saler.exceeded_by > 0 && (
+                          <Text
+                            style={{
+                              fontSize: 11,
+                              color: colorScheme.text,
+                              marginTop: 4,
+                              display: "block",
+                            }}>
+                            Vượt +{saler.exceeded_by.toFixed(1)}%
+                          </Text>
+                        )}
+                      </div>
+                    </Card>
+                  </Col>
+                );
+              })}
             </Row>
           ) : (
             <div style={{ textAlign: "center", padding: 40 }}>
@@ -732,7 +739,14 @@ export default function AdminDashboardPage() {
                         `Tuần kết thúc: ${dayjs(value).format("DD/MM/YYYY")}`
                       }
                     />
-                    <Bar dataKey="revenue" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="revenue" radius={[4, 4, 0, 0]}>
+                      {weeklySales?.slice().reverse().map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={index % 2 === 0 ? "#2563eb" : "#f97316"}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -760,7 +774,18 @@ export default function AdminDashboardPage() {
               }>
               <div style={{ marginBottom: 16 }}>
                 <Table
-                  dataSource={dailySales?.slice(0, 7)}
+                  dataSource={dailySales?.slice(0, 7).sort((a, b) => {
+                    const dayOrder: Record<string, number> = {
+                      Mon: 1,
+                      Tue: 2,
+                      Wed: 3,
+                      Thu: 4,
+                      Fri: 5,
+                      Sat: 6,
+                      Sun: 7,
+                    };
+                    return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
+                  })}
                   pagination={false}
                   size="small"
                   rowKey="date"
@@ -808,11 +833,20 @@ export default function AdminDashboardPage() {
                           ...(dailySales?.map((d) => d.revenue) || [1]),
                         );
                         const width = (record.revenue / maxRevenue) * 100;
+                        const dayColors: Record<string, string> = {
+                          Mon: "#2563eb",    // Blue
+                          Tue: "#f97316",    // Orange
+                          Wed: "#2563eb",    // Blue
+                          Thu: "#f97316",    // Orange
+                          Fri: "#2563eb",    // Blue
+                          Sat: "#f97316",    // Orange
+                          Sun: "#2563eb",    // Blue
+                        };
                         return (
                           <div
                             style={{
                               height: 20,
-                              background: "#10b981",
+                              background: dayColors[record.dayOfWeek] || "#2563eb",
                               width: `${width}%`,
                               borderRadius: 4,
                               minWidth: width > 0 ? 20 : 0,
@@ -839,7 +873,19 @@ export default function AdminDashboardPage() {
 
               <div style={{ height: 200 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dailySales?.slice(0, 14).reverse()}>
+                  <BarChart
+                    data={dailySales?.slice(0, 14).sort((a, b) => {
+                      const dayOrder: Record<string, number> = {
+                        Mon: 1,
+                        Tue: 2,
+                        Wed: 3,
+                        Thu: 4,
+                        Fri: 5,
+                        Sat: 6,
+                        Sun: 7,
+                      };
+                      return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
+                    })}>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
@@ -878,7 +924,36 @@ export default function AdminDashboardPage() {
                         dayjs(value).format("dddd, DD/MM/YYYY")
                       }
                     />
-                    <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="revenue" radius={[4, 4, 0, 0]}>
+                      {dailySales?.slice(0, 14).sort((a, b) => {
+                        const dayOrder: Record<string, number> = {
+                          Mon: 1,
+                          Tue: 2,
+                          Wed: 3,
+                          Thu: 4,
+                          Fri: 5,
+                          Sat: 6,
+                          Sun: 7,
+                        };
+                        return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
+                      }).map((entry, index) => {
+                        const dayColors: Record<string, string> = {
+                          Mon: "#2563eb",    // Blue
+                          Tue: "#f97316",    // Orange
+                          Wed: "#2563eb",    // Blue
+                          Thu: "#f97316",    // Orange
+                          Fri: "#2563eb",    // Blue
+                          Sat: "#f97316",    // Orange
+                          Sun: "#2563eb",    // Blue
+                        };
+                        return (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={dayColors[entry.dayOfWeek] || "#2563eb"}
+                          />
+                        );
+                      })}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>

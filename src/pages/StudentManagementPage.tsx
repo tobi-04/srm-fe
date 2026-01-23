@@ -10,6 +10,13 @@ import {
   Avatar,
   message,
   Popconfirm,
+  Modal,
+  Tabs,
+  Progress,
+  Statistic,
+  Row,
+  Col,
+  Spin,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -24,10 +31,14 @@ import {
   MdLock,
   MdLockOpen,
   MdDeleteForever,
+  MdSchool,
+  MdTrendingUp,
+  MdAttachMoney,
 } from "react-icons/md";
 import DashboardLayout from "../components/DashboardLayout";
-import { userApi, Student } from "../api/userApi";
+import { userApi, Student, StudentDetails } from "../api/userApi";
 import { getAvatarStyles } from "../utils/color";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
@@ -36,6 +47,8 @@ export default function StudentManagementPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -50,12 +63,24 @@ export default function StudentManagementPage() {
     gcTime: 10 * 60 * 1000, // 10 minutes (cacheTime renamed to gcTime in v5)
   });
 
+  const { data: studentDetails, isLoading: detailsLoading } = useQuery({
+    queryKey: ["student-details", selectedStudentId],
+    queryFn: () => userApi.getStudentDetails(selectedStudentId!),
+    enabled: !!selectedStudentId && isModalOpen,
+    staleTime: 5 * 60 * 1000, // 5 minutes - matches backend cache TTL
+    gcTime: 10 * 60 * 1000,
+  });
+
   const lockMutation = useMutation({
     mutationFn: (ids: string[]) => userApi.lockMany(ids),
     onSuccess: (res) => {
       message.success(res.message);
       setSelectedRowKeys([]);
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      // Invalidate student details cache for affected students
+      selectedRowKeys.forEach((id) => {
+        queryClient.invalidateQueries({ queryKey: ["student-details", id] });
+      });
     },
     onError: () => message.error("Không thể khóa tài khoản"),
   });
@@ -66,6 +91,10 @@ export default function StudentManagementPage() {
       message.success(res.message);
       setSelectedRowKeys([]);
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      // Invalidate student details cache for affected students
+      selectedRowKeys.forEach((id) => {
+        queryClient.invalidateQueries({ queryKey: ["student-details", id] });
+      });
     },
     onError: () => message.error("Không thể mở khóa tài khoản"),
   });
@@ -76,14 +105,20 @@ export default function StudentManagementPage() {
       message.success(res.message);
       setSelectedRowKeys([]);
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      // Invalidate student details cache for affected students
+      selectedRowKeys.forEach((id) => {
+        queryClient.invalidateQueries({ queryKey: ["student-details", id] });
+      });
     },
     onError: () => message.error("Không thể xóa tài khoản"),
   });
 
   const toggleMutation = useMutation({
     mutationFn: (id: string) => userApi.toggleActive(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      // Invalidate student details cache
+      queryClient.invalidateQueries({ queryKey: ["student-details", id] });
     },
   });
 
@@ -309,6 +344,21 @@ export default function StudentManagementPage() {
           rowKey="_id"
           loading={isLoading}
           scroll={{ x: 1000 }}
+          onRow={(record) => ({
+            onClick: (e) => {
+              // Don't open modal if clicking on action buttons
+              const target = e.target as HTMLElement;
+              if (
+                target.closest("button") ||
+                target.closest(".ant-checkbox-wrapper")
+              ) {
+                return;
+              }
+              setSelectedStudentId(record._id);
+              setIsModalOpen(true);
+            },
+            style: { cursor: "pointer" },
+          })}
           pagination={{
             current: page,
             pageSize: pageSize,
@@ -324,6 +374,224 @@ export default function StudentManagementPage() {
           }}
         />
       </Card>
+
+      {/* Student Details Modal */}
+      <Modal
+        title={
+          <Space>
+            <MdPerson size={24} />
+            <span>Chi tiết học viên</span>
+          </Space>
+        }
+        open={isModalOpen}
+        onCancel={() => {
+          setIsModalOpen(false);
+          setSelectedStudentId(null);
+        }}
+        footer={null}
+        width={900}
+        destroyOnClose>
+        {detailsLoading ? (
+          <div style={{ textAlign: "center", padding: 60 }}>
+            <Spin size="large" />
+          </div>
+        ) : studentDetails ? (
+          <>
+            {/* Student Info Header */}
+            <Card
+              size="small"
+              style={{ marginBottom: 16, background: "#f8fafc" }}>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Space direction="vertical" size={4}>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Họ tên
+                    </Text>
+                    <Text strong style={{ fontSize: 16 }}>
+                      {studentDetails.student.name}
+                    </Text>
+                  </Space>
+                </Col>
+                <Col span={12}>
+                  <Space direction="vertical" size={4}>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Email
+                    </Text>
+                    <Text>{studentDetails.student.email}</Text>
+                  </Space>
+                </Col>
+              </Row>
+            </Card>
+
+            {/* Summary Statistics */}
+            <Row gutter={16} style={{ marginBottom: 16 }}>
+              <Col span={6}>
+                <Card size="small">
+                  <Statistic
+                    title="Khóa học"
+                    value={studentDetails.summary.total_courses}
+                    prefix={<MdSchool />}
+                    valueStyle={{ color: "#2563eb" }}
+                  />
+                </Card>
+              </Col>
+              <Col span={6}>
+                <Card size="small">
+                  <Statistic
+                    title="Đơn hàng"
+                    value={studentDetails.summary.total_orders}
+                    prefix={<MdShoppingCart />}
+                    valueStyle={{ color: "#7c3aed" }}
+                  />
+                </Card>
+              </Col>
+              <Col span={6}>
+                <Card size="small">
+                  <Statistic
+                    title="Tiến độ TB"
+                    value={studentDetails.summary.avg_progress}
+                    suffix="%"
+                    prefix={<MdTrendingUp />}
+                    valueStyle={{ color: "#10b981" }}
+                  />
+                </Card>
+              </Col>
+              <Col span={6}>
+                <Card size="small">
+                  <Statistic
+                    title="Tổng chi"
+                    value={studentDetails.summary.total_spent.toLocaleString(
+                      "vi-VN",
+                    )}
+                    suffix="đ"
+                    prefix={<MdAttachMoney />}
+                    valueStyle={{ color: "#f59e0b" }}
+                  />
+                </Card>
+              </Col>
+            </Row>
+
+            {/* Tabs for detailed information */}
+            <Tabs
+              items={[
+                {
+                  key: "courses",
+                  label: `Khóa học (${studentDetails.enrollments.length})`,
+                  children: (
+                    <Table
+                      dataSource={studentDetails.enrollments}
+                      rowKey="course_id"
+                      pagination={false}
+                      size="small"
+                      scroll={{ y: 300 }}
+                      columns={[
+                        {
+                          title: "Khóa học",
+                          dataIndex: "course_title",
+                          key: "course_title",
+                          render: (text) => <Text strong>{text}</Text>,
+                        },
+                        {
+                          title: "Tiến độ",
+                          dataIndex: "progress_percent",
+                          key: "progress_percent",
+                          width: 200,
+                          render: (percent) => (
+                            <Progress
+                              percent={percent}
+                              size="small"
+                              status={percent === 100 ? "success" : "active"}
+                            />
+                          ),
+                        },
+                        {
+                          title: "Trạng thái",
+                          dataIndex: "status",
+                          key: "status",
+                          render: (status) => (
+                            <Tag
+                              color={
+                                status === "completed"
+                                  ? "success"
+                                  : status === "active"
+                                    ? "processing"
+                                    : "default"
+                              }>
+                              {status === "completed"
+                                ? "Hoàn thành"
+                                : status === "active"
+                                  ? "Đang học"
+                                  : "Đình chỉ"}
+                            </Tag>
+                          ),
+                        },
+                        {
+                          title: "Ngày đăng ký",
+                          dataIndex: "enrolled_at",
+                          key: "enrolled_at",
+                          render: (date) => dayjs(date).format("DD/MM/YYYY"),
+                        },
+                      ]}
+                    />
+                  ),
+                },
+                {
+                  key: "orders",
+                  label: `Lịch sử mua hàng (${studentDetails.orders.length})`,
+                  children: (
+                    <Table
+                      dataSource={studentDetails.orders}
+                      rowKey="order_id"
+                      pagination={false}
+                      size="small"
+                      scroll={{ y: 300 }}
+                      columns={[
+                        {
+                          title: "Khóa học",
+                          dataIndex: "course_title",
+                          key: "course_title",
+                        },
+                        {
+                          title: "Số tiền",
+                          dataIndex: "amount",
+                          key: "amount",
+                          render: (amount) => (
+                            <Text strong>
+                              {amount.toLocaleString("vi-VN")}đ
+                            </Text>
+                          ),
+                        },
+                        {
+                          title: "Trạng thái",
+                          dataIndex: "status",
+                          key: "status",
+                          render: (status) => (
+                            <Tag
+                              color={
+                                status === "completed" ? "success" : "warning"
+                              }>
+                              {status === "completed"
+                                ? "Đã thanh toán"
+                                : "Chờ thanh toán"}
+                            </Tag>
+                          ),
+                        },
+                        {
+                          title: "Ngày mua",
+                          dataIndex: "created_at",
+                          key: "created_at",
+                          render: (date) =>
+                            dayjs(date).format("DD/MM/YYYY HH:mm"),
+                        },
+                      ]}
+                    />
+                  ),
+                },
+              ]}
+            />
+          </>
+        ) : null}
+      </Modal>
     </DashboardLayout>
   );
 }
