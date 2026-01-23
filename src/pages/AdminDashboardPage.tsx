@@ -25,6 +25,8 @@ import { getAvatarStyles } from "../utils/color";
 import {
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -75,6 +77,16 @@ export default function AdminDashboardPage() {
   const { data: topSalers, isLoading: topSalersLoading } = useQuery({
     queryKey: ["admin-top-salers", salerPeriod],
     queryFn: () => adminAnalyticsApi.getTopSalers(salerPeriod, 3),
+  });
+
+  const { data: dailySales } = useQuery({
+    queryKey: ["admin-daily-sales"],
+    queryFn: () => adminAnalyticsApi.getDailySalesSnapshot(14),
+  });
+
+  const { data: weeklySales } = useQuery({
+    queryKey: ["admin-weekly-sales"],
+    queryFn: () => adminAnalyticsApi.getWeeklySalesSnapshot(4),
   });
 
   const isLoading =
@@ -608,6 +620,271 @@ export default function AdminDashboardPage() {
             </div>
           )}
         </Card>
+
+        {/* Sales Snapshots Row */}
+        <Row gutter={[24, 24]}>
+          {/* Weekly Sales Snapshot */}
+          <Col xs={24} lg={12}>
+            <Card
+              variant="borderless"
+              style={{
+                borderRadius: 16,
+                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                height: "100%",
+              }}
+              title={
+                <div style={{ padding: "8px 0" }}>
+                  <Title level={4} style={{ margin: 0 }}>
+                    DOANH THU THEO TUẦN
+                  </Title>
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    Doanh thu 4 tuần gần đây
+                  </Text>
+                </div>
+              }>
+              <div style={{ marginBottom: 16 }}>
+                <Table
+                  dataSource={weeklySales}
+                  pagination={false}
+                  size="small"
+                  rowKey="weekEnding"
+                  columns={[
+                    {
+                      title: "TUẦN KẾT THÚC",
+                      dataIndex: "weekEnding",
+                      key: "weekEnding",
+                      width: "35%",
+                      render: (date: string) => (
+                        <Text style={{ fontWeight: 500 }}>
+                          {dayjs(date).format("DD/MM/YYYY")}
+                        </Text>
+                      ),
+                    },
+                    {
+                      title: "KHOẢNG",
+                      dataIndex: "weekLabel",
+                      key: "weekLabel",
+                      width: "35%",
+                      render: (label: string) => {
+                        const [start, end] = label.split(" - ");
+                        return (
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {dayjs(start).format("DD/MM")} -{" "}
+                            {dayjs(end).format("DD/MM")}
+                          </Text>
+                        );
+                      },
+                    },
+                    {
+                      title: "DOANH THU",
+                      dataIndex: "revenue",
+                      key: "revenue",
+                      align: "right" as const,
+                      width: "30%",
+                      render: (revenue: number) => (
+                        <Text strong style={{ fontSize: 14 }}>
+                          {revenue.toLocaleString("vi-VN")}đ
+                        </Text>
+                      ),
+                    },
+                  ]}
+                />
+              </div>
+
+              <div style={{ height: 200 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weeklySales?.slice().reverse()}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#f1f5f9"
+                    />
+                    <XAxis
+                      dataKey="weekEnding"
+                      axisLine={{ stroke: "#f1f5f9" }}
+                      tickLine={{ stroke: "#f1f5f9" }}
+                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      tickFormatter={(value) => dayjs(value).format("DD/MM")}
+                    />
+                    <YAxis
+                      axisLine={{ stroke: "#f1f5f9" }}
+                      tickLine={{ stroke: "#f1f5f9" }}
+                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      tickFormatter={(value) => {
+                        if (value >= 1000000)
+                          return `${(value / 1000000).toFixed(1)}Tr`;
+                        if (value >= 1000)
+                          return `${(value / 1000).toFixed(0)}k`;
+                        return `${value}`;
+                      }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "none",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      }}
+                      formatter={(value: any) => [
+                        `${value?.toLocaleString("vi-VN")}đ`,
+                        "Doanh thu",
+                      ]}
+                      labelFormatter={(value) =>
+                        `Tuần kết thúc: ${dayjs(value).format("DD/MM/YYYY")}`
+                      }
+                    />
+                    <Bar dataKey="revenue" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </Col>
+
+          {/* Daily Sales Snapshot */}
+          <Col xs={24} lg={12}>
+            <Card
+              variant="borderless"
+              style={{
+                borderRadius: 16,
+                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                height: "100%",
+              }}
+              title={
+                <div style={{ padding: "8px 0" }}>
+                  <Title level={4} style={{ margin: 0 }}>
+                    DOANH THU THEO NGÀY
+                  </Title>
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    Doanh thu 14 ngày gần đây
+                  </Text>
+                </div>
+              }>
+              <div style={{ marginBottom: 16 }}>
+                <Table
+                  dataSource={dailySales?.slice(0, 7)}
+                  pagination={false}
+                  size="small"
+                  rowKey="date"
+                  columns={[
+                    {
+                      title: "THỨ",
+                      dataIndex: "dayOfWeek",
+                      key: "dayOfWeek",
+                      width: "15%",
+                      render: (day: string) => {
+                        const viDays: Record<string, string> = {
+                          Mon: "T2",
+                          Tue: "T3",
+                          Wed: "T4",
+                          Thu: "T5",
+                          Fri: "T6",
+                          Sat: "T7",
+                          Sun: "CN",
+                        };
+                        return (
+                          <Text style={{ fontWeight: 500 }}>
+                            {viDays[day] || day}
+                          </Text>
+                        );
+                      },
+                    },
+                    {
+                      title: "NGÀY",
+                      dataIndex: "date",
+                      key: "date",
+                      width: "20%",
+                      render: (date: string) => (
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          {dayjs(date).format("DD/MM")}
+                        </Text>
+                      ),
+                    },
+                    {
+                      title: "XU HƯỚNG",
+                      dataKey: "trend",
+                      key: "trend",
+                      width: "35%",
+                      render: (_: any, record: any) => {
+                        const maxRevenue = Math.max(
+                          ...(dailySales?.map((d) => d.revenue) || [1]),
+                        );
+                        const width = (record.revenue / maxRevenue) * 100;
+                        return (
+                          <div
+                            style={{
+                              height: 20,
+                              background: "#10b981",
+                              width: `${width}%`,
+                              borderRadius: 4,
+                              minWidth: width > 0 ? 20 : 0,
+                            }}
+                          />
+                        );
+                      },
+                    },
+                    {
+                      title: "DOANH THU",
+                      dataIndex: "revenue",
+                      key: "revenue",
+                      align: "right" as const,
+                      width: "30%",
+                      render: (revenue: number) => (
+                        <Text strong style={{ fontSize: 14 }}>
+                          {revenue.toLocaleString("vi-VN")}đ
+                        </Text>
+                      ),
+                    },
+                  ]}
+                />
+              </div>
+
+              <div style={{ height: 200 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dailySales?.slice(0, 14).reverse()}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#f1f5f9"
+                    />
+                    <XAxis
+                      dataKey="date"
+                      axisLine={{ stroke: "#f1f5f9" }}
+                      tickLine={{ stroke: "#f1f5f9" }}
+                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      tickFormatter={(value) => dayjs(value).format("DD/MM")}
+                    />
+                    <YAxis
+                      axisLine={{ stroke: "#f1f5f9" }}
+                      tickLine={{ stroke: "#f1f5f9" }}
+                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      tickFormatter={(value) => {
+                        if (value >= 1000000)
+                          return `${(value / 1000000).toFixed(1)}Tr`;
+                        if (value >= 1000)
+                          return `${(value / 1000).toFixed(0)}k`;
+                        return `${value}`;
+                      }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "none",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      }}
+                      formatter={(value: any) => [
+                        `${value?.toLocaleString("vi-VN")}đ`,
+                        "Doanh thu",
+                      ]}
+                      labelFormatter={(value) =>
+                        dayjs(value).format("dddd, DD/MM/YYYY")
+                      }
+                    />
+                    <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </Col>
+        </Row>
 
         {/* Recent Orders Table */}
         <Card

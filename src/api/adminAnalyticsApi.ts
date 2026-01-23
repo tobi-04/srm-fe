@@ -51,6 +51,18 @@ export interface RecentPayment {
   paid_at: string;
 }
 
+export interface DailySalesSnapshot {
+  date: string;
+  dayOfWeek: string;
+  revenue: number;
+}
+
+export interface WeeklySalesSnapshot {
+  weekEnding: string;
+  weekLabel: string;
+  revenue: number;
+}
+
 export const adminAnalyticsApi = {
   getSummary: async (): Promise<DashboardSummary> => {
     const response = await axios.get(`${API_URL}/analytics/dashboard/summary`, {
@@ -85,6 +97,28 @@ export const adminAnalyticsApi = {
       `${API_URL}/analytics/dashboard/recent-payments`,
       {
         headers: getAuthHeader(),
+      },
+    );
+    return response.data;
+  },
+
+  getDailySalesSnapshot: async (days: number = 14): Promise<DailySalesSnapshot[]> => {
+    const response = await axios.get(
+      `${API_URL}/analytics/dashboard/daily-sales`,
+      {
+        headers: getAuthHeader(),
+        params: { days },
+      },
+    );
+    return response.data;
+  },
+
+  getWeeklySalesSnapshot: async (weeks: number = 4): Promise<WeeklySalesSnapshot[]> => {
+    const response = await axios.get(
+      `${API_URL}/analytics/dashboard/weekly-sales`,
+      {
+        headers: getAuthHeader(),
+        params: { weeks },
       },
     );
     return response.data;
