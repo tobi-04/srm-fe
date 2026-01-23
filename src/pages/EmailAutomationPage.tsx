@@ -18,6 +18,7 @@ import {
   Col,
   Tabs,
   Divider,
+  DatePicker,
 } from "antd";
 import {
   MdAdd,
@@ -27,6 +28,7 @@ import {
   MdMail,
   MdSchedule,
 } from "react-icons/md";
+import dayjs from "dayjs";
 import DashboardLayout from "../components/DashboardLayout";
 import TiptapEditor from "../components/email-automation/TiptapEditor";
 import {
@@ -263,7 +265,7 @@ export default function EmailAutomationPage() {
     setStepBodyContent("");
     stepForm.setFieldsValue({
       step_order: steps.length + 1,
-      delay_minutes: 0,
+      scheduled_at: dayjs().add(1, "hour"), // Default to 1 hour from now
     });
     setStepModalVisible(true);
   };
@@ -272,7 +274,7 @@ export default function EmailAutomationPage() {
     setEditingStep(step);
     stepForm.setFieldsValue({
       step_order: step.step_order,
-      delay_minutes: step.delay_minutes,
+      scheduled_at: step.scheduled_at ? dayjs(step.scheduled_at) : null,
       subject_template: step.subject_template,
     });
     setStepBodyContent(step.body_template);
@@ -284,8 +286,14 @@ export default function EmailAutomationPage() {
 
     try {
       const values = await stepForm.validateFields();
+
+      // Transform the scheduled_at from dayjs to ISO string
       const stepData: CreateStepDto = {
-        ...values,
+        step_order: values.step_order,
+        scheduled_at: values.scheduled_at
+          ? dayjs(values.scheduled_at).toISOString()
+          : undefined,
+        subject_template: values.subject_template,
         body_template: stepBodyContent,
       };
 
@@ -601,9 +609,13 @@ export default function EmailAutomationPage() {
                       <Space>
                         <MdSchedule />
                         <Text type="secondary">
-                          {step.delay_minutes === 0
-                            ? "Ngay lập tức"
-                            : `Sau ${step.delay_minutes} phút`}
+                          {step.scheduled_at
+                            ? dayjs(step.scheduled_at).format(
+                                "DD/MM/YYYY HH:mm",
+                              )
+                            : step.delay_minutes === 0
+                              ? "Ngay lập tức"
+                              : `Sau ${step.delay_minutes} phút`}
                         </Text>
                       </Space>
                     }
@@ -743,11 +755,25 @@ export default function EmailAutomationPage() {
           </Form.Item>
 
           <Form.Item
-            name="delay_minutes"
-            label="Độ trễ (phút)"
-            extra="0 = gửi ngay lập tức, 1440 = 1 ngày"
-            rules={[{ required: true, message: "Vui lòng nhập độ trễ" }]}>
-            <InputNumber min={0} style={{ width: "100%" }} />
+            name="scheduled_at"
+            label="Ngày và giờ gửi"
+            rules={[
+              { required: true, message: "Vui lòng chọn ngày và giờ gửi" },
+            ]}
+            extra="Chọn ngày và giờ để gửi email này">
+            <DatePicker
+              showTime={{
+                format: "HH:mm",
+                minuteStep: 5,
+              }}
+              format="DD/MM/YYYY HH:mm"
+              placeholder="Chọn ngày và giờ"
+              style={{ width: "100%" }}
+              disabledDate={(current) => {
+                // Disable dates before today
+                return current && current < dayjs().startOf("day");
+              }}
+            />
           </Form.Item>
 
           <Form.Item

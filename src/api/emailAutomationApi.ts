@@ -24,7 +24,8 @@ export interface EmailAutomationStep {
   _id: string;
   automation_id: string;
   step_order: number;
-  delay_minutes: number;
+  delay_minutes?: number; // Legacy field - kept for backward compatibility
+  scheduled_at?: string; // New field: ISO datetime string
   subject_template: string;
   body_template: string;
 }
@@ -59,7 +60,8 @@ export interface CreateAutomationDto {
 
 export interface CreateStepDto {
   step_order: number;
-  delay_minutes: number;
+  delay_minutes?: number; // Legacy field - kept for backward compatibility
+  scheduled_at?: string; // New field: ISO datetime string
   subject_template: string;
   body_template: string;
 }
