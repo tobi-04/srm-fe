@@ -5,6 +5,8 @@ export interface WithdrawalConfig {
   min_withdrawal_amount: number;
   fee_rate: number;
   is_active: boolean;
+  withdrawal_start_day?: number;
+  withdrawal_end_day?: number;
   updated_by?: string;
   updated_at?: string;
 }
@@ -68,6 +70,8 @@ const adminWithdrawalApi = {
     min_withdrawal_amount?: number;
     fee_rate?: number;
     is_active?: boolean;
+    withdrawal_start_day?: number;
+    withdrawal_end_day?: number;
   }): Promise<WithdrawalConfig> {
     const response = await apiClient.put<WithdrawalConfig>(
       "/admin/withdrawals/config",
