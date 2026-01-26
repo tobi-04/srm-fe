@@ -20,7 +20,7 @@ import {
   MdPerson,
 } from "react-icons/md";
 import DashboardLayout from "../components/DashboardLayout";
-import { orderApi } from "../api/orderApi";
+import { adminAnalyticsApi } from "../api/adminAnalyticsApi";
 import { getAvatarStyles } from "../utils/color";
 
 const { Title, Text } = Typography;
@@ -45,9 +45,9 @@ export default function OrderHistoryPage() {
   }, []);
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["admin-orders", page, pageSize, statusFilter, searchText],
+    queryKey: ["admin-transactions", page, pageSize, statusFilter, searchText],
     queryFn: () =>
-      orderApi.getAdminOrders({
+      adminAnalyticsApi.getTransactions({
         page,
         limit: pageSize,
         status: statusFilter,
@@ -60,16 +60,16 @@ export default function OrderHistoryPage() {
 
   const columns = [
     {
-      title: "ĐƠN HÀNG",
-      key: "order_id",
-      width: 120,
+      title: "MÃ GD",
+      key: "transfer_code",
+      width: 150,
       render: (_: any, record: any) => (
         <Space direction="vertical" size={0}>
           <Text strong style={{ fontSize: 13 }}>
-            #{record._id.substring(record._id.length - 6).toUpperCase()}
+            {record.transfer_code || record._id.substring(record._id.length - 8).toUpperCase()}
           </Text>
           <Text type="secondary" style={{ fontSize: 11 }}>
-            {new Date(record.created_at).toLocaleDateString("vi-VN")}
+            {new Date(record.created_at || record.paid_at).toLocaleDateString("vi-VN")}
           </Text>
         </Space>
       ),
@@ -131,13 +131,14 @@ export default function OrderHistoryPage() {
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        const isPaid = status === "paid";
+        const isCompleted = status === "completed";
+        const isFailed = status === "failed";
         return (
           <Tag
-            color={isPaid ? "success" : "warning"}
-            icon={isPaid ? <MdCheckCircle /> : null}
+            color={isCompleted ? "success" : isFailed ? "error" : "warning"}
+            icon={isCompleted ? <MdCheckCircle /> : null}
             style={{ borderRadius: 6, padding: "2px 8px" }}>
-            {isPaid ? "Đã thanh toán" : "Chờ xử lý"}
+            {isCompleted ? "Thành công" : isFailed ? "Thất bại" : "Chờ xử lý"}
           </Tag>
         );
       },
@@ -146,7 +147,7 @@ export default function OrderHistoryPage() {
 
   const mobileColumns = [
     {
-      title: "Thông tin đơn hàng",
+      title: "Thông tin giao dịch",
       key: "mobile_order",
       render: (_: any, record: any) => (
         <div style={{ padding: "8px 0" }}>
@@ -157,10 +158,10 @@ export default function OrderHistoryPage() {
               marginBottom: 8,
             }}>
             <Text strong>
-              #{record._id.substring(record._id.length - 6).toUpperCase()}
+              {record.transfer_code || record._id.substring(record._id.length - 8).toUpperCase()}
             </Text>
-            <Tag color={record.status === "paid" ? "success" : "warning"}>
-              {record.status === "paid" ? "Thành công" : "Chờ"}
+            <Tag color={record.status === "completed" ? "success" : record.status === "failed" ? "error" : "warning"}>
+              {record.status === "completed" ? "Thành công" : record.status === "failed" ? "Thất bại" : "Chờ"}
             </Tag>
           </div>
           <div style={{ marginBottom: 4 }}>
@@ -171,7 +172,7 @@ export default function OrderHistoryPage() {
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <Text type="secondary" style={{ fontSize: 12 }}>
-              {new Date(record.created_at).toLocaleDateString("vi-VN")}
+              {new Date(record.created_at || record.paid_at).toLocaleDateString("vi-VN")}
             </Text>
             <Text strong style={{ color: "#16a34a" }}>
               {record.amount.toLocaleString("vi-VN")}đ
@@ -202,10 +203,10 @@ export default function OrderHistoryPage() {
               alignItems: "center",
               gap: 8,
             }}>
-            <MdHistory /> Lịch sử đơn hàng
+            <MdHistory /> Lịch sử giao dịch
           </Title>
           <Text type="secondary">
-            Xem và quản lý tất cả các đơn hàng trong hệ thống
+            Xem và quản lý tất cả các giao dịch thanh toán trong hệ thống
           </Text>
         </div>
       </div>
@@ -214,7 +215,7 @@ export default function OrderHistoryPage() {
         <Row gutter={[16, 16]}>
           <Col xs={24} md={12}>
             <Input
-              placeholder="Tìm kiếm theo học viên, khóa học hoặc saler..."
+              placeholder="Tìm theo học viên, khóa học hoặc mã GD..."
               prefix={<MdSearch size={18} style={{ color: "#94a3b8" }} />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -230,8 +231,9 @@ export default function OrderHistoryPage() {
               size="large"
               value={statusFilter}
               onChange={setStatusFilter}>
-              <Select.Option value="paid">Đã thanh toán</Select.Option>
+              <Select.Option value="completed">Thành công</Select.Option>
               <Select.Option value="pending">Chờ xử lý</Select.Option>
+              <Select.Option value="failed">Thất bại</Select.Option>
             </Select>
           </Col>
           <Col xs={12} md={6}>
@@ -271,7 +273,7 @@ export default function OrderHistoryPage() {
               setPage(p);
               setPageSize(s);
             },
-            showTotal: (total) => `Tổng cộng ${total} đơn hàng`,
+            showTotal: (total) => `Tổng cộng ${total} giao dịch`,
           }}
           scroll={{ x: isMobile ? undefined : 800 }}
         />

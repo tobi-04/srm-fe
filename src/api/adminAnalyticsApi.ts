@@ -157,6 +157,27 @@ export const adminAnalyticsApi = {
     return response.data;
   },
 
+  getTransactions: async (params: {
+    page: number;
+    limit: number;
+    status?: string;
+    search?: string;
+  }): Promise<{
+    data: any[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  }> => {
+    const response = await axios.get(`${API_URL}/analytics/dashboard/transactions`, {
+      headers: getAuthHeader(),
+      params,
+    });
+    return response.data;
+  },
+
   // Saler KPI Analytics
   getTopSalers: async (
     period: "month" | "quarter" | "year" = "month",

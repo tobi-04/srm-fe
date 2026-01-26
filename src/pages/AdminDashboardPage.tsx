@@ -44,7 +44,7 @@ import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
-const COLORS = ["#2563eb", "#60a5fa", "#93c5fd", "#bfdbfe"];
+const COLORS = ["#10b981", "#8b5cf6", "#34d399", "#a78bfa"];
 
 export default function AdminDashboardPage() {
   const [timeRange, setTimeRange] = useState<number>(7);
@@ -335,12 +335,12 @@ export default function AdminDashboardPage() {
                         y2="1">
                         <stop
                           offset="5%"
-                          stopColor="#2563eb"
+                          stopColor="#10b981"
                           stopOpacity={0.1}
                         />
                         <stop
                           offset="95%"
-                          stopColor="#2563eb"
+                          stopColor="#10b981"
                           stopOpacity={0}
                         />
                       </linearGradient>
@@ -384,7 +384,7 @@ export default function AdminDashboardPage() {
                     <Area
                       type="monotone"
                       dataKey="revenue"
-                      stroke="#2563eb"
+                      stroke="#10b981"
                       strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#colorRevenue)"
@@ -743,7 +743,7 @@ export default function AdminDashboardPage() {
                       {weeklySales?.slice().reverse().map((_, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={index % 2 === 0 ? "#2563eb" : "#f97316"}
+                          fill={index % 2 === 0 ? "#10b981" : "#8b5cf6"}
                         />
                       ))}
                     </Bar>
@@ -834,19 +834,19 @@ export default function AdminDashboardPage() {
                         );
                         const width = (record.revenue / maxRevenue) * 100;
                         const dayColors: Record<string, string> = {
-                          Mon: "#2563eb",    // Blue
-                          Tue: "#f97316",    // Orange
-                          Wed: "#2563eb",    // Blue
-                          Thu: "#f97316",    // Orange
-                          Fri: "#2563eb",    // Blue
-                          Sat: "#f97316",    // Orange
-                          Sun: "#2563eb",    // Blue
+                          Mon: "#10b981",    // Green
+                          Tue: "#8b5cf6",    // Purple
+                          Wed: "#10b981",    // Green
+                          Thu: "#8b5cf6",    // Purple
+                          Fri: "#10b981",    // Green
+                          Sat: "#8b5cf6",    // Purple
+                          Sun: "#10b981",    // Green
                         };
                         return (
                           <div
                             style={{
                               height: 20,
-                              background: dayColors[record.dayOfWeek] || "#2563eb",
+                              background: dayColors[record.dayOfWeek] || "#10b981",
                               width: `${width}%`,
                               borderRadius: 4,
                               minWidth: width > 0 ? 20 : 0,
@@ -938,18 +938,18 @@ export default function AdminDashboardPage() {
                         return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
                       }).map((entry, index) => {
                         const dayColors: Record<string, string> = {
-                          Mon: "#2563eb",    // Blue
-                          Tue: "#f97316",    // Orange
-                          Wed: "#2563eb",    // Blue
-                          Thu: "#f97316",    // Orange
-                          Fri: "#2563eb",    // Blue
-                          Sat: "#f97316",    // Orange
-                          Sun: "#2563eb",    // Blue
+                          Mon: "#10b981",    // Green
+                          Tue: "#8b5cf6",    // Purple
+                          Wed: "#10b981",    // Green
+                          Thu: "#8b5cf6",    // Purple
+                          Fri: "#10b981",    // Green
+                          Sat: "#8b5cf6",    // Purple
+                          Sun: "#10b981",    // Green
                         };
                         return (
                           <Cell
                             key={`cell-${index}`}
-                            fill={dayColors[entry.dayOfWeek] || "#2563eb"}
+                            fill={dayColors[entry.dayOfWeek] || "#10b981"}
                           />
                         );
                       })}
@@ -972,7 +972,11 @@ export default function AdminDashboardPage() {
               </Title>
             </div>
           }
-          extra={<Button type="link">Xem tất cả</Button>}>
+          extra={
+            <Button type="link" onClick={() => navigate("/admin/orders")}>
+              Xem tất cả
+            </Button>
+          }>
           <Table
             dataSource={recentPayments}
             columns={columns}

@@ -142,7 +142,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {
           key: "/admin/orders",
           icon: <MdHistory size={20} />,
-          label: "Lịch sử đơn hàng",
+          label: "Lịch sử giao dịch",
         },
         {
           key: "/admin/withdrawals",
