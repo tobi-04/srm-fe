@@ -11,6 +11,7 @@ export interface EmailAutomation {
     | "unpurchased_students"
     | "purchased_students"
     | "salers";
+  traffic_sources?: string[];
   schedule_type?: "once" | "recurring";
   cron_expression?: string;
   scheduled_at?: string;
@@ -24,8 +25,9 @@ export interface EmailAutomationStep {
   _id: string;
   automation_id: string;
   step_order: number;
-  delay_minutes?: number; // Legacy field - kept for backward compatibility
-  scheduled_at?: string; // New field: ISO datetime string
+  delay_minutes?: number; // Legacy field
+  delay_days?: number; // New field: Delay in days relative to event
+  scheduled_at?: string; // ISO datetime string for group-based sending
   subject_template: string;
   body_template: string;
 }
@@ -53,6 +55,7 @@ export interface CreateAutomationDto {
     | "unpurchased_students"
     | "purchased_students"
     | "salers";
+  traffic_sources?: string[];
   schedule_type?: "once" | "recurring";
   cron_expression?: string;
   scheduled_at?: string;
@@ -60,8 +63,9 @@ export interface CreateAutomationDto {
 
 export interface CreateStepDto {
   step_order: number;
-  delay_minutes?: number; // Legacy field - kept for backward compatibility
-  scheduled_at?: string; // New field: ISO datetime string
+  delay_minutes?: number; // Legacy field
+  delay_days?: number; // New field
+  scheduled_at?: string; // ISO datetime string
   subject_template: string;
   body_template: string;
 }

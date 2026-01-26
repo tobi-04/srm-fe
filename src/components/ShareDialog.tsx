@@ -11,7 +11,7 @@ import {
   Card,
 } from "antd";
 import { MdContentCopy, MdOpenInNew, MdShare } from "react-icons/md";
-import { FaFacebook, FaYoutube, FaTiktok } from "react-icons/fa";
+import { FaFacebook, FaYoutube, FaTiktok, FaAdn } from "react-icons/fa";
 import { buildShareUrl } from "../utils/trafficSource";
 
 const { Text, Title } = Typography;
@@ -23,7 +23,7 @@ interface ShareDialogProps {
   landingPageTitle?: string;
 }
 
-type SharePlatform = "facebook" | "youtube" | "tiktok";
+type SharePlatform = "facebook" | "youtube" | "tiktok" | "ads";
 
 interface PlatformConfig {
   key: SharePlatform;
@@ -58,6 +58,13 @@ const PLATFORMS: PlatformConfig[] = [
     shareUrlTemplate: (url: string) =>
       `https://www.tiktok.com/share?url=${encodeURIComponent(url)}`,
   },
+  {
+    key: "ads",
+    label: "Quảng cáo (Ads)",
+    icon: <FaAdn size={20} />,
+    color: "#4caf50",
+    shareUrlTemplate: (url: string) => url, // For ads, typically we just need the link
+  },
 ];
 
 export default function ShareDialog({
@@ -82,6 +89,7 @@ export default function ShareDialog({
       facebook: buildShareUrl(baseUrl, "facebook", landingPageTitle || "share"),
       youtube: buildShareUrl(baseUrl, "youtube", landingPageTitle || "share"),
       tiktok: buildShareUrl(baseUrl, "tiktok", landingPageTitle || "share"),
+      ads: buildShareUrl(baseUrl, "ads", landingPageTitle || "share"),
     };
   }, [baseUrl, landingPageTitle]);
 
@@ -144,8 +152,9 @@ export default function ShareDialog({
                   style={{
                     background: config.color,
                     borderColor: config.color,
-                  }}>
-                  Chia sẻ lên {config.label}
+                  }}
+                  disabled={platform === "ads"}>
+                  {platform === "ads" ? "Link quảng cáo" : `Chia sẻ lên ${config.label}`}
                 </Button>
               </Space>
             </Space>
@@ -180,7 +189,9 @@ export default function ShareDialog({
                 textAlign: "center",
                 fontSize: 12,
               }}>
-              Quét mã QR để truy cập trực tiếp với UTM tracking
+              {platform === "ads"
+                ? "Quét mã QR để sử dụng trong ấn phẩm quảng cáo"
+                : "Quét mã QR để truy cập trực tiếp với UTM tracking"}
             </Text>
           </Card>
 
@@ -193,7 +204,7 @@ export default function ShareDialog({
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <Text type="secondary">utm_medium:</Text>
-                <Text code>social</Text>
+                <Text code>{platform === "ads" ? "cpc" : "social"}</Text>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <Text type="secondary">utm_campaign:</Text>

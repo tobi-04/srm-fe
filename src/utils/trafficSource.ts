@@ -216,12 +216,12 @@ export function getOrCreateTrafficSource(): TrafficSourceData {
  */
 export function buildShareUrl(
   baseUrl: string,
-  source: "facebook" | "youtube" | "tiktok",
+  source: "facebook" | "youtube" | "tiktok" | "ads",
   campaign?: string,
 ): string {
   const url = new URL(baseUrl);
   url.searchParams.set("utm_source", source);
-  url.searchParams.set("utm_medium", "social");
+  url.searchParams.set("utm_medium", source === "ads" ? "cpc" : "social");
   url.searchParams.set("utm_campaign", campaign || "share");
   url.searchParams.set("utm_content", `${source}_share`);
 
