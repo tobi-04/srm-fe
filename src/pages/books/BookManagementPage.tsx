@@ -32,6 +32,7 @@ import { useNavigate } from "react-router-dom";
 import { MdSettings } from "react-icons/md";
 import { bookApi } from "../../api/bookApi";
 import DashboardLayout from "../../components/DashboardLayout";
+import ImageUpload from "../../components/ImageUpload";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -380,10 +381,15 @@ const BookManagementPage: React.FC = () => {
 
           <Form.Item
             name="cover_image"
-            label="Link ảnh bìa URL"
-            rules={[{ required: true }]}
+            label="Ảnh bìa"
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng tải lên hoặc dán link ảnh bìa",
+              },
+            ]}
           >
-            <Input placeholder="https://..." />
+            <ImageUpload folder="books" />
           </Form.Item>
 
           <Form.Item name="description" label="Mô tả sách">

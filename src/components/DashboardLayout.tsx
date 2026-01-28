@@ -33,6 +33,7 @@ import {
   MdHistory,
   MdTableChart,
   MdConfirmationNumber,
+  MdShowChart,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -110,6 +111,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           key: "/admin/books/coupons",
           icon: <MdConfirmationNumber size={20} />,
           label: "Quản lý Coupon",
+        },
+        {
+          key: "/admin/indicators",
+          icon: <MdShowChart size={20} />,
+          label: "Quản lý Indicator",
         },
       ],
     },

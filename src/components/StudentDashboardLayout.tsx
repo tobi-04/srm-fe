@@ -21,6 +21,7 @@ import {
   MdMenuOpen,
   MdKeyboardArrowDown,
   MdLibraryBooks,
+  MdShowChart,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -80,6 +81,11 @@ export default function StudentDashboardLayout({
       key: "/student/my-books",
       icon: <MdLibraryBooks size={20} />,
       label: "Sách của tôi",
+    },
+    {
+      key: "/student/my-indicators",
+      icon: <MdShowChart size={20} />,
+      label: "Indicator của tôi",
     },
     {
       key: "/student/orders",

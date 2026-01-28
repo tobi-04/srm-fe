@@ -40,6 +40,11 @@ import BookDetailPage from "./pages/books/BookDetailPage";
 import MyBooksPage from "@/pages/books/MyBooksPage";
 import BookManagementPage from "./pages/books/BookManagementPage";
 import CouponManagementPage from "./pages/books/CouponManagementPage";
+// Indicator Pages
+import IndicatorListPage from "./pages/indicators/IndicatorListPage";
+import IndicatorDetailPage from "./pages/indicators/IndicatorDetailPage";
+import MyIndicatorsPage from "./pages/indicators/MyIndicatorsPage";
+import IndicatorManagementPage from "./pages/indicators/IndicatorManagementPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
 
@@ -344,6 +349,36 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <CouponManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/indicators"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <IndicatorManagementPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Indicator Store Public Routes */}
+          <Route path="/indicators" element={<IndicatorListPage />} />
+          <Route path="/indicators/:slug" element={<IndicatorDetailPage />} />
+
+          {/* My Indicators - User Dashboard */}
+          <Route
+            path="/my-indicators"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <MyIndicatorsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/my-indicators"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <MyIndicatorsPage />
               </ProtectedRoute>
             }
           />
