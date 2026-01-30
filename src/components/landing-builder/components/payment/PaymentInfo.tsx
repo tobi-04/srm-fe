@@ -1,6 +1,7 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Slider } from "antd";
+import { Form, Input, Slider, Tabs } from "antd";
+import { CSSEditor } from "../shared/CSSEditor";
 
 interface PaymentInfoProps {
   title?: string;
@@ -9,7 +10,7 @@ interface PaymentInfoProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const PaymentInfo: React.FC<PaymentInfoProps> = ({
@@ -24,7 +25,7 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
   marginTop = 0,
   marginBottom = 30,
   maxWidth = 1200,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -44,7 +45,7 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
         maxWidth: maxWidth ? `${maxWidth}px` : "100%",
         margin: `${marginTop}px auto ${marginBottom}px auto`,
         border: selected ? "2px dashed #1890ff" : "none",
-        ...style,
+        ...customCSS,
       }}>
       <h3
         style={{ marginBottom: "16px", fontSize: "20px", fontWeight: "bold" }}>
@@ -109,68 +110,92 @@ const PaymentInfoSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
-      <Form.Item label="Title">
-        <Input
-          value={props.title}
-          onChange={(e) =>
-            setProp((props: any) => (props.title = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Instructions (comma-separated)">
-        <Input.TextArea
-          value={props.instructions.join(", ")}
-          onChange={(e) =>
-            setProp(
-              (props: any) =>
-                (props.instructions = e.target.value
-                  .split(",")
-                  .map((i: string) => i.trim())),
-            )
-          }
-          rows={4}
-        />
-      </Form.Item>
-      <Form.Item label={`Padding (${props.padding}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.padding}
-          onChange={(value) => setProp((props: any) => (props.padding = value))}
-        />
-      </Form.Item>
-      <Form.Item label={`Max Width (${props.maxWidth}px)`}>
-        <Slider
-          min={400}
-          max={2000}
-          value={props.maxWidth}
-          onChange={(value) =>
-            setProp((props: any) => (props.maxWidth = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Top (${props.marginTop}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginTop}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginTop = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginBottom}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginBottom = value))
-          }
-        />
-      </Form.Item>
-    </Form>
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
+              <Form.Item label="Title">
+                <Input
+                  value={props.title}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.title = e.target.value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Instructions (comma-separated)">
+                <Input.TextArea
+                  value={props.instructions.join(", ")}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) =>
+                        (props.instructions = e.target.value
+                          .split(",")
+                          .map((i: string) => i.trim())),
+                    )
+                  }
+                  rows={4}
+                />
+              </Form.Item>
+              <Form.Item label={`Padding (${props.padding}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.padding}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.padding = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Max Width (${props.maxWidth}px)`}>
+                <Slider
+                  min={400}
+                  max={2000}
+                  value={props.maxWidth}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.maxWidth = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Top (${props.marginTop}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginTop}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginTop = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginBottom}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginBottom = value))
+                  }
+                />
+              </Form.Item>
+            </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
   );
 };
 
@@ -188,6 +213,7 @@ const PaymentInfoSettings = () => {
     marginTop: 0,
     marginBottom: 30,
     maxWidth: 1200,
+    customCSS: {},
   },
   related: {
     toolbar: PaymentInfoSettings,

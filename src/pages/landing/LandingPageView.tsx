@@ -99,7 +99,7 @@ export default function LandingPageView() {
   useEffect(() => {
     // Check for enrollment error from query
     const errorMessage = (transactionError as any)?.response?.data?.message;
-    if (errorMessage === "ALREADY_ENROLLED") {
+    if (errorMessage === "ALREADY_ENROLLED" && landingPage) {
       message.info("Bạn đã sở hữu khóa học này!");
       const courseId =
         typeof landingPage.course_id === "object"

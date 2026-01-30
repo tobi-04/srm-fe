@@ -12,6 +12,7 @@ import {
   Divider,
   Tabs,
   Dropdown,
+  Modal,
 } from "antd";
 import {
   MdSave,
@@ -21,6 +22,7 @@ import {
   MdVisibility,
   MdShare,
   MdMoreVert,
+  MdDeleteSweep,
 } from "react-icons/md";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "../components/DashboardLayout";
@@ -44,6 +46,16 @@ import {
   PaymentQRCode,
   PaymentInfo,
   PaymentStatus,
+  // Advanced Components
+  VideoEmbed,
+  RichText,
+  AdvancedButton,
+  HeroSection,
+  GridContent,
+  GridItem,
+  List,
+  Carousel,
+  CustomHTML,
 } from "../components/landing-builder/components";
 import { Toolbox, SettingsPanel } from "../components/landing-builder/Sidebar";
 import { LandingPageProvider } from "../contexts/LandingPageContext";
@@ -73,6 +85,41 @@ const SaveButton = ({
       onClick={() => onSave(query, currentStep)}
       loading={loading}>
       Lưu Bước {currentStep}
+    </Button>
+  );
+};
+
+const ClearAllButton = ({ currentStep }: { currentStep: PageStep }) => {
+  const { actions, query } = useEditor();
+
+  const handleClearAll = () => {
+    Modal.confirm({
+      title: "Xóa tất cả components?",
+      content: `Bạn có chắc chắn muốn xóa tất cả components trong Bước ${currentStep}? Hành động này không thể hoàn tác.`,
+      okText: "Xóa tất cả",
+      cancelText: "Hủy",
+      okType: "danger",
+      onOk: () => {
+        const ROOT = query.node("ROOT").get();
+
+        // Get all child nodes of ROOT (excluding ROOT itself)
+        if (ROOT && ROOT.data.nodes) {
+          ROOT.data.nodes.forEach((nodeId: string) => {
+            // Delete all direct children of ROOT
+            if (nodeId !== "ROOT") {
+              actions.delete(nodeId);
+            }
+          });
+        }
+
+        message.success(`Đã xóa tất cả components trong Bước ${currentStep}`);
+      },
+    });
+  };
+
+  return (
+    <Button danger icon={<MdDeleteSweep />} onClick={handleClearAll}>
+      Xóa tất cả
     </Button>
   );
 };
@@ -234,6 +281,16 @@ export default function LandingPageBuilderPage() {
                   PaymentQRCode,
                   PaymentInfo,
                   PaymentStatus,
+                  // Advanced Components
+                  VideoEmbed,
+                  RichText,
+                  AdvancedButton,
+                  HeroSection,
+                  GridContent,
+                  GridItem,
+                  List,
+                  Carousel,
+                  CustomHTML,
                 }}
                 enabled={enabled}
                 onRender={({ render }) => (
@@ -268,6 +325,7 @@ export default function LandingPageBuilderPage() {
                         onSave={handleSave}
                         loading={updateMutation.isPending}
                       />
+                      <ClearAllButton currentStep={currentStep} />
                       <Button
                         icon={<MdPreview />}
                         onClick={() =>

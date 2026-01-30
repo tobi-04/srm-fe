@@ -34,6 +34,8 @@ export default function AdminWithdrawalConfigPage() {
         min_withdrawal_amount: config.min_withdrawal_amount,
         fee_rate: config.fee_rate,
         is_active: config.is_active,
+        withdrawal_start_day: config.withdrawal_start_day || 1,
+        withdrawal_end_day: config.withdrawal_end_day || 31,
       });
     }
   }, [config, form]);
@@ -128,6 +130,36 @@ export default function AdminWithdrawalConfigPage() {
             valuePropName="checked"
             extra="Tắt để tạm dừng tất cả yêu cầu rút tiền">
             <Switch checkedChildren="Bật" unCheckedChildren="Tắt" />
+          </Form.Item>
+
+          <Form.Item
+            name="withdrawal_start_day"
+            label="Ngày bắt đầu cho phép rút tiền"
+            rules={[
+              { required: true, message: "Vui lòng nhập ngày bắt đầu" },
+            ]}
+            extra="Ngày đầu tiên trong tháng được phép rút tiền (1-31)">
+            <InputNumber
+              style={{ width: "100%" }}
+              min={1}
+              max={31}
+              step={1}
+              addonAfter="Ngày"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="withdrawal_end_day"
+            label="Ngày kết thúc cho phép rút tiền"
+            rules={[{ required: true, message: "Vui lòng nhập ngày kết thúc" }]}
+            extra="Ngày cuối cùng trong tháng được phép rút tiền (1-31)">
+            <InputNumber
+              style={{ width: "100%" }}
+              min={1}
+              max={31}
+              step={1}
+              addonAfter="Ngày"
+            />
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0 }}>

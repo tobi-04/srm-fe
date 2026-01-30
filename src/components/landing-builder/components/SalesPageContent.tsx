@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, message, Slider } from "antd";
+import { Form, Input, message, Slider, Tabs, Switch } from "antd";
 import { MdCheckCircle } from "react-icons/md";
 import { useCountdown } from "../../../contexts/CountdownContext";
 import { useParams } from "react-router-dom";
 import { createPaymentTransaction } from "../../../api/paymentTransaction";
 import { useLandingPageData } from "../../../contexts/LandingPageContext";
+import { CSSEditor } from "./shared/CSSEditor";
 
 interface SalesPageContentProps {
   confirmationText?: string;
@@ -20,7 +21,8 @@ interface SalesPageContentProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  showButtonImmediately?: boolean;
+  customCSS?: React.CSSProperties;
 }
 
 export const SalesPageContent: React.FC<SalesPageContentProps> = ({
@@ -39,7 +41,8 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
   marginTop = 0,
   marginBottom = 30,
   maxWidth = 1200,
-  style,
+  showButtonImmediately = false,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -135,7 +138,7 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
         margin: `${marginTop}px auto ${marginBottom}px auto`,
         border: selected ? "2px dashed #1890ff" : "none",
       }}>
-      <div style={style}>
+      <div style={customCSS}>
         {/* Confirmation Text */}
         <p
           style={{
@@ -174,8 +177,8 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
           ))}
         </div>
 
-        {/* CTA Button - Only show when countdown is finished */}
-        {isCountdownFinished && (
+        {/* CTA Button - Show based on countdown or immediate setting */}
+        {(showButtonImmediately || isCountdownFinished) && (
           <button
             onClick={handleNavigateToPayment}
             disabled={isCreatingPayment}
@@ -224,121 +227,169 @@ const SalesPageContentSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
-      <Form.Item label="Confirmation Text">
-        <Input.TextArea
-          value={props.confirmationText}
-          onChange={(e) =>
-            setProp((props: any) => (props.confirmationText = e.target.value))
-          }
-          rows={2}
-        />
-      </Form.Item>
-      <Form.Item label="Benefits (comma-separated)">
-        <Input.TextArea
-          value={props.benefits.join(", ")}
-          onChange={(e) =>
-            setProp(
-              (props: any) =>
-                (props.benefits = e.target.value
-                  .split(",")
-                  .map((b: string) => b.trim())),
-            )
-          }
-          rows={3}
-        />
-      </Form.Item>
-      <Form.Item label="Button Main Text">
-        <Input
-          value={props.buttonMainText}
-          onChange={(e) =>
-            setProp((props: any) => (props.buttonMainText = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Button Sub Text">
-        <Input
-          value={props.buttonSubText}
-          onChange={(e) =>
-            setProp((props: any) => (props.buttonSubText = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Button Color">
-        <Input
-          type="color"
-          value={props.buttonColor}
-          onChange={(e) =>
-            setProp((props: any) => (props.buttonColor = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Button Text Color">
-        <Input
-          type="color"
-          value={props.buttonTextColor}
-          onChange={(e) =>
-            setProp((props: any) => (props.buttonTextColor = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Check Icon Color">
-        <Input
-          type="color"
-          value={props.checkIconColor}
-          onChange={(e) =>
-            setProp((props: any) => (props.checkIconColor = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Background Color">
-        <Input
-          type="color"
-          value={props.backgroundColor}
-          onChange={(e) =>
-            setProp((props: any) => (props.backgroundColor = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Padding (${props.padding}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.padding}
-          onChange={(value) => setProp((props: any) => (props.padding = value))}
-        />
-      </Form.Item>
-      <Form.Item label={`Max Width (${props.maxWidth}px)`}>
-        <Slider
-          min={400}
-          max={2000}
-          value={props.maxWidth}
-          onChange={(value) =>
-            setProp((props: any) => (props.maxWidth = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Top (${props.marginTop}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginTop}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginTop = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginBottom}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginBottom = value))
-          }
-        />
-      </Form.Item>
-    </Form>
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
+              <Form.Item label="Confirmation Text">
+                <Input.TextArea
+                  value={props.confirmationText}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.confirmationText = e.target.value),
+                    )
+                  }
+                  rows={2}
+                />
+              </Form.Item>
+              <Form.Item label="Benefits (comma-separated)">
+                <Input.TextArea
+                  value={props.benefits.join(", ")}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) =>
+                        (props.benefits = e.target.value
+                          .split(",")
+                          .map((b: string) => b.trim())),
+                    )
+                  }
+                  rows={3}
+                />
+              </Form.Item>
+              <Form.Item label="Button Main Text">
+                <Input
+                  value={props.buttonMainText}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.buttonMainText = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Button Sub Text">
+                <Input
+                  value={props.buttonSubText}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.buttonSubText = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Button Color">
+                <Input
+                  type="color"
+                  value={props.buttonColor}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.buttonColor = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Button Text Color">
+                <Input
+                  type="color"
+                  value={props.buttonTextColor}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.buttonTextColor = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Check Icon Color">
+                <Input
+                  type="color"
+                  value={props.checkIconColor}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.checkIconColor = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Background Color">
+                <Input
+                  type="color"
+                  value={props.backgroundColor}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.backgroundColor = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Hiển thị button ngay lập tức (không đợi countdown)">
+                <Switch
+                  checked={props.showButtonImmediately}
+                  onChange={(checked) =>
+                    setProp(
+                      (props: any) => (props.showButtonImmediately = checked),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Padding (${props.padding}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.padding}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.padding = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Max Width (${props.maxWidth}px)`}>
+                <Slider
+                  min={400}
+                  max={2000}
+                  value={props.maxWidth}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.maxWidth = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Top (${props.marginTop}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginTop}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginTop = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginBottom}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginBottom = value))
+                  }
+                />
+              </Form.Item>
+            </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
   );
 };
 
@@ -360,6 +411,8 @@ const SalesPageContentSettings = () => {
     marginTop: 0,
     marginBottom: 30,
     maxWidth: 600,
+    showButtonImmediately: false,
+    customCSS: {},
   },
   related: {
     toolbar: SalesPageContentSettings,

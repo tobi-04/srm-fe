@@ -4,6 +4,16 @@ export { Button } from "./Button";
 export { Container } from "./Container";
 export { Image } from "./Image";
 
+// Advanced Components
+export { VideoEmbed } from "./VideoEmbed";
+export { RichText } from "./RichText";
+export { AdvancedButton } from "./AdvancedButton";
+export { HeroSection } from "./HeroSection";
+export { GridContent, GridItem } from "./GridContent";
+export { List } from "./List";
+export { Carousel } from "./Carousel";
+export { CustomHTML } from "./CustomHTML";
+
 // Step 1 Components
 export { Header } from "./Header";
 export { Headline } from "./Headline";

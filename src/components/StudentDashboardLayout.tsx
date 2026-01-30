@@ -20,6 +20,8 @@ import {
   MdPlayCircleFilled,
   MdMenuOpen,
   MdKeyboardArrowDown,
+  MdLibraryBooks,
+  MdShowChart,
 } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
@@ -76,6 +78,16 @@ export default function StudentDashboardLayout({
       label: "Khóa học của tôi",
     },
     {
+      key: "/student/my-books",
+      icon: <MdLibraryBooks size={20} />,
+      label: "Sách của tôi",
+    },
+    {
+      key: "/student/my-indicators",
+      icon: <MdShowChart size={20} />,
+      label: "Indicator của tôi",
+    },
+    {
       key: "/student/orders",
       icon: <MdShoppingCart size={20} />,
       label: "Lịch sử đơn hàng",
@@ -106,7 +118,8 @@ export default function StudentDashboardLayout({
           alignItems: "center",
           padding: "0 24px",
           gap: 12,
-        }}>
+        }}
+      >
         <div
           style={{
             width: 36,
@@ -117,7 +130,8 @@ export default function StudentDashboardLayout({
             alignItems: "center",
             justifyContent: "center",
             boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
-          }}>
+          }}
+        >
           <MdMenuBook color="white" size={20} />
         </div>
         {(!collapsed || isMobile) && (
@@ -128,7 +142,8 @@ export default function StudentDashboardLayout({
                 fontWeight: 800,
                 color: "#1e293b",
                 display: "block",
-              }}>
+              }}
+            >
               Học viên Portal
             </Text>
             <Text type="secondary" style={{ fontSize: 11 }}>
@@ -165,7 +180,8 @@ export default function StudentDashboardLayout({
             gap: 12,
             height: 40,
             borderRadius: 8,
-          }}>
+          }}
+        >
           {(!collapsed || isMobile) && "Đăng xuất"}
         </Button>
       </div>
@@ -189,7 +205,8 @@ export default function StudentDashboardLayout({
             position: "fixed",
             left: 0,
             zIndex: 100,
-          }}>
+          }}
+        >
           {sidebarContent}
         </Sider>
       )}
@@ -203,7 +220,8 @@ export default function StudentDashboardLayout({
         width={280}
         styles={{
           body: { padding: 0, display: "flex", flexDirection: "column" },
-        }}>
+        }}
+      >
         {sidebarContent}
       </Drawer>
 
@@ -211,7 +229,8 @@ export default function StudentDashboardLayout({
         style={{
           marginLeft: isMobile ? 0 : collapsed ? 80 : 280,
           transition: "margin-left 0.2s",
-        }}>
+        }}
+      >
         <Header
           style={{
             padding: isMobile ? "0 16px" : "0 32px",
@@ -225,14 +244,16 @@ export default function StudentDashboardLayout({
             top: 0,
             zIndex: 99,
             borderBottom: "1px solid #f1f5f9",
-          }}>
+          }}
+        >
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: isMobile ? 12 : 24,
               flex: 1,
-            }}>
+            }}
+          >
             <Button
               type="text"
               icon={
@@ -262,7 +283,8 @@ export default function StudentDashboardLayout({
             <Dropdown
               menu={{ items: userMenuItems }}
               placement="bottomRight"
-              arrow>
+              arrow
+            >
               <div
                 style={{
                   display: "flex",
@@ -273,13 +295,15 @@ export default function StudentDashboardLayout({
                   borderRadius: 8,
                   transition: "all 0.2s",
                 }}
-                className="user-profile-trigger">
+                className="user-profile-trigger"
+              >
                 <Avatar
                   style={{
                     ...getAvatarStyles(user?.name || user?.email || "Student"),
                     fontWeight: "bold",
                     boxShadow: "none",
-                  }}>
+                  }}
+                >
                   {user?.name ? (
                     user.name.substring(0, 2).toUpperCase()
                   ) : (
@@ -293,7 +317,8 @@ export default function StudentDashboardLayout({
                         display: "flex",
                         flexDirection: "column",
                         lineHeight: 1.2,
-                      }}>
+                      }}
+                    >
                       <Text strong style={{ fontSize: 14, color: "#1e293b" }}>
                         {user?.name || "Học viên"}
                       </Text>
@@ -316,7 +341,8 @@ export default function StudentDashboardLayout({
           style={{
             margin: isMobile ? "16px" : "32px",
             minHeight: 280,
-          }}>
+          }}
+        >
           {children}
         </Content>
       </Layout>

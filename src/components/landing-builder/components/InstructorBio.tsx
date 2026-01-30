@@ -1,8 +1,9 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, message, Slider } from "antd";
+import { Form, Input, message, Slider, Tabs } from "antd";
 import { MdCheckCircle } from "react-icons/md";
 import { useParams } from "react-router-dom";
+import { CSSEditor } from "./shared/CSSEditor";
 
 interface InstructorBioProps {
   imageUrl?: string;
@@ -20,7 +21,7 @@ interface InstructorBioProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const InstructorBio: React.FC<InstructorBioProps> = ({
@@ -45,7 +46,7 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
   marginTop = 0,
   marginBottom = 40,
   maxWidth = 1200,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -75,7 +76,7 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
           maxWidth: maxWidth ? `${maxWidth}px` : "1200px",
           margin: "0 auto",
           padding: 0,
-          ...style,
+          ...customCSS,
         }}>
         {/* Left Column: Instructor Image and Bio */}
         <div
@@ -169,7 +170,7 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
               // Check if we're in builder/preview mode
               if (!slug) {
                 message.info(
-                  "This button will scroll to the form when viewing the published landing page."
+                  "This button will scroll to the form when viewing the published landing page.",
                 );
                 return;
               }
@@ -211,145 +212,181 @@ const InstructorBioSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
-      <Form.Item label="Instructor Image URL">
-        <Input
-          value={props.imageUrl}
-          onChange={(e) =>
-            setProp((props: any) => (props.imageUrl = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Instructor Name">
-        <Input
-          value={props.instructorName}
-          onChange={(e) =>
-            setProp((props: any) => (props.instructorName = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Bio Text">
-        <Input.TextArea
-          value={props.bioText}
-          onChange={(e) =>
-            setProp((props: any) => (props.bioText = e.target.value))
-          }
-          rows={3}
-        />
-      </Form.Item>
-      <Form.Item label="Section Title">
-        <Input
-          value={props.sectionTitle}
-          onChange={(e) =>
-            setProp((props: any) => (props.sectionTitle = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Benefits (comma-separated)">
-        <Input.TextArea
-          value={props.benefits.join(", ")}
-          onChange={(e) =>
-            setProp(
-              (props: any) =>
-                (props.benefits = e.target.value
-                  .split(",")
-                  .map((b: string) => b.trim()))
-            )
-          }
-          rows={5}
-        />
-      </Form.Item>
-      <Form.Item label="Button Text">
-        <Input
-          value={props.buttonText}
-          onChange={(e) =>
-            setProp((props: any) => (props.buttonText = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Button Color">
-        <Input
-          type="color"
-          value={props.buttonColor}
-          onChange={(e) =>
-            setProp((props: any) => (props.buttonColor = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Button Text Color">
-        <Input
-          type="color"
-          value={props.buttonTextColor}
-          onChange={(e) =>
-            setProp((props: any) => (props.buttonTextColor = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Check Icon Color">
-        <Input
-          type="color"
-          value={props.checkIconColor}
-          onChange={(e) =>
-            setProp((props: any) => (props.checkIconColor = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Footer Text">
-        <Input
-          value={props.footerText}
-          onChange={(e) =>
-            setProp((props: any) => (props.footerText = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Background Color">
-        <Input
-          type="color"
-          value={props.backgroundColor}
-          onChange={(e) =>
-            setProp((props: any) => (props.backgroundColor = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Padding (${props.padding}px)`}>
-        <Slider
-          min={0}
-          max={200}
-          value={props.padding}
-          onChange={(value) => setProp((props: any) => (props.padding = value))}
-        />
-      </Form.Item>
-      <Form.Item label={`Max Width (${props.maxWidth}px)`}>
-        <Slider
-          min={400}
-          max={2000}
-          value={props.maxWidth}
-          onChange={(value) =>
-            setProp((props: any) => (props.maxWidth = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Top (${props.marginTop}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginTop}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginTop = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginBottom}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginBottom = value))
-          }
-        />
-      </Form.Item>
-    </Form>
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
+              <Form.Item label="Instructor Image URL">
+                <Input
+                  value={props.imageUrl}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.imageUrl = e.target.value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Instructor Name">
+                <Input
+                  value={props.instructorName}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.instructorName = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Bio Text">
+                <Input.TextArea
+                  value={props.bioText}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.bioText = e.target.value))
+                  }
+                  rows={3}
+                />
+              </Form.Item>
+              <Form.Item label="Section Title">
+                <Input
+                  value={props.sectionTitle}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.sectionTitle = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Benefits (comma-separated)">
+                <Input.TextArea
+                  value={props.benefits.join(", ")}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) =>
+                        (props.benefits = e.target.value
+                          .split(",")
+                          .map((b: string) => b.trim())),
+                    )
+                  }
+                  rows={5}
+                />
+              </Form.Item>
+              <Form.Item label="Button Text">
+                <Input
+                  value={props.buttonText}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.buttonText = e.target.value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Button Color">
+                <Input
+                  type="color"
+                  value={props.buttonColor}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.buttonColor = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Button Text Color">
+                <Input
+                  type="color"
+                  value={props.buttonTextColor}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.buttonTextColor = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Check Icon Color">
+                <Input
+                  type="color"
+                  value={props.checkIconColor}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.checkIconColor = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Footer Text">
+                <Input
+                  value={props.footerText}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.footerText = e.target.value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Background Color">
+                <Input
+                  type="color"
+                  value={props.backgroundColor}
+                  onChange={(e) =>
+                    setProp(
+                      (props: any) => (props.backgroundColor = e.target.value),
+                    )
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Padding (${props.padding}px)`}>
+                <Slider
+                  min={0}
+                  max={200}
+                  value={props.padding}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.padding = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Max Width (${props.maxWidth}px)`}>
+                <Slider
+                  min={400}
+                  max={2000}
+                  value={props.maxWidth}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.maxWidth = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Top (${props.marginTop}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginTop}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginTop = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Bottom (${props.marginBottom}px)`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginBottom}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginBottom = value))
+                  }
+                />
+              </Form.Item>
+            </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
   );
 };
 
@@ -378,6 +415,7 @@ const InstructorBioSettings = () => {
     marginTop: 0,
     marginBottom: 40,
     maxWidth: 1200,
+    customCSS: {},
   },
   related: {
     toolbar: InstructorBioSettings,

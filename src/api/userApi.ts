@@ -9,6 +9,43 @@ export interface Student {
   created_at: string;
 }
 
+export interface StudentEnrollment {
+  course_id: string;
+  course_title: string;
+  enrolled_at: string;
+  status: string;
+  progress_percent: number;
+  completed_lessons_count: number;
+  last_activity_at: string;
+}
+
+export interface StudentOrder {
+  order_id: string;
+  course_title: string;
+  amount: number;
+  status: string;
+  paid_at: string;
+  created_at: string;
+}
+
+export interface StudentDetails {
+  student: {
+    _id: string;
+    name: string;
+    email: string;
+    is_active: boolean;
+    created_at: string;
+  };
+  enrollments: StudentEnrollment[];
+  orders: StudentOrder[];
+  summary: {
+    total_courses: number;
+    total_orders: number;
+    avg_progress: number;
+    total_spent: number;
+  };
+}
+
 export interface Saler {
   _id: string;
   name: string;
@@ -84,6 +121,14 @@ export const userApi = {
     search?: string;
   }): Promise<PaginatedResponse<Student>> {
     const response = await apiClient.get("/users/students", { params });
+    return response.data;
+  },
+
+  /**
+   * Get student details with courses, progress, and orders
+   */
+  async getStudentDetails(id: string): Promise<StudentDetails> {
+    const response = await apiClient.get(`/users/students/${id}/details`);
     return response.data;
   },
 

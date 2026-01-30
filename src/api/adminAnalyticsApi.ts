@@ -51,6 +51,18 @@ export interface RecentPayment {
   paid_at: string;
 }
 
+export interface DailySalesSnapshot {
+  date: string;
+  dayOfWeek: string;
+  revenue: number;
+}
+
+export interface WeeklySalesSnapshot {
+  weekEnding: string;
+  weekLabel: string;
+  revenue: number;
+}
+
 export const adminAnalyticsApi = {
   getSummary: async (): Promise<DashboardSummary> => {
     const response = await axios.get(`${API_URL}/analytics/dashboard/summary`, {
@@ -90,6 +102,28 @@ export const adminAnalyticsApi = {
     return response.data;
   },
 
+  getDailySalesSnapshot: async (days: number = 14): Promise<DailySalesSnapshot[]> => {
+    const response = await axios.get(
+      `${API_URL}/analytics/dashboard/daily-sales`,
+      {
+        headers: getAuthHeader(),
+        params: { days },
+      },
+    );
+    return response.data;
+  },
+
+  getWeeklySalesSnapshot: async (weeks: number = 4): Promise<WeeklySalesSnapshot[]> => {
+    const response = await axios.get(
+      `${API_URL}/analytics/dashboard/weekly-sales`,
+      {
+        headers: getAuthHeader(),
+        params: { weeks },
+      },
+    );
+    return response.data;
+  },
+
   getProgressSummary: async (): Promise<{
     avgCompletion: number;
     activeToday: number;
@@ -117,6 +151,27 @@ export const adminAnalyticsApi = {
     limit: number;
   }> => {
     const response = await axios.get(`${API_URL}/analytics/student-progress`, {
+      headers: getAuthHeader(),
+      params,
+    });
+    return response.data;
+  },
+
+  getTransactions: async (params: {
+    page: number;
+    limit: number;
+    status?: string;
+    search?: string;
+  }): Promise<{
+    data: any[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  }> => {
+    const response = await axios.get(`${API_URL}/analytics/dashboard/transactions`, {
       headers: getAuthHeader(),
       params,
     });

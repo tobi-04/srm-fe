@@ -18,6 +18,7 @@ import {
   Col,
   Tabs,
   Divider,
+  DatePicker,
 } from "antd";
 import {
   MdAdd,
@@ -27,6 +28,7 @@ import {
   MdMail,
   MdSchedule,
 } from "react-icons/md";
+import dayjs from "dayjs";
 import DashboardLayout from "../components/DashboardLayout";
 import TiptapEditor from "../components/email-automation/TiptapEditor";
 import {
@@ -53,6 +55,7 @@ export default function EmailAutomationPage() {
   const [triggerType, setTriggerType] = useState<"event" | "group">("event");
   const [targetGroup, setTargetGroup] = useState<string>("all_students");
   const [eventType, setEventType] = useState("user.registered");
+  const [trafficSources, setTrafficSources] = useState<string[]>([]);
   const [isActive, setIsActive] = useState(false);
 
   // Step editor modal
@@ -115,6 +118,7 @@ export default function EmailAutomationPage() {
     setTriggerType(automation.trigger_type || "event");
     setEventType(automation.event_type || "");
     setTargetGroup(automation.target_group || "all_students");
+    setTrafficSources(automation.traffic_sources || []);
     setIsActive(automation.is_active);
   };
 
@@ -125,6 +129,7 @@ export default function EmailAutomationPage() {
     setTriggerType("event");
     setEventType("user.registered");
     setTargetGroup("all_students");
+    setTrafficSources([]);
     setIsActive(false);
     setSteps([]);
   };
@@ -179,6 +184,7 @@ export default function EmailAutomationPage() {
         event_type: triggerType === "event" ? eventType : undefined,
         target_group:
           triggerType === "group" ? (targetGroup as any) : undefined,
+        traffic_sources: trafficSources,
       });
       message.success("Tạo automation thành công");
       await loadAutomations();
@@ -202,6 +208,7 @@ export default function EmailAutomationPage() {
         event_type: triggerType === "event" ? eventType : undefined,
         target_group:
           triggerType === "group" ? (targetGroup as any) : undefined,
+        traffic_sources: trafficSources,
       });
       message.success("Cập nhật automation thành công");
       await loadAutomations();
@@ -263,7 +270,8 @@ export default function EmailAutomationPage() {
     setStepBodyContent("");
     stepForm.setFieldsValue({
       step_order: steps.length + 1,
-      delay_minutes: 0,
+      delay_days: 0,
+      scheduled_at: dayjs().add(1, "hour"),
     });
     setStepModalVisible(true);
   };
@@ -272,7 +280,8 @@ export default function EmailAutomationPage() {
     setEditingStep(step);
     stepForm.setFieldsValue({
       step_order: step.step_order,
-      delay_minutes: step.delay_minutes,
+      delay_days: step.delay_days || 0,
+      scheduled_at: step.scheduled_at ? dayjs(step.scheduled_at) : null,
       subject_template: step.subject_template,
     });
     setStepBodyContent(step.body_template);
@@ -284,10 +293,21 @@ export default function EmailAutomationPage() {
 
     try {
       const values = await stepForm.validateFields();
+
+      // Transform the data based on trigger type
       const stepData: CreateStepDto = {
-        ...values,
+        step_order: values.step_order,
+        subject_template: values.subject_template,
         body_template: stepBodyContent,
       };
+
+      if (triggerType === "event") {
+        stepData.delay_days = values.delay_days;
+      } else {
+        stepData.scheduled_at = values.scheduled_at
+          ? dayjs(values.scheduled_at).toISOString()
+          : undefined;
+      }
 
       setLoading(true);
       if (editingStep) {
@@ -341,6 +361,14 @@ export default function EmailAutomationPage() {
     { label: "Học viên chưa mua khóa học", value: "unpurchased_students" },
     { label: "Học viên đã mua khóa học", value: "purchased_students" },
     { label: "Saler (Đội ngũ bán hàng)", value: "salers" },
+  ];
+
+  const trafficSourceOptions = [
+    { label: "Facebook", value: "facebook" },
+    { label: "YouTube", value: "youtube" },
+    { label: "TikTok", value: "tiktok" },
+    { label: "Ads (Quảng cáo)", value: "ads" },
+    { label: "Trực tiếp (Direct)", value: "direct" },
   ];
 
   const logColumns = [
@@ -601,9 +629,15 @@ export default function EmailAutomationPage() {
                       <Space>
                         <MdSchedule />
                         <Text type="secondary">
-                          {step.delay_minutes === 0
-                            ? "Ngay lập tức"
-                            : `Sau ${step.delay_minutes} phút`}
+                          {selectedAutomation.trigger_type === "group"
+                            ? step.scheduled_at
+                              ? dayjs(step.scheduled_at).format(
+                                  "DD/MM/YYYY HH:mm",
+                                )
+                              : "Chưa đặt lịch"
+                            : step.delay_days === 0
+                              ? "Ngay khi sự kiện xảy ra"
+                              : `Sau ${step.delay_days} ngày`}
                         </Text>
                       </Space>
                     }
@@ -659,6 +693,25 @@ export default function EmailAutomationPage() {
                   {configPanel}
                 </Col>
                 <Col xs={24} lg={8}>
+                  <Card
+                    title="Cấu hình nguồn người dùng"
+                    size="small"
+                    style={{ marginBottom: 16 }}>
+                    <Space direction="vertical" style={{ width: "100%" }}>
+                      <Text type="secondary">
+                        Chỉ gửi cho người dùng từ các nguồn này (để trống để gửi
+                        cho tất cả):
+                      </Text>
+                      <Select
+                        mode="multiple"
+                        style={{ width: "100%" }}
+                        placeholder="Chọn nguồn traffic"
+                        value={trafficSources}
+                        onChange={setTrafficSources}
+                        options={trafficSourceOptions}
+                      />
+                    </Space>
+                  </Card>
                   <Card title="Hướng dẫn" size="small">
                     <Text type="secondary">
                       1. Chọn hoặc tạo mới chiến dịch.
@@ -742,13 +795,38 @@ export default function EmailAutomationPage() {
             <InputNumber min={1} style={{ width: "100%" }} />
           </Form.Item>
 
-          <Form.Item
-            name="delay_minutes"
-            label="Độ trễ (phút)"
-            extra="0 = gửi ngay lập tức, 1440 = 1 ngày"
-            rules={[{ required: true, message: "Vui lòng nhập độ trễ" }]}>
-            <InputNumber min={0} style={{ width: "100%" }} />
-          </Form.Item>
+          {triggerType === "event" ? (
+            <Form.Item
+              name="delay_days"
+              label="Gửi sau (số ngày)"
+              rules={[
+                { required: true, message: "Vui lòng nhập số ngày chờ" },
+              ]}
+              extra="Số ngày chờ kể từ khi sự kiện xảy ra. 0 có nghĩa là gửi ngay lập tức.">
+              <InputNumber min={0} style={{ width: "100%" }} />
+            </Form.Item>
+          ) : (
+            <Form.Item
+              name="scheduled_at"
+              label="Ngày và giờ gửi"
+              rules={[
+                { required: true, message: "Vui lòng chọn ngày và giờ gửi" },
+              ]}
+              extra="Chọn ngày và giờ cụ thể để gửi email này cho nhóm đối tượng.">
+              <DatePicker
+                showTime={{
+                  format: "HH:mm",
+                  minuteStep: 5,
+                }}
+                format="DD/MM/YYYY HH:mm"
+                placeholder="Chọn ngày và giờ"
+                style={{ width: "100%" }}
+                disabledDate={(current) => {
+                  return current && current < dayjs().startOf("day");
+                }}
+              />
+            </Form.Item>
+          )}
 
           <Form.Item
             name="subject_template"

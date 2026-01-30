@@ -1,6 +1,7 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Slider } from "antd";
+import { Form, Input, Slider, Tabs } from "antd";
+import { CSSEditor } from "./shared/CSSEditor";
 
 interface VideoPlayerProps {
   videoUrl?: string;
@@ -9,7 +10,7 @@ interface VideoPlayerProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -19,7 +20,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   marginTop = 0,
   marginBottom = 0,
   maxWidth = 1200,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -52,7 +53,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         marginLeft: "auto",
         border: selected ? "2px dashed #1890ff" : "none",
       }}>
-      <div style={style}>
+      <div style={customCSS}>
         {title && (
           <h3
             style={{
@@ -103,67 +104,93 @@ const VideoPlayerSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
-      <Form.Item label="Video Title">
-        <Input
-          value={props.title}
-          onChange={(e) =>
-            setProp((props: any) => (props.title = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Video URL (YouTube or Embed URL)">
-        <Input
-          value={props.videoUrl}
-          onChange={(e) =>
-            setProp((props: any) => (props.videoUrl = e.target.value))
-          }
-          placeholder="https://www.youtube.com/watch?v=..."
-        />
-      </Form.Item>
-      <Form.Item label={`Padding: ${props.padding || 12}px`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.padding || 12}
-          onChange={(value) => setProp((props: any) => (props.padding = value))}
-        />
-      </Form.Item>
-      <Form.Item
-        label={`Max Width: ${
-          props.maxWidth === 1200 ? "Full" : (props.maxWidth || 1200) + "px"
-        }`}>
-        <Slider
-          min={400}
-          max={1200}
-          step={10}
-          value={props.maxWidth || 1200}
-          onChange={(value) =>
-            setProp((props: any) => (props.maxWidth = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Top: ${props.marginTop || 0}px`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginTop || 0}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginTop = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Bottom: ${props.marginBottom || 0}px`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginBottom || 0}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginBottom = value))
-          }
-        />
-      </Form.Item>
-    </Form>
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
+              <Form.Item label="Video Title">
+                <Input
+                  value={props.title}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.title = e.target.value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Video URL (YouTube or Embed URL)">
+                <Input
+                  value={props.videoUrl}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.videoUrl = e.target.value))
+                  }
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+              </Form.Item>
+              <Form.Item label={`Padding: ${props.padding || 12}px`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.padding || 12}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.padding = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item
+                label={`Max Width: ${
+                  props.maxWidth === 1200
+                    ? "Full"
+                    : (props.maxWidth || 1200) + "px"
+                }`}>
+                <Slider
+                  min={400}
+                  max={1200}
+                  step={10}
+                  value={props.maxWidth || 1200}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.maxWidth = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Top: ${props.marginTop || 0}px`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginTop || 0}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginTop = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Bottom: ${props.marginBottom || 0}px`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginBottom || 0}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginBottom = value))
+                  }
+                />
+              </Form.Item>
+            </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
   );
 };
 
@@ -176,6 +203,7 @@ const VideoPlayerSettings = () => {
     marginTop: 0,
     marginBottom: 0,
     maxWidth: 1200,
+    customCSS: {},
   },
   related: {
     toolbar: VideoPlayerSettings,

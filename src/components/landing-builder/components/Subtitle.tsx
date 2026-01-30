@@ -1,6 +1,7 @@
 import React from "react";
 import { useNode } from "@craftjs/core";
-import { Form, Input, Select, Slider } from "antd";
+import { Form, Input, Select, Slider, Tabs } from "antd";
+import { CSSEditor } from "./shared/CSSEditor";
 
 interface SubtitleProps {
   text?: string;
@@ -11,7 +12,7 @@ interface SubtitleProps {
   marginTop?: number;
   marginBottom?: number;
   maxWidth?: number;
-  style?: React.CSSProperties;
+  customCSS?: React.CSSProperties;
 }
 
 export const Subtitle: React.FC<SubtitleProps> = ({
@@ -23,7 +24,7 @@ export const Subtitle: React.FC<SubtitleProps> = ({
   marginTop = 0,
   marginBottom = 20,
   maxWidth = 900,
-  style,
+  customCSS = {},
 }) => {
   const {
     connectors: { connect, drag },
@@ -52,7 +53,7 @@ export const Subtitle: React.FC<SubtitleProps> = ({
           margin: "0 auto",
           maxWidth: maxWidth === 1200 ? "100%" : `${maxWidth}px`,
           padding: 0,
-          ...style,
+          ...customCSS,
         }}>
         {text}
       </p>
@@ -69,91 +70,117 @@ const SubtitleSettings = () => {
   }));
 
   return (
-    <Form layout="vertical">
-      <Form.Item label="Text">
-        <Input.TextArea
-          value={props.text}
-          onChange={(e) =>
-            setProp((props: any) => (props.text = e.target.value))
-          }
-          rows={2}
-        />
-      </Form.Item>
-      <Form.Item label={`Font Size: ${props.fontSize}px`}>
-        <Slider
-          min={10}
-          max={50}
-          value={props.fontSize}
-          onChange={(value) =>
-            setProp((props: any) => (props.fontSize = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Color">
-        <Input
-          type="color"
-          value={props.color}
-          onChange={(e) =>
-            setProp((props: any) => (props.color = e.target.value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label="Text Align">
-        <Select
-          value={props.textAlign}
-          onChange={(value) =>
-            setProp((props: any) => (props.textAlign = value))
-          }
-          options={[
-            { value: "left", label: "Left" },
-            { value: "center", label: "Center" },
-            { value: "right", label: "Right" },
-          ]}
-        />
-      </Form.Item>
-      <Form.Item label={`Padding: ${props.padding || 0}px`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.padding || 0}
-          onChange={(value) => setProp((props: any) => (props.padding = value))}
-        />
-      </Form.Item>
-      <Form.Item
-        label={`Max Width: ${
-          props.maxWidth === 1200 ? "Full" : (props.maxWidth || 900) + "px"
-        }`}>
-        <Slider
-          min={400}
-          max={1200}
-          step={10}
-          value={props.maxWidth || 900}
-          onChange={(value) =>
-            setProp((props: any) => (props.maxWidth = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Top: ${props.marginTop || 0}px`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginTop || 0}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginTop = value))
-          }
-        />
-      </Form.Item>
-      <Form.Item label={`Margin Bottom: ${props.marginBottom || 0}px`}>
-        <Slider
-          min={0}
-          max={100}
-          value={props.marginBottom || 20}
-          onChange={(value) =>
-            setProp((props: any) => (props.marginBottom = value))
-          }
-        />
-      </Form.Item>
-    </Form>
+    <Tabs
+      items={[
+        {
+          key: "settings",
+          label: "Cài đặt",
+          children: (
+            <Form layout="vertical">
+              <Form.Item label="Text">
+                <Input.TextArea
+                  value={props.text}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.text = e.target.value))
+                  }
+                  rows={2}
+                />
+              </Form.Item>
+              <Form.Item label={`Font Size: ${props.fontSize}px`}>
+                <Slider
+                  min={10}
+                  max={50}
+                  value={props.fontSize}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.fontSize = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Color">
+                <Input
+                  type="color"
+                  value={props.color}
+                  onChange={(e) =>
+                    setProp((props: any) => (props.color = e.target.value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label="Text Align">
+                <Select
+                  value={props.textAlign}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.textAlign = value))
+                  }
+                  options={[
+                    { value: "left", label: "Left" },
+                    { value: "center", label: "Center" },
+                    { value: "right", label: "Right" },
+                  ]}
+                />
+              </Form.Item>
+              <Form.Item label={`Padding: ${props.padding || 0}px`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.padding || 0}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.padding = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item
+                label={`Max Width: ${
+                  props.maxWidth === 1200
+                    ? "Full"
+                    : (props.maxWidth || 900) + "px"
+                }`}>
+                <Slider
+                  min={400}
+                  max={1200}
+                  step={10}
+                  value={props.maxWidth || 900}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.maxWidth = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Top: ${props.marginTop || 0}px`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginTop || 0}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginTop = value))
+                  }
+                />
+              </Form.Item>
+              <Form.Item label={`Margin Bottom: ${props.marginBottom || 0}px`}>
+                <Slider
+                  min={0}
+                  max={100}
+                  value={props.marginBottom || 20}
+                  onChange={(value) =>
+                    setProp((props: any) => (props.marginBottom = value))
+                  }
+                />
+              </Form.Item>
+            </Form>
+          ),
+        },
+        {
+          key: "css",
+          label: "",
+          children: (
+            <CSSEditor
+              value={props.customCSS}
+              onChange={(value) =>
+                setProp((props: any) => (props.customCSS = value))
+              }
+            />
+          ),
+        },
+      ]}
+    />
   );
 };
 
@@ -168,6 +195,7 @@ const SubtitleSettings = () => {
     marginTop: 0,
     marginBottom: 20,
     maxWidth: 900,
+    customCSS: {},
   },
   related: {
     toolbar: SubtitleSettings,

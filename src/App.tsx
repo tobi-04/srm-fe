@@ -34,6 +34,17 @@ import AdminWithdrawalConfigPage from "./pages/AdminWithdrawalConfigPage";
 import AdminWithdrawalListPage from "./pages/AdminWithdrawalListPage";
 import AdminProgressPage from "./pages/AdminProgressPage";
 import OrderHistoryPage from "./pages/OrderHistoryPage";
+import GoogleSheetPage from "./pages/GoogleSheetPage";
+import BookListPage from "./pages/books/BookListPage";
+import BookDetailPage from "./pages/books/BookDetailPage";
+import MyBooksPage from "@/pages/books/MyBooksPage";
+import BookManagementPage from "./pages/books/BookManagementPage";
+import CouponManagementPage from "./pages/books/CouponManagementPage";
+// Indicator Pages
+import IndicatorListPage from "./pages/indicators/IndicatorListPage";
+import IndicatorDetailPage from "./pages/indicators/IndicatorDetailPage";
+import MyIndicatorsPage from "./pages/indicators/MyIndicatorsPage";
+import IndicatorManagementPage from "./pages/indicators/IndicatorManagementPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
 
@@ -46,12 +57,14 @@ function App() {
           colorPrimary: "#f78404",
           borderRadius: 8,
         },
-      }}>
+      }}
+    >
       <BrowserRouter
         future={{
           v7_startTransition: true,
           v7_relativeSplatPath: true,
-        }}>
+        }}
+      >
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/landing/:slug" element={<LandingPageView />} />
@@ -61,6 +74,10 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/change-password" element={<ChangePasswordPage />} />
+
+          {/* Book Store Public Routes */}
+          <Route path="/books" element={<BookListPage />} />
+          <Route path="/books/:slug" element={<BookDetailPage />} />
 
           {/* Student Course Viewer Routes - Protected */}
           <Route
@@ -106,6 +123,15 @@ function App() {
             element={
               <ProtectedRoute requiredRole="user">
                 <StudentCoursePlayerPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/student/my-books"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <MyBooksPage />
               </ProtectedRoute>
             }
           />
@@ -299,6 +325,60 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <OrderHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/google-sheet"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <GoogleSheetPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/books"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <BookManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/books/coupons"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <CouponManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/indicators"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <IndicatorManagementPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Indicator Store Public Routes */}
+          <Route path="/indicators" element={<IndicatorListPage />} />
+          <Route path="/indicators/:slug" element={<IndicatorDetailPage />} />
+
+          {/* My Indicators - User Dashboard */}
+          <Route
+            path="/my-indicators"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <MyIndicatorsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/my-indicators"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <MyIndicatorsPage />
               </ProtectedRoute>
             }
           />

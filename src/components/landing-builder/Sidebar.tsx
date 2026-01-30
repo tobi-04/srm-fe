@@ -19,6 +19,14 @@ import {
   MdQrCode2,
   MdPayment,
   MdInfo,
+  MdVideoLibrary,
+  MdFormatColorText,
+  MdRadioButtonChecked,
+  MdViewCarousel,
+  MdList,
+  MdCode,
+  MdDashboard,
+  MdGradient,
 } from "react-icons/md";
 import {
   Text,
@@ -39,6 +47,16 @@ import {
   PaymentQRCode,
   PaymentInfo,
   PaymentStatus,
+  // Advanced Components
+  VideoEmbed,
+  RichText,
+  AdvancedButton,
+  HeroSection,
+  GridContent,
+  GridItem,
+  List,
+  Carousel,
+  CustomHTML,
 } from "./components";
 
 const { Text: AntText } = Typography;
@@ -55,8 +73,7 @@ export const Toolbox = () => {
           <div
             ref={(ref) =>
               ref && connectors.create(ref, <Text text="Văn bản mới" />)
-            }
-          >
+            }>
             <Button block icon={<MdTextFields />} style={{ cursor: "move" }}>
               Văn bản
             </Button>
@@ -68,8 +85,7 @@ export const Toolbox = () => {
                 ref,
                 <BuilderButton text="Nhấp vào đây" type="primary" />,
               )
-            }
-          >
+            }>
             <Button block icon={<MdSmartButton />} style={{ cursor: "move" }}>
               Nút bấm
             </Button>
@@ -83,8 +99,7 @@ export const Toolbox = () => {
                   <Text text="Container trống" />
                 </Element>,
               )
-            }
-          >
+            }>
             <Button block icon={<MdCropSquare />} style={{ cursor: "move" }}>
               Container
             </Button>
@@ -96,10 +111,119 @@ export const Toolbox = () => {
                 ref,
                 <Image src="https://via.placeholder.com/150" />,
               )
-            }
-          >
+            }>
             <Button block icon={<MdImage />} style={{ cursor: "move" }}>
               Hình ảnh
+            </Button>
+          </div>
+        </Space>
+      ),
+    },
+    {
+      key: "advanced",
+      label: "Thành phần nâng cao",
+      children: (
+        <Space direction="vertical" style={{ width: "100%" }} size="small">
+          <div
+            ref={(ref) => ref && connectors.create(ref, <VideoEmbed url="" />)}>
+            <Button
+              block
+              icon={<MdVideoLibrary />}
+              style={{ cursor: "move" }}
+              size="small">
+              Video Embed
+            </Button>
+          </div>
+          <div
+            ref={(ref) =>
+              ref && connectors.create(ref, <RichText text="Nhập văn bản" />)
+            }>
+            <Button
+              block
+              icon={<MdFormatColorText />}
+              style={{ cursor: "move" }}
+              size="small">
+              Rich Text
+            </Button>
+          </div>
+          <div
+            ref={(ref) =>
+              ref &&
+              connectors.create(ref, <AdvancedButton label="Nhấp vào đây" />)
+            }>
+            <Button
+              block
+              icon={<MdRadioButtonChecked />}
+              style={{ cursor: "move" }}
+              size="small">
+              Advanced Button
+            </Button>
+          </div>
+          <div
+            ref={(ref) =>
+              ref &&
+              connectors.create(
+                ref,
+                <Element is={HeroSection} canvas>
+                  <Text text="Hero Content" />
+                </Element>,
+              )
+            }>
+            <Button
+              block
+              icon={<MdGradient />}
+              style={{ cursor: "move" }}
+              size="small">
+              Hero Section
+            </Button>
+          </div>
+          <div
+            ref={(ref) =>
+              ref &&
+              connectors.create(
+                ref,
+                <Element is={GridContent} canvas>
+                  {[1, 2, 3].map((i) => (
+                    <Element key={i} is={GridItem} canvas>
+                      <Text text={`Grid ${i}`} />
+                    </Element>
+                  ))}
+                </Element>,
+              )
+            }>
+            <Button
+              block
+              icon={<MdDashboard />}
+              style={{ cursor: "move" }}
+              size="small">
+              Grid Content
+            </Button>
+          </div>
+          <div ref={(ref) => ref && connectors.create(ref, <List />)}>
+            <Button
+              block
+              icon={<MdList />}
+              style={{ cursor: "move" }}
+              size="small">
+              Danh sách
+            </Button>
+          </div>
+          <div ref={(ref) => ref && connectors.create(ref, <Carousel />)}>
+            <Button
+              block
+              icon={<MdViewCarousel />}
+              style={{ cursor: "move" }}
+              size="small">
+              Carousel
+            </Button>
+          </div>
+          <div ref={(ref) => ref && connectors.create(ref, <CustomHTML />)}>
+            <Button
+              block
+              icon={<MdCode />}
+              style={{ cursor: "move" }}
+              size="small">
+              Custom HTML
             </Button>
           </div>
         </Space>
@@ -115,8 +239,7 @@ export const Toolbox = () => {
               block
               icon={<MdTitle />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Banner tiêu đề
             </Button>
           </div>
@@ -125,8 +248,7 @@ export const Toolbox = () => {
               block
               icon={<MdTitle />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Tiêu đề chính
             </Button>
           </div>
@@ -135,8 +257,7 @@ export const Toolbox = () => {
               block
               icon={<MdSubtitles />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Tiêu đề phụ
             </Button>
           </div>
@@ -145,8 +266,7 @@ export const Toolbox = () => {
               block
               icon={<MdInput />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Form người dùng
             </Button>
           </div>
@@ -155,8 +275,7 @@ export const Toolbox = () => {
               block
               icon={<MdPerson />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Giới thiệu giảng viên
             </Button>
           </div>
@@ -169,14 +288,12 @@ export const Toolbox = () => {
       children: (
         <Space direction="vertical" style={{ width: "100%" }} size="small">
           <div
-            ref={(ref) => ref && connectors.create(ref, <SuccessHeadline />)}
-          >
+            ref={(ref) => ref && connectors.create(ref, <SuccessHeadline />)}>
             <Button
               block
               icon={<MdCheckCircle />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Tiêu đề thành công
             </Button>
           </div>
@@ -185,8 +302,7 @@ export const Toolbox = () => {
               block
               icon={<MdPlayCircle />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Trình phát video
             </Button>
           </div>
@@ -195,20 +311,17 @@ export const Toolbox = () => {
               block
               icon={<MdTimer />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Đồng hồ đếm ngược
             </Button>
           </div>
           <div
-            ref={(ref) => ref && connectors.create(ref, <SalesPageContent />)}
-          >
+            ref={(ref) => ref && connectors.create(ref, <SalesPageContent />)}>
             <Button
               block
               icon={<MdCheckCircle />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Nội dung bán hàng
             </Button>
           </div>
@@ -222,14 +335,12 @@ export const Toolbox = () => {
                   <Text text="Cột phải" />
                 </Element>,
               )
-            }
-          >
+            }>
             <Button
               block
               icon={<MdViewWeek />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Hai cột
             </Button>
           </div>
@@ -246,8 +357,7 @@ export const Toolbox = () => {
               block
               icon={<MdQrCode2 />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Mã QR thanh toán
             </Button>
           </div>
@@ -256,8 +366,7 @@ export const Toolbox = () => {
               block
               icon={<MdInfo />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Thông tin thanh toán
             </Button>
           </div>
@@ -266,8 +375,7 @@ export const Toolbox = () => {
               block
               icon={<MdPayment />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Trạng thái thanh toán
             </Button>
           </div>
@@ -284,8 +392,7 @@ export const Toolbox = () => {
               block
               icon={<MdContactPage />}
               style={{ cursor: "move" }}
-              size="small"
-            >
+              size="small">
               Chân trang
             </Button>
           </div>
@@ -335,8 +442,7 @@ export const SettingsPanel = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-          }}
-        >
+          }}>
           <AntText strong>
             <MdSettings
               style={{ verticalAlign: "middle", marginRight: "4px" }}
@@ -347,8 +453,7 @@ export const SettingsPanel = () => {
             <Button
               danger
               size="small"
-              onClick={() => actions.delete(selected.id)}
-            >
+              onClick={() => actions.delete(selected.id)}>
               Xóa
             </Button>
           )}
