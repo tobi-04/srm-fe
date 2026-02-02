@@ -53,10 +53,26 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
 
   const { isCountdownFinished } = useCountdown();
   const { slug } = useParams<{ slug: string }>();
-  const { landingPage } = useLandingPageData();
+  const { landingPage, setPurchaseModalOpen } = useLandingPageData();
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
 
   const handleNavigateToPayment = async () => {
+    // 1. Handle Books/Indicators (Direct Purchase Modal)
+    if (
+      landingPage?.resource_type === "book" ||
+      landingPage?.book_id ||
+      landingPage?.resource_type === "indicator" ||
+      landingPage?.indicator_id
+    ) {
+      if (setPurchaseModalOpen) {
+        setPurchaseModalOpen(true);
+      } else {
+        message.info("Button will open Purchase Modal in published view.");
+      }
+      return;
+    }
+
+    // 2. Handle Courses (Step 3 Flow)
     // In builder mode, just show info
     if (!slug || !landingPage) {
       message.info(
@@ -80,7 +96,13 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
         return;
       }
 
-      // Get real course_id and course_price from landing page data
+      // Check if course_id exists (it might not if it's a book but caught in this block for some reason)
+      if (!landingPage.course_id) {
+        message.error("Invalid configuration: No Course ID found.");
+        return;
+      }
+
+      // Get real course_id
       const courseId =
         typeof landingPage.course_id === "string"
           ? landingPage.course_id
@@ -109,11 +131,13 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
       if (errorMessage === "ALREADY_ENROLLED") {
         message.info("Bạn đã sở hữu khóa học này!");
         // If we are already enrolled, we can redirect to the learn page
-        const courseId =
-          typeof landingPage.course_id === "string"
-            ? landingPage.course_id
-            : landingPage.course_id._id;
-        window.location.href = `/login?from=/learn/${courseId}`;
+        if (landingPage.course_id) {
+          const courseId =
+            typeof landingPage.course_id === "string"
+              ? landingPage.course_id
+              : landingPage.course_id._id;
+          window.location.href = `/login?from=/learn/${courseId}`;
+        }
         return;
       }
 
@@ -137,7 +161,8 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
         maxWidth: maxWidth ? `${maxWidth}px` : "100%",
         margin: `${marginTop}px auto ${marginBottom}px auto`,
         border: selected ? "2px dashed #1890ff" : "none",
-      }}>
+      }}
+    >
       <div style={customCSS}>
         {/* Confirmation Text */}
         <p
@@ -147,7 +172,8 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
             color: "#000",
             marginBottom: "20px",
             textAlign: "center",
-          }}>
+          }}
+        >
           {confirmationText}
         </p>
 
@@ -160,7 +186,8 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
                 display: "flex",
                 alignItems: "center",
                 marginBottom: "12px",
-              }}>
+              }}
+            >
               <MdCheckCircle
                 style={{
                   fontSize: "clamp(20px, 24px, 24px)",
@@ -170,7 +197,8 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
                 }}
               />
               <span
-                style={{ fontSize: "clamp(14px, 16px, 16px)", color: "#000" }}>
+                style={{ fontSize: "clamp(14px, 16px, 16px)", color: "#000" }}
+              >
                 {benefit}
               </span>
             </div>
@@ -195,20 +223,23 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
               alignItems: "center",
               gap: "4px",
               opacity: isCreatingPayment ? 0.7 : 1,
-            }}>
+            }}
+          >
             <span
               style={{
                 fontSize: "clamp(16px, 22px, 22px)",
                 fontWeight: "bold",
                 textTransform: "uppercase",
-              }}>
+              }}
+            >
               {isCreatingPayment ? "Processing..." : buttonMainText}
             </span>
             <span
               style={{
                 fontSize: "clamp(12px, 14px, 14px)",
                 fontWeight: "normal",
-              }}>
+              }}
+            >
               {buttonSubText}
             </span>
           </button>

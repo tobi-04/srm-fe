@@ -40,7 +40,9 @@ import {
 import { MdSchool, MdAccountCircle } from "react-icons/md";
 import { motion } from "framer-motion";
 import { bookApi } from "../../api/bookApi";
+import { getLandingPages } from "../../api/landingPage";
 import { useAuthStore } from "../../stores/authStore";
+import { LandingPageRenderer } from "../landing/LandingPageRenderer";
 
 const { Title, Text, Paragraph } = Typography;
 const { Header, Content, Footer } = Layout;
@@ -57,6 +59,14 @@ const BookDetailPage: React.FC = () => {
     queryFn: () => bookApi.getBookBySlug(slug!).then((res) => res.data),
     enabled: !!slug,
   });
+
+  const { data: landingPageData } = useQuery({
+    queryKey: ["landing-page-for-book", book?._id],
+    queryFn: () => getLandingPages({ book_id: book?._id, status: "published" }),
+    enabled: !!book?._id,
+  });
+
+  const activeLandingPage = landingPageData?.data?.[0];
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -209,7 +219,7 @@ const BookDetailPage: React.FC = () => {
       });
 
       // Store pollInterval reference for cleanup
-      let pollInterval: NodeJS.Timeout;
+      let pollInterval: ReturnType<typeof setInterval>;
 
       // Handle modal close with confirmation
       const handleClosePayment = () => {
@@ -464,6 +474,10 @@ const BookDetailPage: React.FC = () => {
         <Spin size="large" tip="Đang tải dữ liệu sách..." />
       </div>
     );
+
+  if (activeLandingPage) {
+    return <LandingPageRenderer landingPage={activeLandingPage} urlStep={2} />;
+  }
 
   if (!book)
     return (

@@ -31,6 +31,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { MdSettings } from "react-icons/md";
 import { bookApi } from "../../api/bookApi";
+import { createLandingPage, getLandingPages } from "../../api/landingPage";
 import DashboardLayout from "../../components/DashboardLayout";
 import ImageUpload from "../../components/ImageUpload";
 
@@ -173,6 +174,47 @@ const BookManagementPage: React.FC = () => {
     }
   };
 
+  const handleManageLandingPage = async (book: any) => {
+    try {
+      message.loading({
+        content: "Đang kiểm tra Landing Page...",
+        key: "landing",
+      });
+      const res = await getLandingPages({ book_id: book._id });
+
+      if (res.data && res.data.length > 0) {
+        message.success({
+          content: "Đã tìm thấy Landing Page!",
+          key: "landing",
+        });
+        navigate(`/admin/landing-builder/${res.data[0]._id}`);
+      } else {
+        message.loading({
+          content: "Đang tạo Landing Page mới...",
+          key: "landing",
+        });
+        const newLp = await createLandingPage({
+          resource_type: "book",
+          book_id: book._id,
+          title: book.title,
+          slug: book.slug,
+          status: "draft",
+        });
+        message.success({
+          content: "Tạo Landing Page thành công!",
+          key: "landing",
+        });
+        navigate(`/admin/landing-builder/${newLp._id}`);
+      }
+    } catch (error) {
+      console.error(error);
+      message.error({
+        content: "Lỗi khi truy cập Landing Page",
+        key: "landing",
+      });
+    }
+  };
+
   const columns = [
     {
       title: "Ảnh bìa",
@@ -273,6 +315,14 @@ const BookManagementPage: React.FC = () => {
             type="dashed"
           >
             Chia sẻ
+          </Button>
+          <Button
+            icon={<BookOutlined />}
+            onClick={() => handleManageLandingPage(record)}
+            type="dashed"
+            style={{ color: "#fa8c16", borderColor: "#fa8c16" }}
+          >
+            Landing
           </Button>
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
             Sửa

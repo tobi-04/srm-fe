@@ -2,7 +2,10 @@ import apiClient from "./client";
 import type { LandingPage } from "../stores/landingPageStore";
 
 export interface CreateLandingPageInput {
-  course_id: string;
+  resource_type?: "course" | "book" | "indicator";
+  course_id?: string;
+  book_id?: string;
+  indicator_id?: string;
   title: string;
   slug: string;
   status?: "draft" | "published";
@@ -81,6 +84,8 @@ export const getLandingPages = async (params?: {
   page?: number;
   limit?: number;
   course_id?: string;
+  book_id?: string;
+  indicator_id?: string;
   status?: string;
 }): Promise<LandingPageListResponse> => {
   const response = await apiClient.get("/landing-pages", { params });

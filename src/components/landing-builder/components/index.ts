@@ -34,4 +34,6 @@ export { PaymentQRCode, PaymentInfo, PaymentStatus } from "./payment";
 export { TwoColumnLayout } from "./TwoColumnLayout";
 
 // Common Components
+// Common Components
 export { Footer } from "./Footer";
+export { BookHero, BookCheckoutButton } from "./BookComponents";
