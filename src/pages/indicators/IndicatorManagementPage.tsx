@@ -15,6 +15,7 @@ import {
   Popconfirm,
   Card,
   Tabs,
+  Dropdown,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
@@ -23,6 +24,8 @@ import {
   DeleteOutlined,
   ReloadOutlined,
   ThunderboltOutlined,
+  MoreOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { indicatorApi, Indicator } from "../../api/indicatorApi";
 import { createLandingPage, getLandingPages } from "../../api/landingPage";
@@ -209,28 +212,53 @@ const IndicatorManagementPage: React.FC = () => {
     {
       title: "Thao tác",
       key: "actions",
+      width: 80,
       render: (_: any, record: Indicator) => (
-        <Space>
-          <Button
-            icon={<ThunderboltOutlined />}
-            onClick={() => handleManageLandingPage(record)}
-            type="dashed"
-            style={{ color: "#722ed1", borderColor: "#722ed1" }} // Purple for indicator
-          >
-            Landing
-          </Button>
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleOpenModal(record)}
-          />
-          <Popconfirm
-            title="Xác nhận xóa?"
-            onConfirm={() => deleteMutation.mutate(record._id)}
-          >
-            <Button type="text" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </Space>
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: "view",
+                label: "Xem chi tiết",
+                icon: <EyeOutlined />,
+                onClick: () => handleOpenModal(record),
+              },
+              {
+                key: "edit",
+                label: "Chỉnh sửa",
+                icon: <EditOutlined />,
+                onClick: () => handleOpenModal(record),
+              },
+              {
+                key: "landing",
+                label: "Landing Page",
+                icon: <ThunderboltOutlined />,
+                onClick: () => handleManageLandingPage(record),
+              },
+              {
+                type: "divider",
+              },
+              {
+                key: "delete",
+                label: (
+                  <Popconfirm
+                    title="Xác nhận xóa?"
+                    onConfirm={() => deleteMutation.mutate(record._id)}
+                    okText="Xóa"
+                    cancelText="Hủy"
+                  >
+                    <span>Xóa</span>
+                  </Popconfirm>
+                ),
+                icon: <DeleteOutlined />,
+                danger: true,
+              },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <Button type="text" icon={<MoreOutlined />} />
+        </Dropdown>
       ),
     },
   ];

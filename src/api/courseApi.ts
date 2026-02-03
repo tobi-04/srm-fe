@@ -35,27 +35,15 @@ export const courseApi = {
     limit?: number;
     search?: string;
   }): Promise<{ data: CoursesResponse }> => {
-    const response = await apiClient.get("/landing-pages", {
+    const response = await apiClient.get("/courses", {
       params: {
         ...params,
         status: "published",
       },
     });
 
-    // Filter to only include course landing pages
-    const filteredData =
-      response.data.data?.filter(
-        (item: any) => item.course_id !== null && item.course_id !== undefined,
-      ) || [];
-
     return {
-      data: {
-        data: filteredData,
-        meta: {
-          ...response.data.meta,
-          total: filteredData.length,
-        },
-      },
+      data: response.data,
     };
   },
 

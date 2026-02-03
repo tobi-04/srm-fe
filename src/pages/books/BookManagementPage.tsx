@@ -17,6 +17,7 @@ import {
   Divider,
   Row,
   Col,
+  Dropdown,
 } from "antd";
 import {
   PlusOutlined,
@@ -27,6 +28,8 @@ import {
   FileTextOutlined,
   BookOutlined,
   ShareAltOutlined,
+  MoreOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { MdSettings } from "react-icons/md";
@@ -307,35 +310,59 @@ const BookManagementPage: React.FC = () => {
     {
       title: "Hành động",
       key: "action",
+      width: 80,
       render: (_: any, record: any) => (
-        <Space size="middle">
-          <Button
-            icon={<ShareAltOutlined />}
-            onClick={() => handleShare(record)}
-            type="dashed"
-          >
-            Chia sẻ
-          </Button>
-          <Button
-            icon={<BookOutlined />}
-            onClick={() => handleManageLandingPage(record)}
-            type="dashed"
-            style={{ color: "#fa8c16", borderColor: "#fa8c16" }}
-          >
-            Landing
-          </Button>
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
-            Sửa
-          </Button>
-          <Popconfirm
-            title="Xóa sách này?"
-            onConfirm={() => deleteMutation.mutate(record._id)}
-          >
-            <Button icon={<DeleteOutlined />} danger>
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Space>
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: "view",
+                label: "Xem chi tiết",
+                icon: <EyeOutlined />,
+                onClick: () => handleEdit(record),
+              },
+              {
+                key: "edit",
+                label: "Chỉnh sửa",
+                icon: <EditOutlined />,
+                onClick: () => handleEdit(record),
+              },
+              {
+                key: "landing",
+                label: "Landing Page",
+                icon: <BookOutlined />,
+                onClick: () => handleManageLandingPage(record),
+              },
+              {
+                key: "share",
+                label: "Chia sẻ",
+                icon: <ShareAltOutlined />,
+                onClick: () => handleShare(record),
+              },
+              {
+                type: "divider",
+              },
+              {
+                key: "delete",
+                label: (
+                  <Popconfirm
+                    title="Xóa sách này?"
+                    onConfirm={() => deleteMutation.mutate(record._id)}
+                    okText="Xóa"
+                    cancelText="Hủy"
+                  >
+                    <span>Xóa</span>
+                  </Popconfirm>
+                ),
+                icon: <DeleteOutlined />,
+                danger: true,
+              },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <Button type="text" icon={<MoreOutlined />} />
+        </Dropdown>
       ),
     },
   ];
