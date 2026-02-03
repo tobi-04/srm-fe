@@ -16,13 +16,16 @@ import {
   Card,
   Tabs,
 } from "antd";
+import { useNavigate } from "react-router-dom";
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   ReloadOutlined,
+  ThunderboltOutlined,
 } from "@ant-design/icons";
 import { indicatorApi, Indicator } from "../../api/indicatorApi";
+import { createLandingPage, getLandingPages } from "../../api/landingPage";
 import DashboardLayout from "../../components/DashboardLayout";
 import ImageUpload from "../../components/ImageUpload";
 import dayjs from "dayjs";
@@ -39,6 +42,9 @@ const formatPrice = (price: number) => {
 };
 
 const IndicatorManagementPage: React.FC = () => {
+  const navigate = useNavigate();
+  // ... existing hooks ...
+
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -118,6 +124,49 @@ const IndicatorManagementPage: React.FC = () => {
     }
   };
 
+  const handleManageLandingPage = async (indicator: Indicator) => {
+    try {
+      message.loading({
+        content: "Đang kiểm tra Landing Page...",
+        key: "landing",
+      });
+      const res = await getLandingPages({ indicator_id: indicator._id });
+
+      if (res.data && res.data.length > 0) {
+        message.success({
+          content: "Đã tìm thấy Landing Page!",
+          key: "landing",
+        });
+        navigate(`/admin/landing-builder/${res.data[0]._id}`);
+      } else {
+        message.loading({
+          content: "Đang tạo Landing Page mới...",
+          key: "landing",
+        });
+        const newLp = await createLandingPage({
+          resource_type: "indicator",
+          indicator_id: indicator._id,
+          title: indicator.name,
+          slug: indicator.slug,
+          status: "draft",
+        });
+        message.success({
+          content: "Tạo Landing Page thành công!",
+          key: "landing",
+        });
+        navigate(`/admin/landing-builder/${newLp._id}`);
+      }
+    } catch (error) {
+      console.error(error);
+      message.error({
+        content: "Lỗi khi truy cập Landing Page",
+        key: "landing",
+      });
+    }
+  };
+
+  // ... existing definitions ...
+
   const columns = [
     {
       title: "Tên Indicator",
@@ -162,6 +211,14 @@ const IndicatorManagementPage: React.FC = () => {
       key: "actions",
       render: (_: any, record: Indicator) => (
         <Space>
+          <Button
+            icon={<ThunderboltOutlined />}
+            onClick={() => handleManageLandingPage(record)}
+            type="dashed"
+            style={{ color: "#722ed1", borderColor: "#722ed1" }} // Purple for indicator
+          >
+            Landing
+          </Button>
           <Button
             type="text"
             icon={<EditOutlined />}

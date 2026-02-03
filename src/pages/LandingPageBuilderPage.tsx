@@ -58,12 +58,18 @@ import {
   CustomHTML,
   BookHero,
   BookCheckoutButton,
+  IndicatorHero,
+  IndicatorCheckoutButton,
 } from "../components/landing-builder/components";
 import { Toolbox, SettingsPanel } from "../components/landing-builder/Sidebar";
 import { LandingPageProvider } from "../contexts/LandingPageContext";
 import { PaymentProvider } from "../contexts/PaymentContext";
 import { CountdownProvider } from "../contexts/CountdownContext";
 import ShareDialog from "../components/ShareDialog";
+import { BookCheckoutModal } from "../components/books/BookCheckoutModal";
+import { IndicatorCheckoutModal } from "../components/indicators/IndicatorCheckoutModal";
+import { indicatorApi } from "../api/indicatorApi";
+import { bookApi } from "../api/bookApi";
 
 const { Content, Sider } = Layout;
 const { Title } = Typography;
@@ -74,10 +80,12 @@ const SaveButton = ({
   currentStep,
   onSave,
   loading,
+  isRestrictedFlow,
 }: {
   currentStep: PageStep;
   onSave: (query: any, step: PageStep) => void;
   loading: boolean;
+  isRestrictedFlow?: boolean;
 }) => {
   const { query } = useEditor();
   return (
@@ -87,7 +95,7 @@ const SaveButton = ({
       onClick={() => onSave(query, currentStep)}
       loading={loading}
     >
-      Lưu Bước {currentStep}
+      {isRestrictedFlow ? "Lưu" : `Lưu Bước ${currentStep}`}
     </Button>
   );
 };
@@ -134,12 +142,42 @@ export default function LandingPageBuilderPage() {
   const [enabled, setEnabled] = useState(true);
   const [currentStep, setCurrentStep] = useState<PageStep>("1");
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isPurchaseModalOpen, setPurchaseModalOpen] = useState(false);
 
   // Fetch landing page data
   const { data: landingPage, isLoading } = useQuery({
     queryKey: ["landing-page", id],
     queryFn: () => getLandingPageById(id!),
     enabled: !!id,
+  });
+
+  // Fetch book data if available
+  const { data: book } = useQuery({
+    queryKey: ["book", landingPage?.book_id],
+    queryFn: () => {
+      // Handle case where book_id might be an object (if populated) or string
+      const bookId =
+        typeof landingPage?.book_id === "object"
+          ? (landingPage.book_id as any)._id
+          : landingPage?.book_id;
+      return bookApi.adminGetById(bookId).then((res: any) => res.data);
+    },
+    enabled: !!landingPage?.book_id,
+  });
+
+  // Fetch indicator data if available
+  const { data: indicator } = useQuery({
+    queryKey: ["indicator", landingPage?.indicator_id],
+    queryFn: () => {
+      const indicatorId =
+        typeof landingPage?.indicator_id === "object"
+          ? (landingPage.indicator_id as any)._id
+          : landingPage?.indicator_id;
+      return indicatorApi
+        .adminGetById(indicatorId)
+        .then((res: any) => res.data);
+    },
+    enabled: !!landingPage?.indicator_id,
   });
 
   // Force Step 2 for Books/Indicators
@@ -230,17 +268,18 @@ export default function LandingPageBuilderPage() {
           landingPage?.indicator_id;
 
         if (isRestrictedFlow) {
+          const isIndicator =
+            landingPage?.resource_type === "indicator" ||
+            landingPage?.indicator_id;
+
           return (
             <Element is={Container} padding={0} background="#ffffff" canvas>
-              <BookHero />
-              <Element is={Container} padding={20} background="#f9f9f9" canvas>
-                <Text
-                  text="Chi tiết nội dung sách"
-                  type="title"
-                  textAlign="center"
-                  level={2}
-                />
-                <RichText text="<p>Viết thêm chi tiết hấp dẫn về cuốn sách của bạn tại đây...</p>" />
+              <Element is={Container} padding={20} background="#fff" canvas>
+                {isIndicator ? (
+                  <IndicatorCheckoutButton />
+                ) : (
+                  <BookCheckoutButton />
+                )}
               </Element>
               <Footer />
             </Element>
@@ -300,7 +339,11 @@ export default function LandingPageBuilderPage() {
           flexDirection: "column",
         }}
       >
-        <LandingPageProvider landingPage={landingPage || null}>
+        <LandingPageProvider
+          landingPage={landingPage || null}
+          isPurchaseModalOpen={isPurchaseModalOpen}
+          setPurchaseModalOpen={setPurchaseModalOpen}
+        >
           <PaymentProvider>
             <CountdownProvider>
               <Editor
@@ -335,6 +378,8 @@ export default function LandingPageBuilderPage() {
                   CustomHTML,
                   BookHero,
                   BookCheckoutButton,
+                  IndicatorHero,
+                  IndicatorCheckoutButton,
                 }}
                 enabled={enabled}
                 onRender={({ render }) => (
@@ -372,6 +417,14 @@ export default function LandingPageBuilderPage() {
                         currentStep={currentStep}
                         onSave={handleSave}
                         loading={updateMutation.isPending}
+                        isRestrictedFlow={
+                          !!(
+                            landingPage?.resource_type === "book" ||
+                            landingPage?.book_id ||
+                            landingPage?.resource_type === "indicator" ||
+                            landingPage?.indicator_id
+                          )
+                        }
                       />
                       <ClearAllButton currentStep={currentStep} />
                       <Button
@@ -536,6 +589,29 @@ export default function LandingPageBuilderPage() {
               </Editor>
             </CountdownProvider>
           </PaymentProvider>
+
+          {/* Render Checkou Modals */}
+          {isPurchaseModalOpen && (
+            <>
+              {(landingPage?.resource_type === "indicator" ||
+                landingPage?.indicator_id) &&
+              indicator ? (
+                <IndicatorCheckoutModal
+                  open={isPurchaseModalOpen}
+                  onCancel={() => setPurchaseModalOpen(false)}
+                  indicator={indicator}
+                />
+              ) : (landingPage?.resource_type === "book" ||
+                  landingPage?.book_id) &&
+                book ? (
+                <BookCheckoutModal
+                  open={isPurchaseModalOpen}
+                  onCancel={() => setPurchaseModalOpen(false)}
+                  book={book}
+                />
+              ) : null}
+            </>
+          )}
         </LandingPageProvider>
       </div>
 

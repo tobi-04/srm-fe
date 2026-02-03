@@ -37,3 +37,4 @@ export { TwoColumnLayout } from "./TwoColumnLayout";
 // Common Components
 export { Footer } from "./Footer";
 export { BookHero, BookCheckoutButton } from "./BookComponents";
+export { IndicatorHero, IndicatorCheckoutButton } from "./IndicatorComponents";

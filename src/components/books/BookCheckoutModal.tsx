@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Modal,
   Form,
@@ -38,6 +38,12 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+
+  // Safeguard: If book is missing, do not render or crash
+  if (!book) {
+    return null;
+  }
+
   // We keep the logic for showing the second step (payment info) inside this modal component
   // or we can handle it via a second modal.
   // In the original file, it closed the first modal and opened a second one via Modal.info.
@@ -209,7 +215,7 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
       });
 
       // Store pollInterval reference for cleanup
-      let pollInterval: NodeJS.Timeout;
+      let pollInterval: ReturnType<typeof setInterval>;
 
       // Handle modal close with confirmation
       function handleClosePayment() {

@@ -45,6 +45,8 @@ import IndicatorListPage from "./pages/indicators/IndicatorListPage";
 import IndicatorDetailPage from "./pages/indicators/IndicatorDetailPage";
 import MyIndicatorsPage from "./pages/indicators/MyIndicatorsPage";
 import IndicatorManagementPage from "./pages/indicators/IndicatorManagementPage";
+// Courses Page
+import CoursesPage from "./pages/CoursesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
 
@@ -78,6 +80,9 @@ function App() {
           {/* Book Store Public Routes */}
           <Route path="/books" element={<BookListPage />} />
           <Route path="/books/:slug" element={<BookDetailPage />} />
+
+          {/* Courses Public Routes */}
+          <Route path="/courses" element={<CoursesPage />} />
 
           {/* Student Course Viewer Routes - Protected */}
           <Route

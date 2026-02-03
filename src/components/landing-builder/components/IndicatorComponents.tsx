@@ -12,36 +12,44 @@ import {
 } from "antd";
 import { Text } from "./";
 import { useLandingPageData } from "../../../contexts/LandingPageContext";
-import { ShoppingCartOutlined, BookOutlined } from "@ant-design/icons";
+import { ThunderboltOutlined, LineChartOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
-// Book Hero Component - Defaults to showing book info
-export const BookHero = ({ ...props }) => {
+// Indicator Hero Component - Defaults to showing indicator info
+export const IndicatorHero = ({ ...props }) => {
   const {
     connectors: { connect, drag },
   } = useNode();
 
   const { landingPage } = useLandingPageData();
 
-  // Safe extraction of book data
-  const book =
+  // Safe extraction of indicator data
+  const indicator =
     landingPage &&
-    (landingPage.resource_type === "book" || landingPage.book_id) &&
-    typeof landingPage.book_id === "object"
-      ? landingPage.book_id
+    (landingPage.resource_type === "indicator" || landingPage.indicator_id) &&
+    typeof landingPage.indicator_id === "object"
+      ? landingPage.indicator_id
       : null;
 
-  if (!book) {
+  if (!indicator) {
     return (
       <div
         ref={(ref) => connect(drag(ref!))}
         style={{ padding: 20, textAlign: "center", background: "#fff" }}
       >
-        <Text text="Book details will appear here in published mode" />
+        <Text text="Indicator details will appear here in published mode" />
       </div>
     );
   }
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
 
   return (
     <div
@@ -58,10 +66,10 @@ export const BookHero = ({ ...props }) => {
         style={{ maxWidth: 1200, margin: "0 auto" }}
       >
         <Col xs={24} md={10} style={{ textAlign: "center" }}>
-          {book.cover_image ? (
+          {indicator.cover_image ? (
             <img
-              src={book.cover_image}
-              alt={book.title}
+              src={indicator.cover_image}
+              alt={indicator.name}
               style={{
                 maxWidth: "100%",
                 maxHeight: 500,
@@ -74,7 +82,7 @@ export const BookHero = ({ ...props }) => {
               style={{
                 width: 300,
                 height: 450,
-                background: "#f0f2f5",
+                background: "linear-gradient(135deg, #722ed1 0%, #9254de 100%)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -82,26 +90,26 @@ export const BookHero = ({ ...props }) => {
                 borderRadius: 8,
               }}
             >
-              <BookOutlined style={{ fontSize: 60, color: "#ccc" }} />
+              <LineChartOutlined style={{ fontSize: 60, color: "#fff" }} />
             </div>
           )}
         </Col>
         <Col xs={24} md={14}>
           <Space direction="vertical" size="large" style={{ width: "100%" }}>
             <div>
-              <Tag color="orange" style={{ fontSize: 14, padding: "4px 10px" }}>
-                SÁCH MỚI
+              <Tag color="purple" style={{ fontSize: 14, padding: "4px 10px" }}>
+                <ThunderboltOutlined /> INDICATOR
               </Tag>
               <Title
                 level={1}
                 style={{ marginTop: 16, marginBottom: 8, fontSize: 42 }}
               >
-                {book.title}
+                {indicator.name}
               </Title>
               <Text
                 text={
-                  book.description ||
-                  "Mô tả sách sẽ hiển thị ở đây. Cuốn sách này cung cấp kiến thức giá trị cho bạn..."
+                  indicator.description ||
+                  "Indicator chuyên nghiệp giúp bạn phân tích thị trường hiệu quả..."
                 }
                 customCSS={{ fontSize: 18, color: "#555" }}
               />
@@ -110,36 +118,15 @@ export const BookHero = ({ ...props }) => {
             <Divider />
 
             <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
-              {book.discount_percentage > 0 && (
-                <span
-                  style={{
-                    fontSize: 20,
-                    textDecoration: "line-through",
-                    color: "#999",
-                  }}
-                >
-                  {new Intl.NumberFormat("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  }).format(book.price)}
-                </span>
-              )}
               <span
-                style={{ fontSize: 36, fontWeight: "bold", color: "#f78404" }}
+                style={{ fontSize: 36, fontWeight: "bold", color: "#722ed1" }}
               >
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(
-                  book.price * (1 - (book.discount_percentage || 0) / 100),
-                )}
+                {formatPrice(indicator.price_monthly)}
               </span>
-              {book.discount_percentage > 0 && (
-                <Tag color="red">-{book.discount_percentage}%</Tag>
-              )}
+              <span style={{ fontSize: 18, color: "#999" }}>/tháng</span>
             </div>
 
-            <BookCheckoutButton />
+            <IndicatorCheckoutButton />
           </Space>
         </Col>
       </Row>
@@ -147,8 +134,8 @@ export const BookHero = ({ ...props }) => {
   );
 };
 
-BookHero.craft = {
-  displayName: "Book Hero Section",
+IndicatorHero.craft = {
+  displayName: "Indicator Hero Section",
   props: {
     background: "#ffffff",
     padding: "40px 20px",
@@ -160,8 +147,8 @@ BookHero.craft = {
   },
 };
 
-// Start: Book Checkout Button Settings
-const BookCheckoutButtonSettings = () => {
+// Start: Indicator Checkout Button Settings
+const IndicatorCheckoutButtonSettings = () => {
   const {
     actions: { setProp },
     props,
@@ -237,8 +224,8 @@ const BookCheckoutButtonSettings = () => {
   );
 };
 
-// Start: Book Checkout Button
-export const BookCheckoutButton = ({ ...props }) => {
+// Start: Indicator Checkout Button
+export const IndicatorCheckoutButton = ({ ...props }) => {
   const {
     connectors: { connect, drag },
   } = useNode();
@@ -272,19 +259,19 @@ export const BookCheckoutButton = ({ ...props }) => {
           color: props.textColor,
           pointerEvents: enabled ? "none" : "auto", // Fix selection in edit mode
         }}
-        icon={<ShoppingCartOutlined />}
+        icon={<ThunderboltOutlined />}
       >
-        {props.text || "MUA SÁCH NGAY"}
+        {props.text || "THUÊ NGAY"}
       </Button>
     </div>
   );
 };
 
-BookCheckoutButton.craft = {
-  displayName: "Nút Mua Sách",
+IndicatorCheckoutButton.craft = {
+  displayName: "Nút Thuê Indicator",
   props: {
-    text: "MUA SÁCH NGAY",
-    background: "linear-gradient(135deg, #f78404 0%, #ff5e00 100%)",
+    text: "THUÊ NGAY",
+    background: "linear-gradient(135deg, #722ed1 0%, #9254de 100%)",
     buttonBgColor: undefined, // undefined means use default/theme
     textColor: undefined,
     borderColor: undefined,
@@ -294,6 +281,6 @@ BookCheckoutButton.craft = {
     canDelete: false, // MANDATORY: Cannot be deleted
   },
   related: {
-    settings: BookCheckoutButtonSettings,
+    settings: IndicatorCheckoutButtonSettings,
   },
 };
