@@ -9,6 +9,7 @@ import { useAuthStore } from "../../stores/authStore";
 import { usePaymentData, PaymentProvider } from "../../contexts/PaymentContext";
 import { LandingPageRenderer } from "./LandingPageRenderer";
 import { Alert } from "antd";
+import SEO from "../../components/common/SEO";
 
 const { Content } = Layout;
 
@@ -253,6 +254,24 @@ export default function LandingPageView() {
 
   return (
     <PaymentProvider>
+      <SEO
+        title={
+          landingPage?.title ||
+          (typeof landingPage?.course_id === "object"
+            ? landingPage.course_id.title
+            : "")
+        }
+        description={
+          typeof landingPage?.course_id === "object"
+            ? landingPage.course_id.description || landingPage.course_id.title
+            : landingPage?.title || ""
+        }
+        ogImage={
+          typeof landingPage?.course_id === "object"
+            ? landingPage.course_id.thumbnail
+            : ""
+        }
+      />
       <PaymentDataInitializer transaction={transaction}>
         <LandingPageRenderer
           landingPage={landingPage}

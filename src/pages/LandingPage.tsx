@@ -17,10 +17,14 @@ import {
   MdTrendingUp,
   MdPeople,
   MdStar,
+  MdPlayCircle,
+  MdAutoGraph,
+  MdBook,
 } from "react-icons/md";
 import { FaBook, FaChartLine, FaGraduationCap } from "react-icons/fa";
 import PublicLayout from "../components/layout/PublicLayout";
 import { motion } from "framer-motion";
+import SEO from "../components/common/SEO";
 
 const { Title, Paragraph } = Typography;
 
@@ -106,6 +110,10 @@ const LandingPage: React.FC = () => {
       }}
     >
       <PublicLayout>
+        <SEO
+          title="Nền tảng đào tạo Tài chính & Đầu tư chuyên sâu"
+          description="Tham gia các khóa học chất lượng cao, sở hữu các công cụ (indicator) và sách chuyên sâu về tài chính tại SRM FIN-EDU."
+        />
         {/* Hero Section */}
         <section
           style={{

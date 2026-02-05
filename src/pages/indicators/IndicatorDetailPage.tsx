@@ -5,6 +5,7 @@ import { Spin, Empty, Button } from "antd";
 import { indicatorApi } from "../../api/indicatorApi";
 import { getLandingPages, createLandingPage } from "../../api/landingPage";
 import { LandingPageRenderer } from "../landing/LandingPageRenderer";
+import SEO from "../../components/common/SEO";
 
 const IndicatorDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -91,7 +92,16 @@ const IndicatorDetailPage: React.FC = () => {
 
   // Render landing page if exists
   if (activeLandingPage) {
-    return <LandingPageRenderer landingPage={activeLandingPage} urlStep={2} />;
+    return (
+      <>
+        <SEO
+          title={indicator.name}
+          description={indicator.description}
+          ogImage={indicator.cover_image}
+        />
+        <LandingPageRenderer landingPage={activeLandingPage} urlStep={2} />
+      </>
+    );
   }
 
   // Fallback (should not reach here due to auto-create)

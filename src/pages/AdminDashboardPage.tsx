@@ -133,50 +133,67 @@ export default function AdminDashboardPage() {
 
   const columns = [
     {
-      title: "HỌC VIÊN",
-      key: "student",
+      title: "LOẠI",
+      key: "type",
+      width: 90,
+      render: (_: any, record: any) => {
+        const typeMap: Record<string, { label: string; color: string }> = {
+          course: { label: "Khóa học", color: "blue" },
+          book: { label: "Sách", color: "green" },
+          indicator: { label: "Indicator", color: "purple" },
+        };
+        const typeInfo = typeMap[record.type] || {
+          label: "Khác",
+          color: "default",
+        };
+        return (
+          <Tag color={typeInfo.color} style={{ borderRadius: 6 }}>
+            {typeInfo.label}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "KHÁCH HÀNG",
+      key: "customer",
       render: (_: any, record: any) => (
         <Space>
           <Avatar
-            src={record.user_submission_id?.avatar}
             style={{
               width: 36,
               height: 36,
               borderRadius: 10,
-              ...getAvatarStyles(
-                record.user_submission_id?.name ||
-                  record.user_submission_id?._id ||
-                  record._id,
-              ),
+              ...getAvatarStyles(record.customer_name || record._id),
               fontWeight: "bold",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               border: "none",
-            }}>
-            {record.user_submission_id?.name ? (
-              record.user_submission_id.name.substring(0, 2).toUpperCase()
+            }}
+          >
+            {record.customer_name ? (
+              record.customer_name.substring(0, 2).toUpperCase()
             ) : (
               <MdPerson />
             )}
           </Avatar>
           <div>
-            <Text strong>{record.user_submission_id?.name || "N/A"}</Text>
+            <Text strong>{record.customer_name || "N/A"}</Text>
             <br />
             <Text type="secondary" style={{ fontSize: 12 }}>
-              {record.user_submission_id?.email || "N/A"}
+              {record.customer_email || "N/A"}
             </Text>
           </div>
         </Space>
       ),
     },
     {
-      title: "KHÓA HỌC",
-      key: "course",
-      render: (_: any, record: any) => record.landing_page_id?.title || "N/A",
+      title: "SẢN PHẨM",
+      key: "item",
+      render: (_: any, record: any) => record.item_name || "N/A",
     },
     {
-      title: "NGÀY ĐĂNG KÝ",
+      title: "NGÀY THANH TOÁN",
       key: "date",
       render: (_: any, record: any) =>
         record.paid_at ? dayjs(record.paid_at).format("DD/MM/YYYY") : "N/A",
@@ -186,10 +203,17 @@ export default function AdminDashboardPage() {
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        const color = status === "completed" ? "success" : "warning";
-        const text = status === "completed" ? "Hoàn thành" : "Chờ thanh toán";
+        const statusLower = status?.toLowerCase();
+        const isCompleted =
+          statusLower === "completed" ||
+          statusLower === "paid" ||
+          status === "COMPLETED";
+        const text = isCompleted ? "Hoàn thành" : "Chờ thanh toán";
         return (
-          <Tag color={color} style={{ borderRadius: 12, padding: "0 12px" }}>
+          <Tag
+            color={isCompleted ? "success" : "warning"}
+            style={{ borderRadius: 12, padding: "0 12px" }}
+          >
             {text}
           </Tag>
         );
@@ -200,8 +224,10 @@ export default function AdminDashboardPage() {
       dataIndex: "total_amount",
       key: "amount",
       align: "right" as const,
-      render: (amount: number) => (
-        <Text strong>{amount?.toLocaleString("vi-VN")}đ</Text>
+      render: (_: any, record: any) => (
+        <Text strong>
+          {(record.total_amount || record.amount)?.toLocaleString("vi-VN")}đ
+        </Text>
       ),
     },
   ];
@@ -215,7 +241,8 @@ export default function AdminDashboardPage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-          }}>
+          }}
+        >
           <Spin size="large" />
         </div>
       </DashboardLayout>
@@ -227,7 +254,8 @@ export default function AdminDashboardPage() {
       <Space
         direction="vertical"
         size={24}
-        style={{ width: "100%", padding: "24px 0" }}>
+        style={{ width: "100%", padding: "24px 0" }}
+      >
         {/* Stats Cards */}
         <Row gutter={[24, 24]}>
           {statsCards.map((stat, index) => (
@@ -238,22 +266,26 @@ export default function AdminDashboardPage() {
                   borderRadius: 16,
                   boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                 }}
-                styles={{ body: { padding: "24px" } }}>
+                styles={{ body: { padding: "24px" } }}
+              >
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "flex-start",
-                  }}>
+                  }}
+                >
                   <div>
                     <Text
                       type="secondary"
-                      style={{ fontSize: 14, fontWeight: 500 }}>
+                      style={{ fontSize: 14, fontWeight: 500 }}
+                    >
                       {stat.title}
                     </Text>
                     <Title
                       level={3}
-                      style={{ margin: "8px 0", fontWeight: 700 }}>
+                      style={{ margin: "8px 0", fontWeight: 700 }}
+                    >
                       {stat.value}
                     </Title>
                   </div>
@@ -266,7 +298,8 @@ export default function AdminDashboardPage() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                    }}>
+                    }}
+                  >
                     {stat.icon}
                   </div>
                 </div>
@@ -282,7 +315,8 @@ export default function AdminDashboardPage() {
                       display: "flex",
                       alignItems: "center",
                       gap: 4,
-                    }}>
+                    }}
+                  >
                     {stat.change}
                   </Tag>
                   <Text type="secondary" style={{ fontSize: 12 }}>
@@ -318,11 +352,13 @@ export default function AdminDashboardPage() {
                   value={timeRange}
                   variant="borderless"
                   style={{ width: 120 }}
-                  onChange={(val) => setTimeRange(val)}>
+                  onChange={(val) => setTimeRange(val)}
+                >
                   <Select.Option value={30}>30 ngày qua</Select.Option>
                   <Select.Option value={7}>7 ngày qua</Select.Option>
                 </Select>
-              }>
+              }
+            >
               <div style={{ width: "100%", height: 350 }}>
                 <ResponsiveContainer>
                   <AreaChart data={revenueTrend}>
@@ -332,7 +368,8 @@ export default function AdminDashboardPage() {
                         x1="0"
                         y1="0"
                         x2="0"
-                        y2="1">
+                        y2="1"
+                      >
                         <stop
                           offset="5%"
                           stopColor="#10b981"
@@ -412,7 +449,8 @@ export default function AdminDashboardPage() {
                     Người dùng đến từ đâu
                   </Text>
                 </div>
-              }>
+              }
+            >
               <div
                 style={{
                   position: "relative",
@@ -420,7 +458,8 @@ export default function AdminDashboardPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                }}>
+                }}
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -430,7 +469,8 @@ export default function AdminDashboardPage() {
                       innerRadius={60}
                       outerRadius={80}
                       paddingAngle={5}
-                      dataKey="count">
+                      dataKey="count"
+                    >
                       {trafficSources?.map((_, index) => (
                         <Cell
                           key={`cell-${index}`}
@@ -453,7 +493,8 @@ export default function AdminDashboardPage() {
               <Space
                 direction="vertical"
                 style={{ width: "100%", marginTop: 24 }}
-                size={16}>
+                size={16}
+              >
                 {trafficSources?.map((source, index) => (
                   <div
                     key={index}
@@ -461,7 +502,8 @@ export default function AdminDashboardPage() {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                    }}>
+                    }}
+                  >
                     <Space>
                       <div
                         style={{
@@ -503,7 +545,8 @@ export default function AdminDashboardPage() {
                 value={salerPeriod}
                 variant="borderless"
                 style={{ width: 100 }}
-                onChange={(val) => setSalerPeriod(val)}>
+                onChange={(val) => setSalerPeriod(val)}
+              >
                 <Select.Option value="month">Tháng</Select.Option>
                 <Select.Option value="quarter">Quý</Select.Option>
                 <Select.Option value="year">Năm</Select.Option>
@@ -512,7 +555,8 @@ export default function AdminDashboardPage() {
                 Xem tất cả
               </Button>
             </Space>
-          }>
+          }
+        >
           {topSalersLoading ? (
             <div style={{ textAlign: "center", padding: 40 }}>
               <Spin />
@@ -520,106 +564,123 @@ export default function AdminDashboardPage() {
           ) : topSalers && topSalers.length > 0 ? (
             <Row gutter={[24, 24]}>
               {/* Reorder: 2nd, 1st, 3rd */}
-              {[
-                topSalers[1],
-                topSalers[0],
-                topSalers[2],
-              ].filter(Boolean).map((saler: TopSaler, displayIndex: number) => {
-                // Original index (0 = 1st place, 1 = 2nd place, 2 = 3rd place)
-                const originalIndex = displayIndex === 0 ? 1 : displayIndex === 1 ? 0 : 2;
+              {[topSalers[1], topSalers[0], topSalers[2]]
+                .filter(Boolean)
+                .map((saler: TopSaler, displayIndex: number) => {
+                  // Original index (0 = 1st place, 1 = 2nd place, 2 = 3rd place)
+                  const originalIndex =
+                    displayIndex === 0 ? 1 : displayIndex === 1 ? 0 : 2;
 
-                // Color scheme based on ranking
-                const colorScheme = originalIndex === 0
-                  ? { bg: "#fff7ed", text: "#ea580c", border: "#fdba74" }  // Orange for 1st
-                  : originalIndex === 1
-                    ? { bg: "#dbeafe", text: "#2563eb", border: "#93c5fd" }  // Blue for 2nd
-                    : { bg: "#dbeafe", text: "#2563eb", border: "#93c5fd" }; // Blue for 3rd
+                  // Color scheme based on ranking
+                  const colorScheme =
+                    originalIndex === 0
+                      ? { bg: "#fff7ed", text: "#ea580c", border: "#fdba74" } // Orange for 1st
+                      : originalIndex === 1
+                        ? { bg: "#dbeafe", text: "#2563eb", border: "#93c5fd" } // Blue for 2nd
+                        : { bg: "#dbeafe", text: "#2563eb", border: "#93c5fd" }; // Blue for 3rd
 
-                return (
-                  <Col xs={24} md={8} key={saler.saler_id}>
-                    <Card
-                      size="small"
-                      style={{
-                        borderRadius: 12,
-                        background: colorScheme.bg,
-                        border: `2px solid ${colorScheme.border}`,
-                      }}>
-                      <div
+                  return (
+                    <Col xs={24} md={8} key={saler.saler_id}>
+                      <Card
+                        size="small"
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                        }}>
-                        <Avatar
-                          src={saler.avatar}
-                          size={48}
-                          style={{
-                            ...getAvatarStyles(saler.name),
-                            fontWeight: "bold",
-                            border: `2px solid ${colorScheme.border}`,
-                          }}>
-                          {saler.name?.substring(0, 2).toUpperCase()}
-                        </Avatar>
-                        <div style={{ flex: 1 }}>
-                          <Text strong style={{ display: "block", color: colorScheme.text }}>
-                            {originalIndex === 0 ? "🥇 " : originalIndex === 1 ? "🥈 " : "🥉 "}
-                            {saler.name}
-                          </Text>
-                          <Text type="secondary" style={{ fontSize: 12 }}>
-                            {saler.total_orders} đơn hàng
-                          </Text>
-                        </div>
-                      </div>
-                      <div style={{ marginTop: 16 }}>
+                          borderRadius: 12,
+                          background: colorScheme.bg,
+                          border: `2px solid ${colorScheme.border}`,
+                        }}
+                      >
                         <div
                           style={{
                             display: "flex",
-                            justifyContent: "space-between",
-                            marginBottom: 4,
-                          }}>
-                          <Text type="secondary" style={{ fontSize: 12 }}>
-                            KPI
-                          </Text>
-                          <Text
-                            strong
+                            alignItems: "center",
+                            gap: 12,
+                          }}
+                        >
+                          <Avatar
+                            src={saler.avatar}
+                            size={48}
                             style={{
-                              color: colorScheme.text,
-                            }}>
-                            {saler.completion_percentage.toFixed(1)}%
-                          </Text>
+                              ...getAvatarStyles(saler.name),
+                              fontWeight: "bold",
+                              border: `2px solid ${colorScheme.border}`,
+                            }}
+                          >
+                            {saler.name?.substring(0, 2).toUpperCase()}
+                          </Avatar>
+                          <div style={{ flex: 1 }}>
+                            <Text
+                              strong
+                              style={{
+                                display: "block",
+                                color: colorScheme.text,
+                              }}
+                            >
+                              {originalIndex === 0
+                                ? "🥇 "
+                                : originalIndex === 1
+                                  ? "🥈 "
+                                  : "🥉 "}
+                              {saler.name}
+                            </Text>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              {saler.total_orders} đơn hàng
+                            </Text>
+                          </div>
                         </div>
-                        <div
-                          style={{
-                            height: 8,
-                            background: "#e5e7eb",
-                            borderRadius: 4,
-                            overflow: "hidden",
-                          }}>
+                        <div style={{ marginTop: 16 }}>
                           <div
                             style={{
-                              height: "100%",
-                              width: `${Math.min(saler.completion_percentage, 100)}%`,
-                              background: colorScheme.text,
-                              borderRadius: 4,
+                              display: "flex",
+                              justifyContent: "space-between",
+                              marginBottom: 4,
                             }}
-                          />
-                        </div>
-                        {saler.exceeded_by > 0 && (
-                          <Text
+                          >
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              KPI
+                            </Text>
+                            <Text
+                              strong
+                              style={{
+                                color: colorScheme.text,
+                              }}
+                            >
+                              {saler.completion_percentage.toFixed(1)}%
+                            </Text>
+                          </div>
+                          <div
                             style={{
-                              fontSize: 11,
-                              color: colorScheme.text,
-                              marginTop: 4,
-                              display: "block",
-                            }}>
-                            Vượt +{saler.exceeded_by.toFixed(1)}%
-                          </Text>
-                        )}
-                      </div>
-                    </Card>
-                  </Col>
-                );
-              })}
+                              height: 8,
+                              background: "#e5e7eb",
+                              borderRadius: 4,
+                              overflow: "hidden",
+                            }}
+                          >
+                            <div
+                              style={{
+                                height: "100%",
+                                width: `${Math.min(saler.completion_percentage, 100)}%`,
+                                background: colorScheme.text,
+                                borderRadius: 4,
+                              }}
+                            />
+                          </div>
+                          {saler.exceeded_by > 0 && (
+                            <Text
+                              style={{
+                                fontSize: 11,
+                                color: colorScheme.text,
+                                marginTop: 4,
+                                display: "block",
+                              }}
+                            >
+                              Vượt +{saler.exceeded_by.toFixed(1)}%
+                            </Text>
+                          )}
+                        </div>
+                      </Card>
+                    </Col>
+                  );
+                })}
             </Row>
           ) : (
             <div style={{ textAlign: "center", padding: 40 }}>
@@ -648,7 +709,8 @@ export default function AdminDashboardPage() {
                     Doanh thu 4 tuần gần đây
                   </Text>
                 </div>
-              }>
+              }
+            >
               <div style={{ marginBottom: 16 }}>
                 <Table
                   dataSource={weeklySales}
@@ -740,12 +802,15 @@ export default function AdminDashboardPage() {
                       }
                     />
                     <Bar dataKey="revenue" radius={[4, 4, 0, 0]}>
-                      {weeklySales?.slice().reverse().map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={index % 2 === 0 ? "#10b981" : "#8b5cf6"}
-                        />
-                      ))}
+                      {weeklySales
+                        ?.slice()
+                        .reverse()
+                        .map((_, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={index % 2 === 0 ? "#10b981" : "#8b5cf6"}
+                          />
+                        ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -771,7 +836,8 @@ export default function AdminDashboardPage() {
                     Doanh thu 14 ngày gần đây
                   </Text>
                 </div>
-              }>
+              }
+            >
               <div style={{ marginBottom: 16 }}>
                 <Table
                   dataSource={dailySales?.slice(0, 7).sort((a, b) => {
@@ -834,19 +900,20 @@ export default function AdminDashboardPage() {
                         );
                         const width = (record.revenue / maxRevenue) * 100;
                         const dayColors: Record<string, string> = {
-                          Mon: "#10b981",    // Green
-                          Tue: "#8b5cf6",    // Purple
-                          Wed: "#10b981",    // Green
-                          Thu: "#8b5cf6",    // Purple
-                          Fri: "#10b981",    // Green
-                          Sat: "#8b5cf6",    // Purple
-                          Sun: "#10b981",    // Green
+                          Mon: "#10b981", // Green
+                          Tue: "#8b5cf6", // Purple
+                          Wed: "#10b981", // Green
+                          Thu: "#8b5cf6", // Purple
+                          Fri: "#10b981", // Green
+                          Sat: "#8b5cf6", // Purple
+                          Sun: "#10b981", // Green
                         };
                         return (
                           <div
                             style={{
                               height: 20,
-                              background: dayColors[record.dayOfWeek] || "#10b981",
+                              background:
+                                dayColors[record.dayOfWeek] || "#10b981",
                               width: `${width}%`,
                               borderRadius: 4,
                               minWidth: width > 0 ? 20 : 0,
@@ -885,7 +952,8 @@ export default function AdminDashboardPage() {
                         Sun: 7,
                       };
                       return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
-                    })}>
+                    })}
+                  >
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
@@ -925,34 +993,37 @@ export default function AdminDashboardPage() {
                       }
                     />
                     <Bar dataKey="revenue" radius={[4, 4, 0, 0]}>
-                      {dailySales?.slice(0, 14).sort((a, b) => {
-                        const dayOrder: Record<string, number> = {
-                          Mon: 1,
-                          Tue: 2,
-                          Wed: 3,
-                          Thu: 4,
-                          Fri: 5,
-                          Sat: 6,
-                          Sun: 7,
-                        };
-                        return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
-                      }).map((entry, index) => {
-                        const dayColors: Record<string, string> = {
-                          Mon: "#10b981",    // Green
-                          Tue: "#8b5cf6",    // Purple
-                          Wed: "#10b981",    // Green
-                          Thu: "#8b5cf6",    // Purple
-                          Fri: "#10b981",    // Green
-                          Sat: "#8b5cf6",    // Purple
-                          Sun: "#10b981",    // Green
-                        };
-                        return (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={dayColors[entry.dayOfWeek] || "#10b981"}
-                          />
-                        );
-                      })}
+                      {dailySales
+                        ?.slice(0, 14)
+                        .sort((a, b) => {
+                          const dayOrder: Record<string, number> = {
+                            Mon: 1,
+                            Tue: 2,
+                            Wed: 3,
+                            Thu: 4,
+                            Fri: 5,
+                            Sat: 6,
+                            Sun: 7,
+                          };
+                          return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
+                        })
+                        .map((entry, index) => {
+                          const dayColors: Record<string, string> = {
+                            Mon: "#10b981", // Green
+                            Tue: "#8b5cf6", // Purple
+                            Wed: "#10b981", // Green
+                            Thu: "#8b5cf6", // Purple
+                            Fri: "#10b981", // Green
+                            Sat: "#8b5cf6", // Purple
+                            Sun: "#10b981", // Green
+                          };
+                          return (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={dayColors[entry.dayOfWeek] || "#10b981"}
+                            />
+                          );
+                        })}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -976,7 +1047,8 @@ export default function AdminDashboardPage() {
             <Button type="link" onClick={() => navigate("/admin/orders")}>
               Xem tất cả
             </Button>
-          }>
+          }
+        >
           <Table
             dataSource={recentPayments}
             columns={columns}

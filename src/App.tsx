@@ -49,6 +49,7 @@ import IndicatorManagementPage from "./pages/indicators/IndicatorManagementPage"
 import CoursesPage from "./pages/CoursesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountLockedModal from "./components/AccountLockedModal";
+import SEO from "./components/common/SEO";
 
 function App() {
   return (
@@ -67,6 +68,7 @@ function App() {
           v7_relativeSplatPath: true,
         }}
       >
+        <SEO />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/landing/:slug" element={<LandingPageView />} />

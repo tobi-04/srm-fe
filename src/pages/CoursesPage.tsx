@@ -20,6 +20,7 @@ import { courseApi } from "../api/courseApi";
 import { useNavigate } from "react-router-dom";
 import PublicLayout from "../components/layout/PublicLayout";
 import { motion } from "framer-motion";
+import SEO from "../components/common/SEO";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -78,6 +79,10 @@ const CoursesPage: React.FC = () => {
         },
       }}
     >
+      <SEO
+        title="Danh sách khóa học"
+        description="Khám phá các khóa học chất lượng cao về đầu tư, tài chính và phát triển kỹ năng tại SRM Lesson."
+      />
       <PublicLayout>
         {/* Hero Section */}
         <section

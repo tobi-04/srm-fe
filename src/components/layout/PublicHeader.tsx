@@ -66,16 +66,31 @@ const PublicHeader: React.FC = () => {
             <MdSchool style={{ color: "#fff", fontSize: 26 }} />
           </div>
           <div>
-            <div
-              style={{
-                fontSize: 20,
-                fontWeight: 800,
-                color: "#1e293b",
-                lineHeight: 1.2,
-              }}
-            >
-              SRM <span style={{ color: "#f78404" }}>FIN-EDU</span>
-            </div>
+            {location.pathname === "/" ? (
+              <h1
+                style={{
+                  fontSize: 20,
+                  fontWeight: 800,
+                  color: "#1e293b",
+                  lineHeight: 1.2,
+                  margin: 0,
+                }}
+              >
+                SRM <span style={{ color: "#f78404" }}>FIN-EDU</span>
+              </h1>
+            ) : (
+              <h2
+                style={{
+                  fontSize: 20,
+                  fontWeight: 800,
+                  color: "#1e293b",
+                  lineHeight: 1.2,
+                  margin: 0,
+                }}
+              >
+                SRM <span style={{ color: "#f78404" }}>FIN-EDU</span>
+              </h2>
+            )}
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 500 }}>
               Financial Education Platform
             </div>

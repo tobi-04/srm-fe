@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { bookApi } from "../../api/bookApi";
 import { getLandingPages, createLandingPage } from "../../api/landingPage";
 import { LandingPageRenderer } from "../landing/LandingPageRenderer";
+import SEO from "../../components/common/SEO";
 
 const BookDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -92,7 +93,16 @@ const BookDetailPage: React.FC = () => {
 
   // Render landing page if exists
   if (activeLandingPage) {
-    return <LandingPageRenderer landingPage={activeLandingPage} urlStep={2} />;
+    return (
+      <>
+        <SEO
+          title={book.title}
+          description={book.description}
+          ogImage={book.cover_image}
+        />
+        <LandingPageRenderer landingPage={activeLandingPage} urlStep={2} />
+      </>
+    );
   }
 
   // Fallback (should not reach here due to auto-create)

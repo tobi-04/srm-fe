@@ -66,45 +66,70 @@ export default function OrderHistoryPage() {
       render: (_: any, record: any) => (
         <Space direction="vertical" size={0}>
           <Text strong style={{ fontSize: 13 }}>
-            {record.transfer_code || record._id.substring(record._id.length - 8).toUpperCase()}
+            {record.transfer_code ||
+              record._id.substring(record._id.length - 8).toUpperCase()}
           </Text>
           <Text type="secondary" style={{ fontSize: 11 }}>
-            {new Date(record.created_at || record.paid_at).toLocaleDateString("vi-VN")}
+            {new Date(record.created_at || record.paid_at).toLocaleDateString(
+              "vi-VN",
+            )}
           </Text>
         </Space>
       ),
     },
     {
-      title: "HỌC VIÊN",
-      key: "student",
+      title: "LOẠI",
+      key: "type",
+      width: 100,
+      render: (_: any, record: any) => {
+        const typeMap: Record<string, { label: string; color: string }> = {
+          course: { label: "Khóa học", color: "blue" },
+          book: { label: "Sách", color: "green" },
+          indicator: { label: "Indicator", color: "purple" },
+        };
+        const typeInfo = typeMap[record.type] || {
+          label: "Khác",
+          color: "default",
+        };
+        return (
+          <Tag color={typeInfo.color} style={{ borderRadius: 6 }}>
+            {typeInfo.label}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "KHÁCH HÀNG",
+      key: "customer",
       render: (_: any, record: any) => (
         <Space>
           <Avatar
             style={{
-              ...getAvatarStyles(record.student?.name || ""),
+              ...getAvatarStyles(record.customer_name || ""),
               fontWeight: "bold",
-            }}>
-            {record.student?.name?.substring(0, 2).toUpperCase() || (
+            }}
+          >
+            {record.customer_name?.substring(0, 2).toUpperCase() || (
               <MdPerson />
             )}
           </Avatar>
           <Space direction="vertical" size={0}>
-            <Text strong>{record.student?.name || "N/A"}</Text>
+            <Text strong>{record.customer_name || "N/A"}</Text>
             <Text type="secondary" style={{ fontSize: 12 }}>
-              {record.student?.email || ""}
+              {record.customer_email || ""}
             </Text>
           </Space>
         </Space>
       ),
     },
     {
-      title: "KHÓA HỌC",
-      key: "course",
+      title: "SẢN PHẨM",
+      key: "item",
       render: (_: any, record: any) => (
         <Space direction="vertical" size={0}>
-          <Text strong>{record.course?.title || "N/A"}</Text>
+          <Text strong>{record.item_name || "N/A"}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
-            {record.amount.toLocaleString("vi-VN")}đ
+            {record.amount?.toLocaleString("vi-VN")}đ
           </Text>
         </Space>
       ),
@@ -113,14 +138,15 @@ export default function OrderHistoryPage() {
       title: "SALER",
       key: "saler",
       render: (_: any, record: any) =>
-        record.saler ? (
+        record.saler_name ? (
           <Space>
             <Avatar
               size="small"
-              style={{ ...getAvatarStyles(record.saler.name) }}>
-              {record.saler.name.substring(0, 1).toUpperCase()}
+              style={{ ...getAvatarStyles(record.saler_name) }}
+            >
+              {record.saler_name.substring(0, 1).toUpperCase()}
             </Avatar>
-            <Text>{record.saler.name}</Text>
+            <Text>{record.saler_name}</Text>
           </Space>
         ) : (
           <Text type="secondary">Direct</Text>
@@ -131,13 +157,16 @@ export default function OrderHistoryPage() {
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        const isCompleted = status === "completed";
-        const isFailed = status === "failed";
+        const statusLower = status?.toLowerCase();
+        const isCompleted =
+          statusLower === "completed" || statusLower === "paid";
+        const isFailed = statusLower === "failed";
         return (
           <Tag
             color={isCompleted ? "success" : isFailed ? "error" : "warning"}
             icon={isCompleted ? <MdCheckCircle /> : null}
-            style={{ borderRadius: 6, padding: "2px 8px" }}>
+            style={{ borderRadius: 6, padding: "2px 8px" }}
+          >
             {isCompleted ? "Thành công" : isFailed ? "Thất bại" : "Chờ xử lý"}
           </Tag>
         );
@@ -149,37 +178,64 @@ export default function OrderHistoryPage() {
     {
       title: "Thông tin giao dịch",
       key: "mobile_order",
-      render: (_: any, record: any) => (
-        <div style={{ padding: "8px 0" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 8,
-            }}>
-            <Text strong>
-              {record.transfer_code || record._id.substring(record._id.length - 8).toUpperCase()}
-            </Text>
-            <Tag color={record.status === "completed" ? "success" : record.status === "failed" ? "error" : "warning"}>
-              {record.status === "completed" ? "Thành công" : record.status === "failed" ? "Thất bại" : "Chờ"}
-            </Tag>
+      render: (_: any, record: any) => {
+        const typeMap: Record<string, { label: string; color: string }> = {
+          course: { label: "Khóa học", color: "blue" },
+          book: { label: "Sách", color: "green" },
+          indicator: { label: "Indicator", color: "purple" },
+        };
+        const typeInfo = typeMap[record.type] || {
+          label: "Khác",
+          color: "default",
+        };
+        const statusLower = record.status?.toLowerCase();
+        const isCompleted =
+          statusLower === "completed" || statusLower === "paid";
+        const isFailed = statusLower === "failed";
+
+        return (
+          <div style={{ padding: "8px 0" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <Space>
+                <Text strong>
+                  {record.transfer_code ||
+                    record._id.substring(record._id.length - 8).toUpperCase()}
+                </Text>
+                <Tag color={typeInfo.color} style={{ borderRadius: 4 }}>
+                  {typeInfo.label}
+                </Tag>
+              </Space>
+              <Tag
+                color={isCompleted ? "success" : isFailed ? "error" : "warning"}
+              >
+                {isCompleted ? "Thành công" : isFailed ? "Thất bại" : "Chờ"}
+              </Tag>
+            </div>
+            <div style={{ marginBottom: 4 }}>
+              <Text strong>{record.customer_name}</Text>
+            </div>
+            <div style={{ marginBottom: 4 }}>
+              <Text type="secondary">{record.item_name}</Text>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {new Date(
+                  record.created_at || record.paid_at,
+                ).toLocaleDateString("vi-VN")}
+              </Text>
+              <Text strong style={{ color: "#16a34a" }}>
+                {record.amount?.toLocaleString("vi-VN")}đ
+              </Text>
+            </div>
           </div>
-          <div style={{ marginBottom: 4 }}>
-            <Text strong>{record.student?.name}</Text>
-          </div>
-          <div style={{ marginBottom: 4 }}>
-            <Text type="secondary">{record.course?.title}</Text>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {new Date(record.created_at || record.paid_at).toLocaleDateString("vi-VN")}
-            </Text>
-            <Text strong style={{ color: "#16a34a" }}>
-              {record.amount.toLocaleString("vi-VN")}đ
-            </Text>
-          </div>
-        </div>
-      ),
+        );
+      },
     },
   ];
 
@@ -193,7 +249,8 @@ export default function OrderHistoryPage() {
           alignItems: isMobile ? "flex-start" : "center",
           gap: isMobile ? 16 : 0,
           marginBottom: 24,
-        }}>
+        }}
+      >
         <div style={{ flex: 1 }}>
           <Title
             level={isMobile ? 3 : 2}
@@ -202,7 +259,8 @@ export default function OrderHistoryPage() {
               display: "flex",
               alignItems: "center",
               gap: 8,
-            }}>
+            }}
+          >
             <MdHistory /> Lịch sử giao dịch
           </Title>
           <Text type="secondary">
@@ -230,7 +288,8 @@ export default function OrderHistoryPage() {
               allowClear
               size="large"
               value={statusFilter}
-              onChange={setStatusFilter}>
+              onChange={setStatusFilter}
+            >
               <Select.Option value="completed">Thành công</Select.Option>
               <Select.Option value="pending">Chờ xử lý</Select.Option>
               <Select.Option value="failed">Thất bại</Select.Option>
@@ -251,7 +310,8 @@ export default function OrderHistoryPage() {
                 borderRadius: 8,
                 cursor: "pointer",
                 fontWeight: 500,
-              }}>
+              }}
+            >
               <MdRefresh size={18} /> Làm mới
             </button>
           </Col>

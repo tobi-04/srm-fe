@@ -19,6 +19,7 @@ import { indicatorApi, Indicator } from "../../api/indicatorApi";
 import { useNavigate } from "react-router-dom";
 import PublicLayout from "../../components/layout/PublicLayout";
 import { motion } from "framer-motion";
+import SEO from "../../components/common/SEO";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -77,6 +78,10 @@ const IndicatorListPage: React.FC = () => {
         },
       }}
     >
+      <SEO
+        title="Công cụ Trading & Indicators"
+        description="Thuê các công cụ phân tích kỹ thuật (indicators) chuyên nghiệp để tối ưu hóa hiệu quả giao dịch của bạn."
+      />
       <PublicLayout>
         <div style={{ padding: "40px 5%", background: colors.slate50 }}>
           {/* Hero Section */}

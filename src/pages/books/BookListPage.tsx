@@ -18,6 +18,7 @@ import { bookApi } from "../../api/bookApi";
 import BookCard from "../../components/books/BookCard";
 import PublicLayout from "../../components/layout/PublicLayout";
 import { motion } from "framer-motion";
+import SEO from "../../components/common/SEO";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -66,6 +67,10 @@ const BookListPage: React.FC = () => {
         },
       }}
     >
+      <SEO
+        title="Thư viện Sách Tài chính"
+        description="Khám phá kho tàng tri thức về đầu tư và tài chính qua bộ sưu tập sách điện tử chuyên sâu tại SRM Lesson."
+      />
       <PublicLayout>
         {/* Books Hero Section */}
         <section

@@ -47,7 +47,9 @@ export default function StudentManagementPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    null,
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -155,7 +157,8 @@ export default function StudentManagementPage() {
               alignItems: "center",
               justifyContent: "center",
               border: "none",
-            }}>
+            }}
+          >
             {text ? text.substring(0, 2).toUpperCase() : <MdPerson />}
           </Avatar>
           <div>
@@ -194,7 +197,8 @@ export default function StudentManagementPage() {
             display: "flex",
             alignItems: "center",
             width: "fit-content",
-          }}>
+          }}
+        >
           {hasEnrollment ? "Đã mua" : "Chưa mua"}
         </Tag>
       ),
@@ -207,7 +211,8 @@ export default function StudentManagementPage() {
       render: (active: boolean) => (
         <Space
           size="small"
-          style={{ color: active ? "#10b981" : "#ef4444", fontWeight: 600 }}>
+          style={{ color: active ? "#10b981" : "#ef4444", fontWeight: 600 }}
+        >
           {active ? <MdCheckCircle /> : <MdCancel />}
           {active ? "Hoạt động" : "Đã khóa"}
         </Space>
@@ -235,7 +240,8 @@ export default function StudentManagementPage() {
             type="text"
             size="small"
             icon={record.is_active ? <MdLock /> : <MdLockOpen />}
-            onClick={() => toggleMutation.mutate(record._id)}>
+            onClick={() => toggleMutation.mutate(record._id)}
+          >
             {record.is_active ? "Khóa" : "Mở"}
           </Button>
           <Popconfirm
@@ -244,7 +250,8 @@ export default function StudentManagementPage() {
             onConfirm={() => hardDeleteMutation.mutate([record._id])}
             okText="Xóa"
             cancelText="Hủy"
-            okButtonProps={{ danger: true }}>
+            okButtonProps={{ danger: true }}
+          >
             <Button
               type="text"
               size="small"
@@ -278,7 +285,8 @@ export default function StudentManagementPage() {
             justifyContent: "space-between",
             flexWrap: "wrap",
             gap: 12,
-          }}>
+          }}
+        >
           <Space size="middle" wrap>
             <Input
               placeholder="Tìm kiếm theo tên hoặc email..."
@@ -293,7 +301,8 @@ export default function StudentManagementPage() {
               onClick={() =>
                 queryClient.invalidateQueries({ queryKey: ["students"] })
               }
-              loading={isLoading}>
+              loading={isLoading}
+            >
               Làm mới
             </Button>
           </Space>
@@ -306,7 +315,8 @@ export default function StudentManagementPage() {
               <Button
                 icon={<MdLock size={16} />}
                 onClick={() => lockMutation.mutate(selectedRowKeys as string[])}
-                loading={lockMutation.isPending}>
+                loading={lockMutation.isPending}
+              >
                 Khóa
               </Button>
               <Button
@@ -314,7 +324,8 @@ export default function StudentManagementPage() {
                 onClick={() =>
                   unlockMutation.mutate(selectedRowKeys as string[])
                 }
-                loading={unlockMutation.isPending}>
+                loading={unlockMutation.isPending}
+              >
                 Mở khóa
               </Button>
               <Popconfirm
@@ -325,11 +336,13 @@ export default function StudentManagementPage() {
                 }
                 okText="Xóa tất cả"
                 cancelText="Hủy"
-                okButtonProps={{ danger: true }}>
+                okButtonProps={{ danger: true }}
+              >
                 <Button
                   danger
                   icon={<MdDeleteForever size={16} />}
-                  loading={hardDeleteMutation.isPending}>
+                  loading={hardDeleteMutation.isPending}
+                >
                   Xóa vĩnh viễn
                 </Button>
               </Popconfirm>
@@ -390,7 +403,8 @@ export default function StudentManagementPage() {
         }}
         footer={null}
         width={900}
-        destroyOnClose>
+        destroyOnClose
+      >
         {detailsLoading ? (
           <div style={{ textAlign: "center", padding: 60 }}>
             <Spin size="large" />
@@ -400,7 +414,8 @@ export default function StudentManagementPage() {
             {/* Student Info Header */}
             <Card
               size="small"
-              style={{ marginBottom: 16, background: "#f8fafc" }}>
+              style={{ marginBottom: 16, background: "#f8fafc" }}
+            >
               <Row gutter={16}>
                 <Col span={12}>
                   <Space direction="vertical" size={4}>
@@ -516,7 +531,8 @@ export default function StudentManagementPage() {
                                   : status === "active"
                                     ? "processing"
                                     : "default"
-                              }>
+                              }
+                            >
                               {status === "completed"
                                 ? "Hoàn thành"
                                 : status === "active"
@@ -547,9 +563,40 @@ export default function StudentManagementPage() {
                       scroll={{ y: 300 }}
                       columns={[
                         {
-                          title: "Khóa học",
-                          dataIndex: "course_title",
-                          key: "course_title",
+                          title: "Loại",
+                          dataIndex: "type",
+                          key: "type",
+                          width: 100,
+                          render: (type) => {
+                            const typeMap: Record<
+                              string,
+                              { label: string; color: string }
+                            > = {
+                              course: { label: "Khóa học", color: "blue" },
+                              book: { label: "Sách", color: "green" },
+                              indicator: {
+                                label: "Indicator",
+                                color: "purple",
+                              },
+                            };
+                            const typeInfo = typeMap[type] || {
+                              label: "Khác",
+                              color: "default",
+                            };
+                            return (
+                              <Tag
+                                color={typeInfo.color}
+                                style={{ borderRadius: 6 }}
+                              >
+                                {typeInfo.label}
+                              </Tag>
+                            );
+                          },
+                        },
+                        {
+                          title: "Sản phẩm",
+                          dataIndex: "item_name",
+                          key: "item_name",
                         },
                         {
                           title: "Số tiền",
@@ -557,7 +604,7 @@ export default function StudentManagementPage() {
                           key: "amount",
                           render: (amount) => (
                             <Text strong>
-                              {amount.toLocaleString("vi-VN")}đ
+                              {amount?.toLocaleString("vi-VN")}đ
                             </Text>
                           ),
                         },
@@ -565,16 +612,20 @@ export default function StudentManagementPage() {
                           title: "Trạng thái",
                           dataIndex: "status",
                           key: "status",
-                          render: (status) => (
-                            <Tag
-                              color={
-                                status === "completed" ? "success" : "warning"
-                              }>
-                              {status === "completed"
-                                ? "Đã thanh toán"
-                                : "Chờ thanh toán"}
-                            </Tag>
-                          ),
+                          render: (status) => {
+                            const statusLower = status?.toLowerCase();
+                            const isCompleted =
+                              statusLower === "completed" ||
+                              statusLower === "paid" ||
+                              status === "COMPLETED";
+                            return (
+                              <Tag color={isCompleted ? "success" : "warning"}>
+                                {isCompleted
+                                  ? "Đã thanh toán"
+                                  : "Chờ thanh toán"}
+                              </Tag>
+                            );
+                          },
                         },
                         {
                           title: "Ngày mua",
