@@ -5,7 +5,6 @@ import {
   Input,
   Button,
   Typography,
-  Row,
   Avatar,
   message,
   Space,
@@ -22,6 +21,8 @@ import {
 import { MdAccountCircle } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { bookApi } from "../../api/bookApi";
+import { CouponInput } from "../payment/CouponInput";
+import { PriceBreakdown } from "../payment/PriceBreakdown";
 
 const { Title, Text } = Typography;
 
@@ -38,6 +39,8 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const [couponDiscount, setCouponDiscount] = React.useState(0);
+  const [couponCode, setCouponCode] = React.useState("");
 
   // Safeguard: If book is missing, do not render or crash
   if (!book) {
@@ -61,16 +64,12 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
     }).format(price || 0);
   };
 
-  const calculateDiscountedPrice = (price: number, discount: number) => {
-    if (!discount) return price;
-    return Math.floor(price * (1 - discount / 100));
-  };
-
   const handleCheckout = async (values: any) => {
     try {
       const response = await bookApi.checkout({
         book_id: book._id,
         ...values,
+        coupon_code: couponCode || undefined,
       });
 
       onCancel(); // Close current form modal
@@ -401,22 +400,27 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
           />
         </Form.Item>
 
-        <Form.Item
-          label={<Text strong>Mã giảm giá (Nếu có)</Text>}
-          name="coupon_code"
-        >
-          <Input
-            size="large"
-            placeholder="NHẬP MÃ GIẢM GIÁ"
-            style={{ borderRadius: 8, textTransform: "uppercase" }}
-            onChange={(e) =>
-              form.setFieldsValue({
-                coupon_code: e.target.value.toUpperCase(),
-              })
-            }
-          />
-        </Form.Item>
+        {/* Coupon Input */}
+        <CouponInput
+          resourceType="book"
+          resourceId={book._id}
+          originalPrice={book.price}
+          defaultDiscount={
+            book.discount_percentage
+              ? Math.floor(book.price * (book.discount_percentage / 100))
+              : 0
+          }
+          onCouponApplied={(discount: number, code: string) => {
+            setCouponDiscount(discount);
+            setCouponCode(code);
+          }}
+          onCouponRemoved={() => {
+            setCouponDiscount(0);
+            setCouponCode("");
+          }}
+        />
 
+        {/* Price Breakdown */}
         <div
           style={{
             background: "#f8fafc",
@@ -426,42 +430,16 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
             border: "1px solid #e2e8f0",
           }}
         >
-          <Row justify="space-between">
-            <Text>Giá gốc:</Text>
-            <Text style={{ textDecoration: "line-through", color: "#94a3b8" }}>
-              {formatPrice(book.price)}
-            </Text>
-          </Row>
-          {book.discount_percentage > 0 && (
-            <Row justify="space-between" style={{ marginTop: 4 }}>
-              <Text>Giảm giá sách:</Text>
-              <Text type="danger">-{book.discount_percentage}%</Text>
-            </Row>
-          )}
-          <Row
-            justify="space-between"
-            style={{
-              marginTop: 8,
-              borderTop: "1px solid #e2e8f0",
-              paddingTop: 8,
-            }}
-          >
-            <Text strong style={{ fontSize: 16 }}>
-              Tổng cộng:
-            </Text>
-            <Text strong style={{ fontSize: 18, color: "#f78404" }}>
-              {formatPrice(
-                calculateDiscountedPrice(book.price, book.discount_percentage),
-              )}
-            </Text>
-          </Row>
-          <Text
-            type="secondary"
-            style={{ fontSize: 12, marginTop: 8, display: "block" }}
-          >
-            * Tổng thanh toán cuối cùng sẽ được tính lại nếu có mã giảm giá hợp
-            lệ.
-          </Text>
+          <PriceBreakdown
+            originalPrice={book.price}
+            defaultDiscount={
+              book.discount_percentage
+                ? Math.floor(book.price * (book.discount_percentage / 100))
+                : 0
+            }
+            couponDiscount={couponDiscount}
+            couponCode={couponCode}
+          />
         </div>
 
         <Form.Item style={{ marginBottom: 0 }}>

@@ -14,11 +14,7 @@ import {
   Tag,
   Avatar,
 } from "antd";
-import {
-  SearchOutlined,
-  PlayCircleOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined, UserOutlined } from "@ant-design/icons";
 import { MdSchool } from "react-icons/md";
 import { courseApi } from "../api/courseApi";
 import { useNavigate } from "react-router-dom";
@@ -313,25 +309,6 @@ const CoursesPage: React.FC = () => {
                                   }}
                                 />
                               )}
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: 12,
-                                  left: 12,
-                                  background: "rgba(0,0,0,0.6)",
-                                  color: "#fff",
-                                  padding: "4px 12px",
-                                  borderRadius: 6,
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 4,
-                                }}
-                              >
-                                <PlayCircleOutlined />
-                                {course.lesson_count || 0} bài học
-                              </div>
                             </div>
                           }
                           style={{

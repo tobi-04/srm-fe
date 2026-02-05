@@ -106,6 +106,16 @@ export const getLandingPageBySlug = async (
   return response.data;
 };
 
+// Get landing page by course slug (public) - new API
+export const getLandingPageByCourseSlug = async (
+  courseSlug: string,
+): Promise<LandingPage> => {
+  const response = await apiClient.get(
+    `/landing-pages/by-course-slug/${courseSlug}`,
+  );
+  return response.data;
+};
+
 // Get landing pages by course ID
 export const getLandingPagesByCourse = async (
   courseId: string,
@@ -163,6 +173,18 @@ export const submitUserForm = async (
 ): Promise<SubmitUserFormResponse> => {
   const response = await apiClient.post(
     `/landing-pages/slug/${slug}/submit-form`,
+    data,
+  );
+  return response.data;
+};
+
+// Submit user form by course slug (new API)
+export const submitUserFormByCourseSlug = async (
+  courseSlug: string,
+  data: SubmitUserFormInput,
+): Promise<SubmitUserFormResponse> => {
+  const response = await apiClient.post(
+    `/landing-pages/by-course-slug/${courseSlug}/submit-form`,
     data,
   );
   return response.data;

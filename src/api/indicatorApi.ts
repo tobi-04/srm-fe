@@ -41,6 +41,7 @@ export interface CreateSubscriptionDto {
   email: string;
   phone?: string;
   auto_renew?: boolean;
+  coupon_code?: string;
 }
 
 export interface SubscriptionResponse {

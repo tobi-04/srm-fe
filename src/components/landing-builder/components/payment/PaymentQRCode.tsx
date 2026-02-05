@@ -107,14 +107,16 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
         border: selected ? "2px dashed #1890ff" : "none",
         textAlign: "center",
         ...customCSS,
-      }}>
+      }}
+    >
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           gap: "16px",
-        }}>
+        }}
+      >
         {/* QR Code */}
         {qrCodeUrl ? (
           <img
@@ -140,7 +142,8 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
               justifyContent: "center",
               gap: "8px",
               color: "#999",
-            }}>
+            }}
+          >
             <MdQrCode2 size={64} />
             <p style={{ margin: 0 }}>QR Code sẽ hiển thị sau khi thanh toán</p>
           </div>
@@ -152,7 +155,8 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
             type="primary"
             icon={<MdDownload />}
             onClick={handleDownloadQR}
-            style={{ marginTop: "8px" }}>
+            style={{ marginTop: "8px" }}
+          >
             Tải QR Code
           </AntButton>
         )}
@@ -170,7 +174,8 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
             borderRadius: "8px",
             width: "100%",
             maxWidth: "400px",
-          }}>
+          }}
+        >
           <div style={{ marginBottom: "8px", textAlign: "left" }}>
             <strong>{bankLabel}:</strong> {bankName || bankCode}{" "}
             {bankName ? `(${bankCode})` : ""}
@@ -195,40 +200,24 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
         <div
           style={{
             marginTop: "16px",
-            paddingTop: "16px",
-            borderTop: "1px solid #eee",
+            padding: "16px",
+            background: "#f0f7ff",
+            borderRadius: "8px",
             width: "100%",
             maxWidth: "400px",
-          }}>
+            border: "2px solid #1890ff",
+          }}
+        >
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              marginBottom: "4px",
-              color: "#666",
-            }}>
-            <span>Giá khóa học:</span>
-            <span>{formatCurrency(totalAmount - 700)}</span>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: "8px",
-              color: "#666",
-            }}>
-            <span>Phí giao dịch:</span>
-            <span>{formatCurrency(700)}</span>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: "18px",
+              fontSize: "20px",
               fontWeight: "bold",
               color: "#1890ff",
-            }}>
-            <span>Tổng cộng:</span>
+            }}
+          >
+            <span>Tổng thanh toán:</span>
             <span>{formatCurrency(totalAmount)}</span>
           </div>
         </div>

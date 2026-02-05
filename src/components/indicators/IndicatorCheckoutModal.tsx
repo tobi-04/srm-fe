@@ -21,6 +21,8 @@ import { MdAccountCircle } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { indicatorApi } from "../../api/indicatorApi";
 import { useAuthStore } from "../../stores/authStore";
+import { CouponInput } from "../payment/CouponInput";
+import { PriceBreakdown } from "../payment/PriceBreakdown";
 
 const { Title, Text } = Typography;
 
@@ -38,6 +40,8 @@ export const IndicatorCheckoutModal: React.FC<IndicatorCheckoutModalProps> = ({
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [form] = Form.useForm();
+  const [couponDiscount, setCouponDiscount] = React.useState(0);
+  const [couponCode, setCouponCode] = React.useState("");
 
   // Safeguard
   if (!indicator) return null;
@@ -65,6 +69,7 @@ export const IndicatorCheckoutModal: React.FC<IndicatorCheckoutModalProps> = ({
         email: values.email,
         phone: values.phone,
         auto_renew: values.auto_renew,
+        coupon_code: couponCode || undefined,
       });
 
       onCancel(); // Close the info modal
@@ -356,6 +361,21 @@ export const IndicatorCheckoutModal: React.FC<IndicatorCheckoutModalProps> = ({
           <Checkbox>Tự động gia hạn hàng tháng</Checkbox>
         </Form.Item>
 
+        <CouponInput
+          resourceType="indicator"
+          resourceId={indicator._id}
+          originalPrice={indicator.price_monthly}
+          defaultDiscount={0}
+          onCouponApplied={(discount: number, code: string) => {
+            setCouponDiscount(discount);
+            setCouponCode(code);
+          }}
+          onCouponRemoved={() => {
+            setCouponDiscount(0);
+            setCouponCode("");
+          }}
+        />
+
         <div
           style={{
             background: colors.slate50,
@@ -364,12 +384,12 @@ export const IndicatorCheckoutModal: React.FC<IndicatorCheckoutModalProps> = ({
             marginBottom: 24,
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <Text>Phí thuê tháng đầu</Text>
-            <Text strong style={{ color: colors.primary }}>
-              {formatPrice(indicator.price_monthly)}
-            </Text>
-          </div>
+          <PriceBreakdown
+            originalPrice={indicator.price_monthly}
+            defaultDiscount={0}
+            couponDiscount={couponDiscount}
+            couponCode={couponCode}
+          />
         </div>
 
         <Button

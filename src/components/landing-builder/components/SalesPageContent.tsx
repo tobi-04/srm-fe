@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import { createPaymentTransaction } from "../../../api/paymentTransaction";
 import { useLandingPageData } from "../../../contexts/LandingPageContext";
 import { CSSEditor } from "./shared/CSSEditor";
+import { CourseCouponDialog } from "../../payment/CourseCouponDialog";
 
 interface SalesPageContentProps {
   confirmationText?: string;
@@ -55,6 +56,10 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
   const { slug } = useParams<{ slug: string }>();
   const { landingPage, setPurchaseModalOpen } = useLandingPageData();
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+  const [showCouponDialog, setShowCouponDialog] = useState(false);
+  const [pendingCouponCode, setPendingCouponCode] = useState<
+    string | undefined
+  >(undefined);
 
   const handleNavigateToPayment = async () => {
     // 1. Handle Books/Indicators (Direct Purchase Modal)
@@ -72,7 +77,7 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
       return;
     }
 
-    // 2. Handle Courses (Step 3 Flow)
+    // 2. Handle Courses (Step 3 Flow with Coupon Dialog)
     // In builder mode, just show info
     if (!slug || !landingPage) {
       message.info(
@@ -80,6 +85,15 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
       );
       return;
     }
+
+    // Show coupon dialog first for courses
+    setShowCouponDialog(true);
+  };
+
+  const handleCouponDialogConfirm = async (couponCode?: string) => {
+    setShowCouponDialog(false);
+
+    if (!landingPage) return;
 
     setIsCreatingPayment(true);
 
@@ -113,11 +127,12 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
           ? landingPage.course_id.price
           : landingPage.course_price || 0;
 
-      // Create payment transaction
+      // Create payment transaction with optional coupon
       const response = await createPaymentTransaction({
         course_id: courseId,
         user_submission_id: submissionId,
         course_price: coursePrice,
+        coupon_code: couponCode,
       });
 
       message.success("Payment created successfully!");
@@ -243,6 +258,31 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
               {buttonSubText}
             </span>
           </button>
+        )}
+
+        {/* Coupon Dialog for Courses */}
+        {landingPage && landingPage.course_id && (
+          <CourseCouponDialog
+            visible={showCouponDialog}
+            courseId={
+              typeof landingPage.course_id === "string"
+                ? landingPage.course_id
+                : landingPage.course_id._id
+            }
+            coursePrice={
+              typeof landingPage.course_id === "object"
+                ? landingPage.course_id.price || 0
+                : landingPage.course_price || 0
+            }
+            defaultDiscount={
+              typeof landingPage.course_id === "object" &&
+              landingPage.course_id.default_discount_percent
+                ? landingPage.course_id.default_discount_percent
+                : 0
+            }
+            onConfirm={handleCouponDialogConfirm}
+            onCancel={() => setShowCouponDialog(false)}
+          />
         )}
       </div>
     </div>

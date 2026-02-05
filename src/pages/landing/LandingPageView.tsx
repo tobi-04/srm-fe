@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Layout, Spin, Result, Button as AntButton, message } from "antd";
 import { MdError, MdCheckCircle } from "react-icons/md";
-import { getLandingPageBySlug } from "../../api/landingPage";
+import { getLandingPageByCourseSlug } from "../../api/landingPage";
 import { getPaymentTransaction } from "../../api/paymentTransaction";
 import { useAuthStore } from "../../stores/authStore";
 import { usePaymentData, PaymentProvider } from "../../contexts/PaymentContext";
@@ -25,14 +25,14 @@ export default function LandingPageView() {
   // Get step from URL params or default to 1 (Single source of truth)
   const urlStep = parseInt(searchParams.get("step") || "1") as FlowStep;
 
-  // Fetch landing page data by slug
+  // Fetch landing page by COURSE slug (not landing page slug)
   const {
     data: landingPage,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["landing-page-public", slug],
-    queryFn: () => getLandingPageBySlug(slug!),
+    queryKey: ["landing-page-by-course-slug", slug],
+    queryFn: () => getLandingPageByCourseSlug(slug!),
     enabled: !!slug,
   });
 
