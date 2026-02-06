@@ -269,10 +269,10 @@ const CoursesPage: React.FC = () => {
               <div style={{ textAlign: "center", padding: "100px 0" }}>
                 <Spin size="large" tip="Đang tải danh sách khóa học..." />
               </div>
-            ) : data?.data?.length > 0 ? (
+            ) : (data?.data?.length ?? 0) > 0 ? (
               <>
                 <Row gutter={[32, 40]}>
-                  {data.data.map((course: any, idx: number) => (
+                  {data?.data?.map((course: any, idx: number) => (
                     <Col xs={24} sm={12} md={8} lg={6} key={course._id}>
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -400,7 +400,7 @@ const CoursesPage: React.FC = () => {
                   <Pagination
                     current={params.page}
                     pageSize={params.limit}
-                    total={data.meta?.total || 0}
+                    total={data?.meta?.total || 0}
                     onChange={handlePageChange}
                     showSizeChanger={false}
                   />

@@ -36,7 +36,7 @@ import {
   MdAttachMoney,
 } from "react-icons/md";
 import DashboardLayout from "../components/DashboardLayout";
-import { userApi, Student, StudentDetails } from "../api/userApi";
+import { userApi, Student } from "../api/userApi";
 import { getAvatarStyles } from "../utils/color";
 import dayjs from "dayjs";
 

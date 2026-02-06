@@ -224,10 +224,11 @@ export default function SalerDashboardPage() {
                 border: "none",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
               }}
-              formatter={(value: number) => [
-                formatCurrency(value),
-                "Doanh thu",
-              ]}
+              formatter={(value: number | undefined) =>
+                value !== undefined
+                  ? [formatCurrency(value), "Doanh thu"]
+                  : ["", ""]
+              }
               labelFormatter={(label) => dayjs(label).format("DD/MM/YYYY")}
             />
             <Area

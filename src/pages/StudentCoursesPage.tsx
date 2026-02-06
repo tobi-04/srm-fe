@@ -21,7 +21,7 @@ import {
   MdImage,
 } from "react-icons/md";
 import StudentDashboardLayout from "../components/StudentDashboardLayout";
-import { studentCourseApi, EnrolledCourse } from "../api/studentCourseApi";
+import { studentCourseApi } from "../api/studentCourseApi";
 
 const { Title, Text } = Typography;
 

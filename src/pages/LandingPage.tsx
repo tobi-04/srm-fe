@@ -17,9 +17,6 @@ import {
   MdTrendingUp,
   MdPeople,
   MdStar,
-  MdPlayCircle,
-  MdAutoGraph,
-  MdBook,
 } from "react-icons/md";
 import { FaBook, FaChartLine, FaGraduationCap } from "react-icons/fa";
 import PublicLayout from "../components/layout/PublicLayout";

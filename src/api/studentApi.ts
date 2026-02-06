@@ -116,7 +116,7 @@ export const getCourseLessons = async (
 /**
  * Get lesson detail
  */
-export const getLesson = async (id: string): Promise<StudentLesson> => {
+export const getLesson = async (_id: string): Promise<StudentLesson> => {
   // This would typically be a separate endpoint
   // For now, we'll throw an error
   throw new Error("getLesson not yet implemented");

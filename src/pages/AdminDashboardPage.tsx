@@ -891,7 +891,6 @@ export default function AdminDashboardPage() {
                     },
                     {
                       title: "XU HƯỚNG",
-                      dataKey: "trend",
                       key: "trend",
                       width: "35%",
                       render: (_: any, record: any) => {

@@ -57,9 +57,6 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
   const { landingPage, setPurchaseModalOpen } = useLandingPageData();
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
   const [showCouponDialog, setShowCouponDialog] = useState(false);
-  const [pendingCouponCode, setPendingCouponCode] = useState<
-    string | undefined
-  >(undefined);
 
   const handleNavigateToPayment = async () => {
     // 1. Handle Books/Indicators (Direct Purchase Modal)
