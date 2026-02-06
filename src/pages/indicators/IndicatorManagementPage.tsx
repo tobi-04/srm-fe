@@ -15,14 +15,20 @@ import {
   Popconfirm,
   Card,
   Tabs,
+  Dropdown,
 } from "antd";
+import { useNavigate } from "react-router-dom";
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   ReloadOutlined,
+  ThunderboltOutlined,
+  MoreOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { indicatorApi, Indicator } from "../../api/indicatorApi";
+import { createLandingPage, getLandingPages } from "../../api/landingPage";
 import DashboardLayout from "../../components/DashboardLayout";
 import ImageUpload from "../../components/ImageUpload";
 import dayjs from "dayjs";
@@ -39,6 +45,9 @@ const formatPrice = (price: number) => {
 };
 
 const IndicatorManagementPage: React.FC = () => {
+  const navigate = useNavigate();
+  // ... existing hooks ...
+
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -118,6 +127,49 @@ const IndicatorManagementPage: React.FC = () => {
     }
   };
 
+  const handleManageLandingPage = async (indicator: Indicator) => {
+    try {
+      message.loading({
+        content: "Đang kiểm tra Landing Page...",
+        key: "landing",
+      });
+      const res = await getLandingPages({ indicator_id: indicator._id });
+
+      if (res.data && res.data.length > 0) {
+        message.success({
+          content: "Đã tìm thấy Landing Page!",
+          key: "landing",
+        });
+        navigate(`/admin/landing-builder/${res.data[0]._id}`);
+      } else {
+        message.loading({
+          content: "Đang tạo Landing Page mới...",
+          key: "landing",
+        });
+        const newLp = await createLandingPage({
+          resource_type: "indicator",
+          indicator_id: indicator._id,
+          title: indicator.name,
+          slug: indicator.slug,
+          status: "draft",
+        });
+        message.success({
+          content: "Tạo Landing Page thành công!",
+          key: "landing",
+        });
+        navigate(`/admin/landing-builder/${newLp._id}`);
+      }
+    } catch (error) {
+      console.error(error);
+      message.error({
+        content: "Lỗi khi truy cập Landing Page",
+        key: "landing",
+      });
+    }
+  };
+
+  // ... existing definitions ...
+
   const columns = [
     {
       title: "Tên Indicator",
@@ -160,20 +212,53 @@ const IndicatorManagementPage: React.FC = () => {
     {
       title: "Thao tác",
       key: "actions",
+      width: 80,
       render: (_: any, record: Indicator) => (
-        <Space>
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleOpenModal(record)}
-          />
-          <Popconfirm
-            title="Xác nhận xóa?"
-            onConfirm={() => deleteMutation.mutate(record._id)}
-          >
-            <Button type="text" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </Space>
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: "view",
+                label: "Xem chi tiết",
+                icon: <EyeOutlined />,
+                onClick: () => handleOpenModal(record),
+              },
+              {
+                key: "edit",
+                label: "Chỉnh sửa",
+                icon: <EditOutlined />,
+                onClick: () => handleOpenModal(record),
+              },
+              {
+                key: "landing",
+                label: "Landing Page",
+                icon: <ThunderboltOutlined />,
+                onClick: () => handleManageLandingPage(record),
+              },
+              {
+                type: "divider",
+              },
+              {
+                key: "delete",
+                label: (
+                  <Popconfirm
+                    title="Xác nhận xóa?"
+                    onConfirm={() => deleteMutation.mutate(record._id)}
+                    okText="Xóa"
+                    cancelText="Hủy"
+                  >
+                    <span>Xóa</span>
+                  </Popconfirm>
+                ),
+                icon: <DeleteOutlined />,
+                danger: true,
+              },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <Button type="text" icon={<MoreOutlined />} />
+        </Dropdown>
       ),
     },
   ];

@@ -10,6 +10,7 @@ import {
   Empty,
   Table,
   Space,
+  Image,
 } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -17,6 +18,7 @@ import {
   MdSearch,
   MdCheckCircle,
   MdTrendingUp,
+  MdImage,
 } from "react-icons/md";
 import StudentDashboardLayout from "../components/StudentDashboardLayout";
 import { studentCourseApi, EnrolledCourse } from "../api/studentCourseApi";
@@ -123,6 +125,37 @@ export default function StudentCoursesPage() {
                 `${range[0]}-${range[1]} / ${total} khóa học`,
             }}
             columns={[
+              {
+                title: "Thumbnail",
+                dataIndex: "thumbnail",
+                key: "thumbnail",
+                width: 100,
+                render: (thumbnail: string) =>
+                  thumbnail ? (
+                    <Image
+                      src={thumbnail}
+                      alt="Course thumbnail"
+                      width={60}
+                      height={60}
+                      style={{ objectFit: "cover", borderRadius: 8 }}
+                      preview
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 60,
+                        height: 60,
+                        background: "#f1f5f9",
+                        borderRadius: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <MdImage size={24} color="#94a3b8" />
+                    </div>
+                  ),
+              },
               {
                 title: "Khóa học",
                 dataIndex: "title",

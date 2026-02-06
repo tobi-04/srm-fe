@@ -61,6 +61,7 @@ export const bookApi = {
 
   // Admin
   adminGetBooks: (params: any) => client.get("/admin/books", { params }),
+  adminGetById: (id: string) => client.get(`/admin/books/${id}`),
   adminCreateBook: (data: any) => {
     const headers =
       data instanceof FormData ? { "Content-Type": "multipart/form-data" } : {};

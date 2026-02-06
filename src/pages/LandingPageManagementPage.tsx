@@ -13,6 +13,7 @@ import {
   Form,
   Select,
   Popconfirm,
+  Tabs,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -47,6 +48,9 @@ export default function LandingPageManagementPage() {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<
+    "courses" | "books" | "indicators"
+  >("courses");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLandingPage, setSelectedLandingPage] =
     useState<LandingPage | null>(null);
@@ -85,7 +89,15 @@ export default function LandingPageManagementPage() {
     gcTime: 0,
   });
 
-  const landingPages = data?.data || [];
+  const allLandingPages = data?.data || [];
+
+  // Filter landing pages by active tab
+  const landingPages = allLandingPages.filter((lp: LandingPage) => {
+    if (activeTab === "courses") return lp.course_id;
+    if (activeTab === "books") return lp.book_id;
+    if (activeTab === "indicators") return lp.indicator_id;
+    return true;
+  });
 
   // Create mutation
   const createMutation = useMutation({
@@ -186,12 +198,25 @@ export default function LandingPageManagementPage() {
       key: "slug",
     },
     {
-      title: "Khóa học",
-      dataIndex: "course_id",
-      key: "course_id",
-      render: (courseId: string) => {
-        const course = courses.find((c: any) => c._id === courseId);
-        return course?.title || courseId;
+      title:
+        activeTab === "courses"
+          ? "Khóa học"
+          : activeTab === "books"
+            ? "Sách"
+            : "Indicator",
+      dataIndex:
+        activeTab === "courses"
+          ? "course_id"
+          : activeTab === "books"
+            ? "book_id"
+            : "indicator_id",
+      key: "resource",
+      render: (resourceId: string) => {
+        if (activeTab === "courses") {
+          const course = courses.find((c: any) => c._id === resourceId);
+          return course?.title || resourceId;
+        }
+        return resourceId; // For books and indicators, show ID for now
       },
     },
     {
@@ -212,19 +237,22 @@ export default function LandingPageManagementPage() {
           <Button
             type="link"
             icon={<MdVisibility />}
-            onClick={() => handleBuilder(record)}>
+            onClick={() => handleBuilder(record)}
+          >
             Thiết kế
           </Button>
           <Button
             type="link"
             icon={<MdEdit />}
-            onClick={() => handleEdit(record)}>
+            onClick={() => handleEdit(record)}
+          >
             Sửa
           </Button>
           <Button
             type="link"
             icon={<MdShare />}
-            onClick={() => handleShare(record)}>
+            onClick={() => handleShare(record)}
+          >
             Chia sẻ
           </Button>
           <Popconfirm
@@ -233,7 +261,8 @@ export default function LandingPageManagementPage() {
             onConfirm={() => handleDelete(record._id)}
             okText="Có, Xóa"
             cancelText="Hủy"
-            okButtonProps={{ danger: true }}>
+            okButtonProps={{ danger: true }}
+          >
             <Button type="link" danger icon={<MdDelete />}>
               Xóa
             </Button>
@@ -269,11 +298,34 @@ export default function LandingPageManagementPage() {
             allowClear
             value={statusFilter || undefined}
             onChange={(value) => setStatusFilter(value || "")}
-            style={{ width: 150 }}>
+            style={{ width: 150 }}
+          >
             <Select.Option value="draft">Bản nháp</Select.Option>
             <Select.Option value="published">Đã xuất bản</Select.Option>
           </Select>
         </Space>
+
+        <Tabs
+          activeKey={activeTab}
+          onChange={(key) =>
+            setActiveTab(key as "courses" | "books" | "indicators")
+          }
+          items={[
+            {
+              key: "courses",
+              label: "Khóa học",
+            },
+            {
+              key: "books",
+              label: "Sách",
+            },
+            {
+              key: "indicators",
+              label: "Indicator",
+            },
+          ]}
+          style={{ marginBottom: 16 }}
+        />
 
         <Table
           columns={columns}
@@ -293,12 +345,14 @@ export default function LandingPageManagementPage() {
             setSelectedLandingPage(null);
             form.resetFields();
           }}
-          footer={null}>
+          footer={null}
+        >
           <Form form={form} onFinish={handleSubmit} layout="vertical">
             <Form.Item
               name="course_id"
               label="Khóa học"
-              rules={[{ required: true, message: "Vui lòng chọn khóa học" }]}>
+              rules={[{ required: true, message: "Vui lòng chọn khóa học" }]}
+            >
               <Select placeholder="Chọn khóa học">
                 {courses.map((course: any) => (
                   <Select.Option key={course._id} value={course._id}>
@@ -311,14 +365,16 @@ export default function LandingPageManagementPage() {
             <Form.Item
               name="title"
               label="Tiêu đề"
-              rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}>
+              rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
+            >
               <Input placeholder="Nhập tiêu đề landing page" />
             </Form.Item>
 
             <Form.Item
               name="slug"
               label="Đường dẫn (Slug)"
-              rules={[{ required: true, message: "Vui lòng nhập đường dẫn" }]}>
+              rules={[{ required: true, message: "Vui lòng nhập đường dẫn" }]}
+            >
               <Input placeholder="duong-dan-landing-page" />
             </Form.Item>
 
@@ -334,9 +390,8 @@ export default function LandingPageManagementPage() {
                 <Button
                   type="primary"
                   htmlType="submit"
-                  loading={
-                    createMutation.isPending || updateMutation.isPending
-                  }>
+                  loading={createMutation.isPending || updateMutation.isPending}
+                >
                   {selectedLandingPage ? "Cập nhật" : "Tạo mới"}
                 </Button>
                 <Button
@@ -344,7 +399,8 @@ export default function LandingPageManagementPage() {
                     setIsModalOpen(false);
                     setSelectedLandingPage(null);
                     form.resetFields();
-                  }}>
+                  }}
+                >
                   Hủy
                 </Button>
               </Space>

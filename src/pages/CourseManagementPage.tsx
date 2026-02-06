@@ -16,6 +16,8 @@ import {
   Popconfirm,
   Dropdown,
   Tooltip,
+  Upload,
+  Image,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -34,6 +36,8 @@ import {
   MdDrafts,
   MdWeb,
   MdPlayCircle,
+  MdImage,
+  MdCloudUpload,
 } from "react-icons/md";
 import DashboardLayout from "../components/DashboardLayout";
 import apiClient from "../api/client";
@@ -52,6 +56,7 @@ interface Course {
   status: "draft" | "published";
   slug: string;
   category: string;
+  thumbnail?: string;
   syllabus: string[];
   created_at: string;
   updated_at: string;
@@ -68,6 +73,7 @@ export default function CourseManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]); // For bulk selection
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -255,15 +261,18 @@ export default function CourseManagementPage() {
 
   const handleCreate = () => {
     setSelectedCourse(null);
+    setThumbnailUrl("");
     form.resetFields();
     setIsModalOpen(true);
   };
 
   const handleEdit = (course: Course) => {
     setSelectedCourse(course);
+    setThumbnailUrl(course.thumbnail || "");
     form.setFieldsValue({
       ...course,
       syllabus: course.syllabus.join("\n"),
+      thumbnail: course.thumbnail,
     });
     setIsModalOpen(true);
   };
@@ -273,6 +282,7 @@ export default function CourseManagementPage() {
       const values = await form.validateFields();
       const payload = {
         ...values,
+        thumbnail: thumbnailUrl || undefined,
         syllabus: values.syllabus
           ? values.syllabus.split("\n").filter((s: string) => s.trim())
           : [],
@@ -305,6 +315,37 @@ export default function CourseManagementPage() {
 
   const columns = [
     {
+      title: "Thumbnail",
+      dataIndex: "thumbnail",
+      key: "thumbnail",
+      width: 100,
+      render: (thumbnail: string) =>
+        thumbnail ? (
+          <Image
+            src={thumbnail}
+            alt="Course thumbnail"
+            width={60}
+            height={60}
+            style={{ objectFit: "cover", borderRadius: 8 }}
+            preview
+          />
+        ) : (
+          <div
+            style={{
+              width: 60,
+              height: 60,
+              background: "#f1f5f9",
+              borderRadius: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MdImage size={24} color="#94a3b8" />
+          </div>
+        ),
+    },
+    {
       title: "Tiêu đề",
       dataIndex: "title",
       key: "title",
@@ -318,7 +359,8 @@ export default function CourseManagementPage() {
               style={{
                 color: "#1e293b",
                 marginBottom: 0,
-              }}>
+              }}
+            >
               {text}
             </Paragraph>
           </Tooltip>
@@ -359,7 +401,8 @@ export default function CourseManagementPage() {
       render: (category: string) =>
         category ? (
           <Tag
-            style={{ background: "#f1f5f9", color: "#475569", border: "none" }}>
+            style={{ background: "#f1f5f9", color: "#475569", border: "none" }}
+          >
             <MdCategory style={{ marginRight: 4 }} />
             {category}
           </Tag>
@@ -388,7 +431,8 @@ export default function CourseManagementPage() {
               background: config.bg,
               border: "none",
               fontWeight: 600,
-            }}>
+            }}
+          >
             {config.label}
           </Tag>
         );
@@ -491,7 +535,8 @@ export default function CourseManagementPage() {
                       onConfirm={() => deleteMutation.mutate(record._id)}
                       okText="Chuyển"
                       cancelText="Hủy"
-                      okButtonProps={{ danger: true }}>
+                      okButtonProps={{ danger: true }}
+                    >
                       <span style={{ color: "#faad14", display: "block" }}>
                         Chuyển vào thùng rác
                       </span>
@@ -508,7 +553,8 @@ export default function CourseManagementPage() {
                       onConfirm={() => hardDeleteMutation.mutate(record._id)}
                       okText="Xóa vĩnh viễn"
                       cancelText="Hủy"
-                      okButtonProps={{ danger: true }}>
+                      okButtonProps={{ danger: true }}
+                    >
                       <span style={{ color: "#ff4d4f", display: "block" }}>
                         Xoá vĩnh viễn
                       </span>
@@ -534,7 +580,8 @@ export default function CourseManagementPage() {
                       onConfirm={() => hardDeleteMutation.mutate(record._id)}
                       okText="Xóa vĩnh viễn"
                       cancelText="Hủy"
-                      okButtonProps={{ danger: true }}>
+                      okButtonProps={{ danger: true }}
+                    >
                       <span style={{ color: "#ff4d4f", display: "block" }}>
                         Xóa vĩnh viễn
                       </span>
@@ -549,7 +596,8 @@ export default function CourseManagementPage() {
           <Dropdown
             menu={{ items }}
             trigger={["click"]}
-            placement="bottomRight">
+            placement="bottomRight"
+          >
             <Button
               type="text"
               icon={<MdMoreVert size={20} />}
@@ -569,12 +617,14 @@ export default function CourseManagementPage() {
           flexDirection: "row",
           gap: "16px",
           alignItems: "flex-start",
-        }}>
+        }}
+      >
         <div style={{ flex: 1 }}>
           <Title
             level={2}
             className="page-title"
-            style={{ fontSize: "clamp(20px, 5vw, 28px)" }}>
+            style={{ fontSize: "clamp(20px, 5vw, 28px)" }}
+          >
             Quản lý khóa học
           </Title>
           <Text className="page-subtitle" style={{ display: "block" }}>
@@ -586,7 +636,8 @@ export default function CourseManagementPage() {
           icon={<MdAdd size={20} />}
           size="large"
           onClick={handleCreate}
-          style={{ flexShrink: 0 }}>
+          style={{ flexShrink: 0 }}
+        >
           <span className="hide-on-mobile">Tạo khóa học mới</span>
           <span className="show-on-mobile">Tạo mới</span>
         </Button>
@@ -607,7 +658,8 @@ export default function CourseManagementPage() {
               className="filter-select"
               value={statusFilter || undefined}
               onChange={setStatusFilter}
-              allowClear>
+              allowClear
+            >
               <Select.Option value="draft">Nháp</Select.Option>
               <Select.Option value="published">Đã xuất bản</Select.Option>
             </Select>
@@ -632,7 +684,8 @@ export default function CourseManagementPage() {
             <Button
               icon={<MdRefresh size={20} />}
               onClick={() => refetch()}
-              className="refresh-btn">
+              className="refresh-btn"
+            >
               <span>Làm mới</span>
             </Button>
             {selectedRowKeys.length > 0 && (
@@ -642,11 +695,13 @@ export default function CourseManagementPage() {
                   description="Các khóa học này sẽ bị ẩn khỏi học viên."
                   onConfirm={() => bulkDeleteMutation.mutate(selectedRowKeys)}
                   okText="Chuyển"
-                  cancelText="Hủy">
+                  cancelText="Hủy"
+                >
                   <Button
                     icon={<MdDelete size={20} />}
                     loading={bulkDeleteMutation.isPending}
-                    style={{ color: "#faad14", borderColor: "#faad14" }}>
+                    style={{ color: "#faad14", borderColor: "#faad14" }}
+                  >
                     Thùng rác ({selectedRowKeys.length})
                   </Button>
                 </Popconfirm>
@@ -658,11 +713,13 @@ export default function CourseManagementPage() {
                   }
                   okText="Xóa vĩnh viễn"
                   cancelText="Hủy"
-                  okButtonProps={{ danger: true }}>
+                  okButtonProps={{ danger: true }}
+                >
                   <Button
                     danger
                     icon={<MdDeleteForever size={20} />}
-                    loading={bulkHardDeleteMutation.isPending}>
+                    loading={bulkHardDeleteMutation.isPending}
+                  >
                     Xóa vĩnh viễn ({selectedRowKeys.length})
                   </Button>
                 </Popconfirm>
@@ -699,7 +756,8 @@ export default function CourseManagementPage() {
         cancelText="Hủy"
         width="90%"
         style={{ maxWidth: 700 }}
-        confirmLoading={createMutation.isPending || updateMutation.isPending}>
+        confirmLoading={createMutation.isPending || updateMutation.isPending}
+      >
         <Form form={form} layout="vertical" style={{ marginTop: 24 }}>
           <Form.Item
             name="title"
@@ -707,7 +765,8 @@ export default function CourseManagementPage() {
             rules={[
               { required: true, message: "Vui lòng nhập tiêu đề" },
               { min: 3, message: "Tối thiểu 3 ký tự" },
-            ]}>
+            ]}
+          >
             <Input placeholder="Ví dụ: Lập trình React nâng cao" />
           </Form.Item>
           <Form.Item name="description" label="Mô tả">
@@ -716,7 +775,8 @@ export default function CourseManagementPage() {
           <Form.Item
             name="price"
             label="Giá (VNĐ)"
-            rules={[{ required: true, message: "Vui lòng nhập giá" }]}>
+            rules={[{ required: true, message: "Vui lòng nhập giá" }]}
+          >
             <InputNumber
               style={{ width: "100%" }}
               min={0}
@@ -726,6 +786,75 @@ export default function CourseManagementPage() {
           <Form.Item name="category" label="Danh mục">
             <Input placeholder="Ví dụ: Lập trình web" />
           </Form.Item>
+          <Form.Item label="Thumbnail">
+            <Upload
+              listType="picture-card"
+              maxCount={1}
+              beforeUpload={async (file) => {
+                const isImage = file.type.startsWith("image/");
+                if (!isImage) {
+                  message.error("Chỉ được upload file ảnh!");
+                  return Upload.LIST_IGNORE;
+                }
+                const isLt5M = file.size / 1024 / 1024 < 5;
+                if (!isLt5M) {
+                  message.error("Ảnh phải nhỏ hơn 5MB!");
+                  return Upload.LIST_IGNORE;
+                }
+
+                try {
+                  const formData = new FormData();
+                  formData.append("file", file);
+                  const response = await apiClient.post(
+                    "/upload/courses",
+                    formData,
+                    {
+                      headers: { "Content-Type": "multipart/form-data" },
+                    },
+                  );
+                  setThumbnailUrl(response.data.url);
+                  message.success("Upload ảnh thành công!");
+                } catch (error: any) {
+                  message.error(
+                    error.response?.data?.message || "Upload ảnh thất bại!",
+                  );
+                }
+                return false;
+              }}
+              onRemove={() => {
+                setThumbnailUrl("");
+              }}
+              defaultFileList={
+                thumbnailUrl
+                  ? [
+                      {
+                        uid: "-1",
+                        name: "thumbnail.png",
+                        status: "done",
+                        url: thumbnailUrl,
+                      },
+                    ]
+                  : []
+              }
+            >
+              {!thumbnailUrl && (
+                <div>
+                  <MdCloudUpload size={32} color="#94a3b8" />
+                  <div style={{ marginTop: 8, color: "#64748b" }}>
+                    Upload Thumbnail
+                  </div>
+                </div>
+              )}
+            </Upload>
+            {thumbnailUrl && (
+              <Text
+                type="secondary"
+                style={{ fontSize: 12, display: "block", marginTop: 8 }}
+              >
+                URL: {thumbnailUrl}
+              </Text>
+            )}
+          </Form.Item>
           <Form.Item name="status" label="Trạng thái" initialValue="draft">
             <Select>
               <Select.Option value="draft">Nháp</Select.Option>
@@ -734,7 +863,8 @@ export default function CourseManagementPage() {
           </Form.Item>
           <Form.Item
             name="syllabus"
-            label="Chương trình học (mỗi chủ đề một dòng)">
+            label="Chương trình học (mỗi chủ đề một dòng)"
+          >
             <TextArea
               rows={6}
               placeholder="React Hooks&#10;Context API&#10;Performance Optimization"

@@ -4,6 +4,7 @@ export interface CreatePaymentTransactionDto {
   course_id: string;
   user_submission_id: string;
   course_price: number;
+  coupon_code?: string;
 }
 
 export interface PaymentTransactionResponse {
@@ -27,7 +28,7 @@ export interface PaymentTransactionDetails extends PaymentTransactionResponse {
  * Create a new payment transaction
  */
 export const createPaymentTransaction = async (
-  data: CreatePaymentTransactionDto
+  data: CreatePaymentTransactionDto,
 ): Promise<PaymentTransactionResponse> => {
   const response = await apiClient.post("/payment/transaction", data);
   return response.data;
@@ -37,7 +38,7 @@ export const createPaymentTransaction = async (
  * Get payment transaction by ID
  */
 export const getPaymentTransaction = async (
-  transactionId: string
+  transactionId: string,
 ): Promise<PaymentTransactionDetails> => {
   const response = await apiClient.get(`/payment/transaction/${transactionId}`);
   return response.data;

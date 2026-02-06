@@ -2,12 +2,29 @@ import { create } from "zustand";
 
 export interface LandingPage {
   _id: string;
-  course_id:
+  resource_type?: "course" | "book" | "indicator";
+  course_id?:
     | string
     | {
         _id: string;
         title: string;
         slug: string;
+        price: number;
+        [key: string]: any;
+      };
+  book_id?:
+    | string
+    | {
+        _id: string;
+        title: string;
+        price: number;
+        [key: string]: any;
+      };
+  indicator_id?:
+    | string
+    | {
+        _id: string;
+        title: string;
         price: number;
         [key: string]: any;
       };

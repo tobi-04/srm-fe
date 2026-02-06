@@ -8,7 +8,6 @@ import {
   Pagination,
   Spin,
   Empty,
-  Layout,
   ConfigProvider,
   Button,
   Card,
@@ -18,11 +17,11 @@ import { SearchOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import { MdShowChart } from "react-icons/md";
 import { indicatorApi, Indicator } from "../../api/indicatorApi";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../stores/authStore";
+import PublicLayout from "../../components/layout/PublicLayout";
 import { motion } from "framer-motion";
+import SEO from "../../components/common/SEO";
 
 const { Title, Text, Paragraph } = Typography;
-const { Header, Content, Footer } = Layout;
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("vi-VN", {
@@ -40,7 +39,6 @@ const IndicatorListPage: React.FC = () => {
   });
 
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
 
   const { data, isLoading } = useQuery({
     queryKey: ["indicators", params],
@@ -80,73 +78,12 @@ const IndicatorListPage: React.FC = () => {
         },
       }}
     >
-      <Layout style={{ minHeight: "100vh", background: colors.white }}>
-        {/* Navbar */}
-        <Header
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 1000,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            background: "rgba(255, 255, 255, 0.8)",
-            backdropFilter: "blur(10px)",
-            padding: "0 5%",
-            borderBottom: `1px solid ${colors.slate100}`,
-            height: "80px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              cursor: "pointer",
-            }}
-            onClick={() => navigate("/")}
-          >
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "12px",
-                background: `linear-gradient(135deg, ${colors.primary}, ${colors.highlight})`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 12px rgba(247, 132, 4, 0.2)",
-              }}
-            >
-              <MdShowChart style={{ color: colors.white, fontSize: "24px" }} />
-            </div>
-            <Title
-              level={4}
-              style={{ margin: 0, fontWeight: 800, color: colors.slate800 }}
-            >
-              Indicators
-            </Title>
-          </div>
-          <div style={{ display: "flex", gap: "12px" }}>
-            <Button type="link" onClick={() => navigate("/books")}>
-              Sách
-            </Button>
-            {isAuthenticated ? (
-              <Button
-                type="primary"
-                onClick={() => navigate("/student/dashboard")}
-              >
-                Dashboard
-              </Button>
-            ) : (
-              <Button type="primary" onClick={() => navigate("/login")}>
-                Đăng nhập
-              </Button>
-            )}
-          </div>
-        </Header>
-
-        <Content style={{ padding: "40px 5%", background: colors.slate50 }}>
+      <SEO
+        title="Công cụ Trading & Indicators"
+        description="Thuê các công cụ phân tích kỹ thuật (indicators) chuyên nghiệp để tối ưu hóa hiệu quả giao dịch của bạn."
+      />
+      <PublicLayout>
+        <div style={{ padding: "40px 5%", background: colors.slate50 }}>
           {/* Hero Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -173,6 +110,7 @@ const IndicatorListPage: React.FC = () => {
                 fontWeight: 800,
                 color: colors.slate800,
                 marginBottom: 16,
+                letterSpacing: "-0.02em",
               }}
             >
               Thuê Indicator từ Chuyên Gia
@@ -349,21 +287,8 @@ const IndicatorListPage: React.FC = () => {
               )}
             </>
           )}
-        </Content>
-
-        <Footer
-          style={{
-            textAlign: "center",
-            background: colors.slate900,
-            color: colors.slate400,
-            padding: "40px 5%",
-          }}
-        >
-          <Text style={{ color: colors.slate400 }}>
-            © 2026 Trading Indicators. All rights reserved.
-          </Text>
-        </Footer>
-      </Layout>
+        </div>
+      </PublicLayout>
     </ConfigProvider>
   );
 };

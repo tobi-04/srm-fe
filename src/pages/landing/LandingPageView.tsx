@@ -1,68 +1,19 @@
 import { useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Editor, Frame, Element } from "@craftjs/core";
-import {
-  Layout,
-  Spin,
-  Result,
-  Alert,
-  Button as AntButton,
-  message,
-} from "antd";
+import { Layout, Spin, Result, Button as AntButton, message } from "antd";
 import { MdError, MdCheckCircle } from "react-icons/md";
-import { getLandingPageBySlug } from "../../api/landingPage";
+import { getLandingPageByCourseSlug } from "../../api/landingPage";
 import { getPaymentTransaction } from "../../api/paymentTransaction";
 import { useAuthStore } from "../../stores/authStore";
-import { CountdownProvider } from "../../contexts/CountdownContext";
-import { PaymentProvider, usePaymentData } from "../../contexts/PaymentContext";
-import {
-  Text,
-  Button as BuilderButton,
-  Container,
-  Image,
-  Header,
-  Headline,
-  Subtitle,
-  UserForm,
-  InstructorBio,
-  SuccessHeadline,
-  VideoPlayer,
-  CountdownTimer,
-  SalesPageContent,
-  TwoColumnLayout,
-  Footer,
-  PaymentQRCode,
-  PaymentInfo,
-  PaymentStatus,
-} from "../../components/landing-builder/components";
-
-import { LandingPageProvider } from "../../contexts/LandingPageContext";
+import { usePaymentData, PaymentProvider } from "../../contexts/PaymentContext";
+import { LandingPageRenderer } from "./LandingPageRenderer";
+import { Alert } from "antd";
+import SEO from "../../components/common/SEO";
 
 const { Content } = Layout;
 
 type FlowStep = 1 | 2 | 3 | 4; // 4 is success page
-
-const CRAFT_RESOLVER = {
-  Text,
-  Button: BuilderButton,
-  Container,
-  Image,
-  Header,
-  Headline,
-  Subtitle,
-  UserForm,
-  InstructorBio,
-  SuccessHeadline,
-  VideoPlayer,
-  CountdownTimer,
-  SalesPageContent,
-  TwoColumnLayout,
-  Footer,
-  PaymentQRCode,
-  PaymentInfo,
-  PaymentStatus,
-};
 
 export default function LandingPageView() {
   const { slug } = useParams<{ slug: string }>();
@@ -75,14 +26,14 @@ export default function LandingPageView() {
   // Get step from URL params or default to 1 (Single source of truth)
   const urlStep = parseInt(searchParams.get("step") || "1") as FlowStep;
 
-  // Fetch landing page data by slug
+  // Fetch landing page by COURSE slug (not landing page slug)
   const {
     data: landingPage,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["landing-page-public", slug],
-    queryFn: () => getLandingPageBySlug(slug!),
+    queryKey: ["landing-page-by-course-slug", slug],
+    queryFn: () => getLandingPageByCourseSlug(slug!),
     enabled: !!slug,
   });
 
@@ -134,6 +85,29 @@ export default function LandingPageView() {
 
   // Update URL to ensure step is present but avoid loops
   useEffect(() => {
+    // Force step 2 for books/indicators flow if landing on default
+    if (
+      landingPage &&
+      (landingPage.resource_type === "book" ||
+        landingPage.book_id ||
+        landingPage.resource_type === "indicator" ||
+        landingPage.indicator_id) &&
+      urlStep !== 2
+    ) {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("step", "2");
+          // Ensure ref is preserved if present
+          const ref = prev.get("ref");
+          if (ref) next.set("ref", ref);
+          return next;
+        },
+        { replace: true },
+      );
+      return;
+    }
+
     if (!searchParams.has("step")) {
       setSearchParams(
         (prev) => {
@@ -147,7 +121,7 @@ export default function LandingPageView() {
         { replace: true },
       );
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, landingPage, urlStep]);
 
   if (isLoading) {
     return (
@@ -157,7 +131,8 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}>
+        }}
+      >
         <Spin size="large" />
       </Layout>
     );
@@ -171,7 +146,8 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}>
+        }}
+      >
         <Result
           status="404"
           title="Không tìm thấy Landing Page"
@@ -191,7 +167,8 @@ export default function LandingPageView() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-        }}>
+        }}
+      >
         <Result
           status="403"
           title="Trang không khả dụng"
@@ -200,84 +177,6 @@ export default function LandingPageView() {
       </Layout>
     );
   }
-
-  // Get content for current step
-  const getCurrentPageContent = () => {
-    switch (urlStep) {
-      case 1:
-        return landingPage.page_1_content;
-      case 2:
-        return landingPage.page_2_content;
-      case 3:
-        return landingPage.page_3_content;
-      case 4:
-        return null; // Success page
-      default:
-        return landingPage.page_1_content;
-    }
-  };
-
-  // Get default sections for empty steps
-  const getDefaultStepSections = (step: FlowStep) => {
-    switch (step) {
-      case 1:
-        return (
-          <Element is={Container} background="#ffffff" canvas>
-            <Element is={Header} />
-            <Element is={Headline} />
-            <Element is={Subtitle} />
-            <Element is={UserForm} />
-            <Element is={InstructorBio} />
-            <Element is={Footer} />
-          </Element>
-        );
-      case 2:
-        return (
-          <Element is={Container} background="#f5f5f5" canvas>
-            <Element is={SuccessHeadline} />
-            <Element is={Container} background="#ffffff" canvas>
-              <Element is={TwoColumnLayout} canvas>
-                <Element is={Container} background="transparent" canvas>
-                  <Element is={VideoPlayer} />
-                </Element>
-                <Element is={Container} background="transparent" canvas>
-                  <Element is={CountdownTimer} />
-                  <Element is={SalesPageContent} />
-                </Element>
-              </Element>
-            </Element>
-            <Element is={Footer} />
-          </Element>
-        );
-      case 3:
-        return (
-          <Element is={Container} background="#f5f5f5" canvas>
-            <Element is={Header} />
-            <div
-              style={{
-                padding: "40px 20px",
-                maxWidth: "800px",
-                margin: "0 auto",
-              }}>
-              <Element
-                is={Text}
-                text="Hoàn tất Thanh toán"
-                type="title"
-                level={1}
-              />
-              <Element is={Container} background="#ffffff" canvas>
-                <Element is={PaymentQRCode} />
-                <Element is={PaymentInfo} />
-              </Element>
-              <Element is={PaymentStatus} />
-            </div>
-            <Element is={Footer} />
-          </Element>
-        );
-      default:
-        return null;
-    }
-  };
 
   // Render success page
   if (urlStep === 4) {
@@ -289,7 +188,8 @@ export default function LandingPageView() {
             alignItems: "center",
             justifyContent: "center",
             padding: "50px",
-          }}>
+          }}
+        >
           <Result
             status="success"
             icon={<MdCheckCircle size={72} style={{ color: "#52c41a" }} />}
@@ -341,7 +241,8 @@ export default function LandingPageView() {
                       ? landingPage.course_id._id
                       : landingPage.course_id;
                   navigate(`/login?from=/learn/${courseId}`);
-                }}>
+                }}
+              >
                 ĐĂNG NHẬP & HỌC NGAY
               </AntButton>,
             ]}
@@ -351,64 +252,39 @@ export default function LandingPageView() {
     );
   }
 
-  const pageContent = getCurrentPageContent();
-  const hasContent =
-    pageContent &&
-    typeof pageContent === "object" &&
-    Object.keys(pageContent).length > 0;
-
   return (
-    <CountdownProvider>
-      <LandingPageProvider landingPage={landingPage}>
-        <PaymentProvider>
-          <PaymentDataInitializer transaction={transaction}>
-            <Layout style={{ minHeight: "100vh", background: "#ffffff" }}>
-              <Content>
-                {/* Draft preview banner for admins */}
-                {isAdmin && landingPage.status === "draft" && (
-                  <Alert
-                    message="Chế độ xem trước bản nháp"
-                    description="Bạn đang xem landing page bản nháp. Trang này chưa hiển thị công khai."
-                    type="warning"
-                    showIcon
-                    banner
-                    style={{ marginBottom: 0 }}
-                  />
-                )}
-
-                {/* Render the page content using Craft.js in view-only mode */}
-                <div
-                  style={{
-                    background: "#fff",
-                    minHeight: "100vh",
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "center",
-                  }}>
-                  <div
-                    style={{ width: "100%" }}
-                    className="landing-builder-content">
-                    <Editor resolver={CRAFT_RESOLVER} enabled={false}>
-                      <Frame
-                        key={`step-${urlStep}`}
-                        data={
-                          hasContent ? JSON.stringify(pageContent) : undefined
-                        }>
-                        {!hasContent && getDefaultStepSections(urlStep)}
-                      </Frame>
-                    </Editor>
-                  </div>
-                </div>
-              </Content>
-            </Layout>
-          </PaymentDataInitializer>
-        </PaymentProvider>
-      </LandingPageProvider>
-    </CountdownProvider>
+    <PaymentProvider>
+      <SEO
+        title={
+          landingPage?.title ||
+          (typeof landingPage?.course_id === "object"
+            ? landingPage.course_id.title
+            : "")
+        }
+        description={
+          typeof landingPage?.course_id === "object"
+            ? landingPage.course_id.description || landingPage.course_id.title
+            : landingPage?.title || ""
+        }
+        ogImage={
+          typeof landingPage?.course_id === "object"
+            ? landingPage.course_id.thumbnail
+            : ""
+        }
+      />
+      <PaymentDataInitializer transaction={transaction}>
+        <LandingPageRenderer
+          landingPage={landingPage}
+          urlStep={urlStep}
+          isAdmin={isAdmin}
+        />
+      </PaymentDataInitializer>
+    </PaymentProvider>
   );
 }
 
 // Helper component to initialize payment data in context
+// Reusing locally here as it's specific to this PAGE's data flow
 function PaymentDataInitializer({
   transaction,
   children,

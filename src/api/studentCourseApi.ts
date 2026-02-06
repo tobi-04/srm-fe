@@ -136,4 +136,92 @@ export const studentCourseApi = {
     );
     return response.data;
   },
+
+  /**
+   * Discussion (Comments & Reactions)
+   */
+  async getComments(lessonId: string): Promise<any[]> {
+    const response = await apiClient.get(`/lessons/${lessonId}/comments`);
+    return response.data;
+  },
+
+  async createComment(
+    lessonId: string,
+    data: { content: string; replied_to?: string },
+  ) {
+    const response = await apiClient.post(`/lessons/${lessonId}/comments`, {
+      ...data,
+      lesson_id: lessonId,
+    });
+    return response.data;
+  },
+
+  async updateComment(
+    lessonId: string,
+    commentId: string,
+    data: { content: string },
+  ) {
+    const response = await apiClient.put(
+      `/lessons/${lessonId}/comments/${commentId}`,
+      data,
+    );
+    return response.data;
+  },
+
+  async deleteComment(lessonId: string, commentId: string) {
+    const response = await apiClient.delete(
+      `/lessons/${lessonId}/comments/${commentId}`,
+    );
+    return response.data;
+  },
+
+  async addReaction(lessonId: string, commentId: string, type: string) {
+    const response = await apiClient.post(
+      `/lessons/${lessonId}/comments/${commentId}/reactions`,
+      { type },
+    );
+    return response.data;
+  },
+
+  async removeReaction(lessonId: string, commentId: string) {
+    const response = await apiClient.delete(
+      `/lessons/${lessonId}/comments/${commentId}/reactions`,
+    );
+    return response.data;
+  },
+
+  /**
+   * Personal Notes
+   */
+  async getNotes(lessonId: string): Promise<any[]> {
+    const response = await apiClient.get(`/lessons/${lessonId}/notes`);
+    return response.data;
+  },
+
+  async createNote(lessonId: string, data: { content: string }) {
+    const response = await apiClient.post(`/lessons/${lessonId}/notes`, {
+      ...data,
+      lesson_id: lessonId,
+    });
+    return response.data;
+  },
+
+  async updateNote(
+    lessonId: string,
+    noteId: string,
+    data: { content: string },
+  ) {
+    const response = await apiClient.put(
+      `/lessons/${lessonId}/notes/${noteId}`,
+      data,
+    );
+    return response.data;
+  },
+
+  async deleteNote(lessonId: string, noteId: string) {
+    const response = await apiClient.delete(
+      `/lessons/${lessonId}/notes/${noteId}`,
+    );
+    return response.data;
+  },
 };

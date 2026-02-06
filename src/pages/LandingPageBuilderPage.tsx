@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Editor, Frame, Element, useEditor } from "@craftjs/core";
 import {
@@ -56,12 +56,20 @@ import {
   List,
   Carousel,
   CustomHTML,
+  BookHero,
+  BookCheckoutButton,
+  IndicatorHero,
+  IndicatorCheckoutButton,
 } from "../components/landing-builder/components";
 import { Toolbox, SettingsPanel } from "../components/landing-builder/Sidebar";
 import { LandingPageProvider } from "../contexts/LandingPageContext";
 import { PaymentProvider } from "../contexts/PaymentContext";
 import { CountdownProvider } from "../contexts/CountdownContext";
 import ShareDialog from "../components/ShareDialog";
+import { BookCheckoutModal } from "../components/books/BookCheckoutModal";
+import { IndicatorCheckoutModal } from "../components/indicators/IndicatorCheckoutModal";
+import { indicatorApi } from "../api/indicatorApi";
+import { bookApi } from "../api/bookApi";
 
 const { Content, Sider } = Layout;
 const { Title } = Typography;
@@ -72,10 +80,12 @@ const SaveButton = ({
   currentStep,
   onSave,
   loading,
+  isRestrictedFlow,
 }: {
   currentStep: PageStep;
   onSave: (query: any, step: PageStep) => void;
   loading: boolean;
+  isRestrictedFlow?: boolean;
 }) => {
   const { query } = useEditor();
   return (
@@ -83,8 +93,9 @@ const SaveButton = ({
       type="primary"
       icon={<MdSave />}
       onClick={() => onSave(query, currentStep)}
-      loading={loading}>
-      Lưu Bước {currentStep}
+      loading={loading}
+    >
+      {isRestrictedFlow ? "Lưu" : `Lưu Bước ${currentStep}`}
     </Button>
   );
 };
@@ -131,6 +142,7 @@ export default function LandingPageBuilderPage() {
   const [enabled, setEnabled] = useState(true);
   const [currentStep, setCurrentStep] = useState<PageStep>("1");
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isPurchaseModalOpen, setPurchaseModalOpen] = useState(false);
 
   // Fetch landing page data
   const { data: landingPage, isLoading } = useQuery({
@@ -138,6 +150,48 @@ export default function LandingPageBuilderPage() {
     queryFn: () => getLandingPageById(id!),
     enabled: !!id,
   });
+
+  // Fetch book data if available
+  const { data: book } = useQuery({
+    queryKey: ["book", landingPage?.book_id],
+    queryFn: () => {
+      // Handle case where book_id might be an object (if populated) or string
+      const bookId =
+        typeof landingPage?.book_id === "object"
+          ? (landingPage.book_id as any)._id
+          : landingPage?.book_id;
+      return bookApi.adminGetById(bookId).then((res: any) => res.data);
+    },
+    enabled: !!landingPage?.book_id,
+  });
+
+  // Fetch indicator data if available
+  const { data: indicator } = useQuery({
+    queryKey: ["indicator", landingPage?.indicator_id],
+    queryFn: () => {
+      const indicatorId =
+        typeof landingPage?.indicator_id === "object"
+          ? (landingPage.indicator_id as any)._id
+          : landingPage?.indicator_id;
+      return indicatorApi
+        .adminGetById(indicatorId)
+        .then((res: any) => res.data);
+    },
+    enabled: !!landingPage?.indicator_id,
+  });
+
+  // Force Step 2 for Books/Indicators
+  useEffect(() => {
+    const isRestrictedFlow =
+      landingPage?.resource_type === "book" ||
+      landingPage?.book_id ||
+      landingPage?.resource_type === "indicator" ||
+      landingPage?.indicator_id;
+
+    if (isRestrictedFlow && currentStep !== "2") {
+      setCurrentStep("2");
+    }
+  }, [landingPage, currentStep]);
 
   // Update mutation
   const updateMutation = useMutation({
@@ -206,6 +260,32 @@ export default function LandingPageBuilderPage() {
           </Element>
         );
       case "2":
+        // Override for Books/Indicators
+        const isRestrictedFlow =
+          landingPage?.resource_type === "book" ||
+          landingPage?.book_id ||
+          landingPage?.resource_type === "indicator" ||
+          landingPage?.indicator_id;
+
+        if (isRestrictedFlow) {
+          const isIndicator =
+            landingPage?.resource_type === "indicator" ||
+            landingPage?.indicator_id;
+
+          return (
+            <Element is={Container} padding={0} background="#ffffff" canvas>
+              <Element is={Container} padding={20} background="#fff" canvas>
+                {isIndicator ? (
+                  <IndicatorCheckoutButton />
+                ) : (
+                  <BookCheckoutButton />
+                )}
+              </Element>
+              <Footer />
+            </Element>
+          );
+        }
+
         return (
           <Element is={Container} padding={0} background="#f5f5f5" canvas>
             <SuccessHeadline />
@@ -257,8 +337,13 @@ export default function LandingPageBuilderPage() {
           height: "calc(100vh - 120px)",
           display: "flex",
           flexDirection: "column",
-        }}>
-        <LandingPageProvider landingPage={landingPage || null}>
+        }}
+      >
+        <LandingPageProvider
+          landingPage={landingPage || null}
+          isPurchaseModalOpen={isPurchaseModalOpen}
+          setPurchaseModalOpen={setPurchaseModalOpen}
+        >
           <PaymentProvider>
             <CountdownProvider>
               <Editor
@@ -291,11 +376,16 @@ export default function LandingPageBuilderPage() {
                   List,
                   Carousel,
                   CustomHTML,
+                  BookHero,
+                  BookCheckoutButton,
+                  IndicatorHero,
+                  IndicatorCheckoutButton,
                 }}
                 enabled={enabled}
                 onRender={({ render }) => (
                   <div style={{ position: "relative" }}>{render}</div>
-                )}>
+                )}
+              >
                 {/* Top Control Bar */}
                 <Card size="small" style={{ marginBottom: 16 }}>
                   <div
@@ -303,11 +393,13 @@ export default function LandingPageBuilderPage() {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                    }}>
+                    }}
+                  >
                     <Space>
                       <Button
                         icon={<MdArrowBack />}
-                        onClick={() => navigate("/admin/landing-pages")}>
+                        onClick={() => navigate("/admin/landing-pages")}
+                      >
                         Quay lại
                       </Button>
                       <Title level={5} style={{ margin: 0 }}>
@@ -317,20 +409,28 @@ export default function LandingPageBuilderPage() {
                     <Space>
                       <Button
                         icon={enabled ? <MdVisibility /> : <MdEdit />}
-                        onClick={() => setEnabled(!enabled)}>
+                        onClick={() => setEnabled(!enabled)}
+                      >
                         {enabled ? "Chế độ xem trước" : "Chế độ chỉnh sửa"}
                       </Button>
                       <SaveButton
                         currentStep={currentStep}
                         onSave={handleSave}
                         loading={updateMutation.isPending}
+                        isRestrictedFlow={
+                          !!(
+                            landingPage?.resource_type === "book" ||
+                            landingPage?.book_id ||
+                            landingPage?.resource_type === "indicator" ||
+                            landingPage?.indicator_id
+                          )
+                        }
                       />
                       <ClearAllButton currentStep={currentStep} />
                       <Button
                         icon={<MdPreview />}
-                        onClick={() =>
-                          navigate(`/admin/landing-preview/${id}`)
-                        }>
+                        onClick={() => navigate(`/admin/landing-preview/${id}`)}
+                      >
                         Xem trước
                       </Button>
                       <Button
@@ -342,7 +442,8 @@ export default function LandingPageBuilderPage() {
                               "_blank",
                             );
                           }
-                        }}>
+                        }}
+                      >
                         Mở trong tab mới
                       </Button>
                       <Dropdown
@@ -356,7 +457,8 @@ export default function LandingPageBuilderPage() {
                             },
                           ],
                         }}
-                        trigger={["click"]}>
+                        trigger={["click"]}
+                      >
                         <Button icon={<MdMoreVert />} />
                       </Dropdown>
                     </Space>
@@ -404,7 +506,29 @@ export default function LandingPageBuilderPage() {
                           </span>
                         ),
                       },
-                    ]}
+                    ].filter((item) => {
+                      // If it is a book or indicator, only show step 2
+                      const isRestrictedFlow =
+                        landingPage?.resource_type === "book" ||
+                        landingPage?.book_id ||
+                        landingPage?.resource_type === "indicator" ||
+                        landingPage?.indicator_id;
+
+                      if (isRestrictedFlow) {
+                        return item.key === "2";
+                      }
+                      return true;
+                    })}
+                    renderTabBar={(props, DefaultTabBar) => {
+                      const isRestrictedFlow =
+                        landingPage?.resource_type === "book" ||
+                        landingPage?.book_id ||
+                        landingPage?.resource_type === "indicator" ||
+                        landingPage?.indicator_id;
+
+                      if (isRestrictedFlow) return <></>;
+                      return <DefaultTabBar {...props} />;
+                    }}
                   />
                 </Card>
 
@@ -413,7 +537,8 @@ export default function LandingPageBuilderPage() {
                     flex: 1,
                     background: "#f0f2f5",
                     overflow: "hidden",
-                  }}>
+                  }}
+                >
                   {/* Main Canvas Area */}
                   <Content
                     style={{
@@ -421,7 +546,8 @@ export default function LandingPageBuilderPage() {
                       overflowY: "auto",
                       display: "flex",
                       justifyContent: "center",
-                    }}>
+                    }}
+                  >
                     <div
                       style={{
                         width: "100%",
@@ -430,14 +556,16 @@ export default function LandingPageBuilderPage() {
                         minHeight: "100%",
                         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                       }}
-                      className="landing-builder-content">
+                      className="landing-builder-content"
+                    >
                       <Frame
                         key={currentStep}
                         data={
                           getCurrentPageContent()
                             ? JSON.stringify(getCurrentPageContent())
                             : undefined
-                        }>
+                        }
+                      >
                         {!getCurrentPageContent() &&
                           getDefaultStepSections(currentStep)}
                       </Frame>
@@ -451,7 +579,8 @@ export default function LandingPageBuilderPage() {
                     style={{
                       borderLeft: "1px solid #f0f0f0",
                       overflowY: "auto",
-                    }}>
+                    }}
+                  >
                     <Toolbox />
                     <Divider style={{ margin: 0 }} />
                     <SettingsPanel />
@@ -460,6 +589,29 @@ export default function LandingPageBuilderPage() {
               </Editor>
             </CountdownProvider>
           </PaymentProvider>
+
+          {/* Render Checkou Modals */}
+          {isPurchaseModalOpen && (
+            <>
+              {(landingPage?.resource_type === "indicator" ||
+                landingPage?.indicator_id) &&
+              indicator ? (
+                <IndicatorCheckoutModal
+                  open={isPurchaseModalOpen}
+                  onCancel={() => setPurchaseModalOpen(false)}
+                  indicator={indicator}
+                />
+              ) : (landingPage?.resource_type === "book" ||
+                  landingPage?.book_id) &&
+                book ? (
+                <BookCheckoutModal
+                  open={isPurchaseModalOpen}
+                  onCancel={() => setPurchaseModalOpen(false)}
+                  book={book}
+                />
+              ) : null}
+            </>
+          )}
         </LandingPageProvider>
       </div>
 

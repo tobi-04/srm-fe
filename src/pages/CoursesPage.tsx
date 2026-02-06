@@ -8,30 +8,42 @@ import {
   Pagination,
   Spin,
   Empty,
-  Space,
   ConfigProvider,
   Button,
+  Card,
   Tag,
+  Avatar,
 } from "antd";
-import { SearchOutlined, StarFilled } from "@ant-design/icons";
-import { bookApi } from "../../api/bookApi";
-import BookCard from "../../components/books/BookCard";
-import PublicLayout from "../../components/layout/PublicLayout";
+import { SearchOutlined, UserOutlined } from "@ant-design/icons";
+import { MdSchool } from "react-icons/md";
+import { courseApi } from "../api/courseApi";
+import { useNavigate } from "react-router-dom";
+import PublicLayout from "../components/layout/PublicLayout";
 import { motion } from "framer-motion";
-import SEO from "../../components/common/SEO";
+import SEO from "../components/common/SEO";
 
 const { Title, Text, Paragraph } = Typography;
 
-const BookListPage: React.FC = () => {
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(price);
+};
+
+const CoursesPage: React.FC = () => {
   const [params, setParams] = useState({
     page: 1,
     limit: 12,
     search: "",
   });
 
+  const navigate = useNavigate();
+
   const { data, isLoading } = useQuery({
-    queryKey: ["books", params],
-    queryFn: () => bookApi.getBooks(params).then((res) => res.data),
+    queryKey: ["courses", params],
+    queryFn: () => courseApi.getCourses(params).then((res) => res.data),
   });
 
   const handleSearch = (value: string) => {
@@ -68,11 +80,11 @@ const BookListPage: React.FC = () => {
       }}
     >
       <SEO
-        title="Thư viện Sách Tài chính"
-        description="Khám phá kho tàng tri thức về đầu tư và tài chính qua bộ sưu tập sách điện tử chuyên sâu tại SRM Lesson."
+        title="Danh sách khóa học"
+        description="Khám phá các khóa học chất lượng cao về đầu tư, tài chính và phát triển kỹ năng tại SRM Lesson."
       />
       <PublicLayout>
-        {/* Books Hero Section */}
+        {/* Hero Section */}
         <section
           style={{
             position: "relative",
@@ -89,7 +101,7 @@ const BookListPage: React.FC = () => {
               width: 400,
               height: 400,
               borderRadius: "50%",
-              background: "rgba(247, 132, 4, 0.05)",
+              background: "rgba(59, 130, 246, 0.05)",
               filter: "blur(80px)",
               zIndex: 0,
             }}
@@ -111,18 +123,19 @@ const BookListPage: React.FC = () => {
                   transition={{ duration: 0.5 }}
                 >
                   <Tag
-                    color="orange"
+                    color="blue"
                     style={{
                       marginBottom: "16px",
                       padding: "4px 12px",
                       borderRadius: "100px",
                       fontWeight: "bold",
                       border: "none",
-                      background: "#fff7e6",
-                      color: colors.primary,
+                      background: "#e0f2fe",
+                      color: "#3b82f6",
                     }}
                   >
-                    KHO TÀNG TRI THỨC SỐ
+                    <MdSchool style={{ marginRight: 4 }} />
+                    HỌC TẬP KHÔNG GIỚI HẠN
                   </Tag>
                   <Title
                     style={{
@@ -134,9 +147,9 @@ const BookListPage: React.FC = () => {
                       color: colors.slate800,
                     }}
                   >
-                    Nâng Tầm Tư Duy <br />
-                    <span style={{ color: colors.primary }}>
-                      Làm Chủ Tài Chính
+                    Khóa Học Tài Chính <br />
+                    <span style={{ color: "#3b82f6" }}>
+                      Từ Cơ Bản Đến Nâng Cao
                     </span>
                   </Title>
                   <Paragraph
@@ -148,12 +161,11 @@ const BookListPage: React.FC = () => {
                       lineHeight: 1.6,
                     }}
                   >
-                    Khám phá bộ sưu tập sách điện tử chuyên sâu về đầu tư, quản
-                    lý tài chính và phát triển bản thân được biên soạn bởi các
-                    chuyên gia hàng đầu.
+                    Học từ các chuyên gia hàng đầu với nội dung cập nhật liên
+                    tục. Truy cập trọn đời, học mọi lúc mọi nơi.
                   </Paragraph>
                   <Input
-                    placeholder="Tìm cuốn sách bạn cần..."
+                    placeholder="Tìm khóa học bạn cần..."
                     prefix={
                       <SearchOutlined
                         style={{ color: colors.slate400, marginRight: 8 }}
@@ -180,55 +192,21 @@ const BookListPage: React.FC = () => {
                   transition={{ duration: 0.5 }}
                 >
                   <div
-                    style={{ position: "relative", display: "inline-block" }}
+                    style={{
+                      width: "100%",
+                      height: 350,
+                      borderRadius: 24,
+                      background:
+                        "linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))",
+                      backdropFilter: "blur(10px)",
+                      border: "1px solid rgba(59, 130, 246, 0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: "0 20px 60px rgba(0, 0, 0, 0.1)",
+                    }}
                   >
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: -20,
-                        left: -20,
-                        background: "#fff",
-                        padding: "16px",
-                        borderRadius: "16px",
-                        boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-                        zIndex: 2,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          background: "#fbbf24",
-                          width: 40,
-                          height: 40,
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <StarFilled style={{ color: "#fff" }} />
-                      </div>
-                      <div>
-                        <Text strong style={{ fontSize: 16, display: "block" }}>
-                          4.9/5.0
-                        </Text>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Xếp hạng tin cậy
-                        </Text>
-                      </div>
-                    </div>
-                    <img
-                      src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-                      alt="Books"
-                      style={{
-                        width: "320px",
-                        borderRadius: "24px",
-                        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-                      }}
-                    />
+                    <MdSchool style={{ fontSize: 100, color: "#3b82f6" }} />
                   </div>
                 </motion.div>
               </Col>
@@ -236,7 +214,7 @@ const BookListPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Books Grid */}
+        {/* Courses Grid */}
         <section style={{ padding: "80px 5%", background: "#fff" }}>
           <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
             <div
@@ -249,15 +227,15 @@ const BookListPage: React.FC = () => {
             >
               <div>
                 <Title level={2} style={{ margin: 0, fontWeight: 800 }}>
-                  Tất cả sách
+                  Tất cả khóa học
                 </Title>
                 <Text type="secondary">
-                  Tìm thấy {data?.meta?.total || 0} cuốn sách phù hợp
+                  Tìm thấy {data?.meta?.total || 0} khóa học phù hợp
                 </Text>
               </div>
               <div style={{ display: "flex", gap: "8px" }}>
                 <Tag
-                  color="orange"
+                  color="blue"
                   style={{
                     cursor: "pointer",
                     borderRadius: "6px",
@@ -282,26 +260,138 @@ const BookListPage: React.FC = () => {
                     padding: "4px 12px",
                   }}
                 >
-                  Giá thấp
+                  Miễn phí
                 </Tag>
               </div>
             </div>
 
             {isLoading ? (
               <div style={{ textAlign: "center", padding: "100px 0" }}>
-                <Spin size="large" tip="Đang tải danh sách sách..." />
+                <Spin size="large" tip="Đang tải danh sách khóa học..." />
               </div>
             ) : data?.data?.length > 0 ? (
               <>
                 <Row gutter={[32, 40]}>
-                  {data.data.map((book: any, idx: number) => (
-                    <Col xs={24} sm={12} md={8} lg={6} key={book._id}>
+                  {data.data.map((course: any, idx: number) => (
+                    <Col xs={24} sm={12} md={8} lg={6} key={course._id}>
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: idx * 0.05 }}
                       >
-                        <BookCard book={book} />
+                        <Card
+                          hoverable
+                          onClick={() => navigate(`/landing/${course.slug}`)}
+                          cover={
+                            <div
+                              style={{
+                                height: 180,
+                                background:
+                                  "linear-gradient(135deg, #3b82f620, #9333ea20)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                position: "relative",
+                                overflow: "hidden",
+                              }}
+                            >
+                              {course.thumbnail ? (
+                                <img
+                                  src={course.thumbnail}
+                                  alt={course.title}
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                              ) : (
+                                <MdSchool
+                                  style={{
+                                    fontSize: 64,
+                                    color: "#3b82f6",
+                                    opacity: 0.6,
+                                  }}
+                                />
+                              )}
+                            </div>
+                          }
+                          style={{
+                            borderRadius: 16,
+                            overflow: "hidden",
+                            border: "none",
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+                          }}
+                          bodyStyle={{ padding: 20 }}
+                        >
+                          <Title
+                            level={5}
+                            ellipsis
+                            style={{
+                              margin: 0,
+                              marginBottom: 8,
+                              color: colors.slate800,
+                            }}
+                          >
+                            {course.title}
+                          </Title>
+                          <Paragraph
+                            ellipsis={{ rows: 2 }}
+                            style={{
+                              color: colors.slate500,
+                              fontSize: 14,
+                              marginBottom: 16,
+                            }}
+                          >
+                            {course.description || "Khóa học chuyên sâu"}
+                          </Paragraph>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              marginBottom: 12,
+                            }}
+                          >
+                            <Avatar
+                              size="small"
+                              icon={<UserOutlined />}
+                              src={course.instructor?.avatar}
+                            />
+                            <Text
+                              type="secondary"
+                              style={{ fontSize: 13 }}
+                              ellipsis
+                            >
+                              {course.instructor?.name || "Giảng viên"}
+                            </Text>
+                          </div>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                            }}
+                          >
+                            <div>
+                              {course.price > 0 ? (
+                                <Text
+                                  strong
+                                  style={{ fontSize: 18, color: "#3b82f6" }}
+                                >
+                                  {formatPrice(course.price)}
+                                </Text>
+                              ) : (
+                                <Tag color="green">Miễn phí</Tag>
+                              )}
+                            </div>
+                            <Button type="primary" size="small">
+                              Xem chi tiết
+                            </Button>
+                          </div>
+                        </Card>
                       </motion.div>
                     </Col>
                   ))}
@@ -313,7 +403,6 @@ const BookListPage: React.FC = () => {
                     total={data.meta?.total || 0}
                     onChange={handlePageChange}
                     showSizeChanger={false}
-                    className="custom-pagination"
                   />
                 </div>
               </>
@@ -331,7 +420,7 @@ const BookListPage: React.FC = () => {
                   description={
                     <div style={{ marginTop: "16px" }}>
                       <Title level={4} style={{ margin: 0 }}>
-                        Không tìm thấy sách nào
+                        Không tìm thấy khóa học nào
                       </Title>
                       <Text type="secondary">
                         Cần thử từ khóa khác hoặc quay lại sau
@@ -344,7 +433,7 @@ const BookListPage: React.FC = () => {
                   style={{ marginTop: "24px" }}
                   onClick={() => handleSearch("")}
                 >
-                  Xem tất cả sách
+                  Xem tất cả khóa học
                 </Button>
               </div>
             )}
@@ -355,4 +444,4 @@ const BookListPage: React.FC = () => {
   );
 };
 
-export default BookListPage;
+export default CoursesPage;

@@ -2,7 +2,10 @@ import apiClient from "./client";
 import type { LandingPage } from "../stores/landingPageStore";
 
 export interface CreateLandingPageInput {
-  course_id: string;
+  resource_type?: "course" | "book" | "indicator";
+  course_id?: string;
+  book_id?: string;
+  indicator_id?: string;
   title: string;
   slug: string;
   status?: "draft" | "published";
@@ -81,6 +84,8 @@ export const getLandingPages = async (params?: {
   page?: number;
   limit?: number;
   course_id?: string;
+  book_id?: string;
+  indicator_id?: string;
   status?: string;
 }): Promise<LandingPageListResponse> => {
   const response = await apiClient.get("/landing-pages", { params });
@@ -98,6 +103,16 @@ export const getLandingPageBySlug = async (
   slug: string,
 ): Promise<LandingPage> => {
   const response = await apiClient.get(`/landing-pages/slug/${slug}`);
+  return response.data;
+};
+
+// Get landing page by course slug (public) - new API
+export const getLandingPageByCourseSlug = async (
+  courseSlug: string,
+): Promise<LandingPage> => {
+  const response = await apiClient.get(
+    `/landing-pages/by-course-slug/${courseSlug}`,
+  );
   return response.data;
 };
 
@@ -158,6 +173,18 @@ export const submitUserForm = async (
 ): Promise<SubmitUserFormResponse> => {
   const response = await apiClient.post(
     `/landing-pages/slug/${slug}/submit-form`,
+    data,
+  );
+  return response.data;
+};
+
+// Submit user form by course slug (new API)
+export const submitUserFormByCourseSlug = async (
+  courseSlug: string,
+  data: SubmitUserFormInput,
+): Promise<SubmitUserFormResponse> => {
+  const response = await apiClient.post(
+    `/landing-pages/by-course-slug/${courseSlug}/submit-form`,
     data,
   );
   return response.data;

@@ -17,6 +17,7 @@ import {
   Divider,
   Row,
   Col,
+  Dropdown,
 } from "antd";
 import {
   PlusOutlined,
@@ -27,10 +28,13 @@ import {
   FileTextOutlined,
   BookOutlined,
   ShareAltOutlined,
+  MoreOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { MdSettings } from "react-icons/md";
 import { bookApi } from "../../api/bookApi";
+import { createLandingPage, getLandingPages } from "../../api/landingPage";
 import DashboardLayout from "../../components/DashboardLayout";
 import ImageUpload from "../../components/ImageUpload";
 
@@ -173,6 +177,47 @@ const BookManagementPage: React.FC = () => {
     }
   };
 
+  const handleManageLandingPage = async (book: any) => {
+    try {
+      message.loading({
+        content: "Đang kiểm tra Landing Page...",
+        key: "landing",
+      });
+      const res = await getLandingPages({ book_id: book._id });
+
+      if (res.data && res.data.length > 0) {
+        message.success({
+          content: "Đã tìm thấy Landing Page!",
+          key: "landing",
+        });
+        navigate(`/admin/landing-builder/${res.data[0]._id}`);
+      } else {
+        message.loading({
+          content: "Đang tạo Landing Page mới...",
+          key: "landing",
+        });
+        const newLp = await createLandingPage({
+          resource_type: "book",
+          book_id: book._id,
+          title: book.title,
+          slug: book.slug,
+          status: "draft",
+        });
+        message.success({
+          content: "Tạo Landing Page thành công!",
+          key: "landing",
+        });
+        navigate(`/admin/landing-builder/${newLp._id}`);
+      }
+    } catch (error) {
+      console.error(error);
+      message.error({
+        content: "Lỗi khi truy cập Landing Page",
+        key: "landing",
+      });
+    }
+  };
+
   const columns = [
     {
       title: "Ảnh bìa",
@@ -265,27 +310,59 @@ const BookManagementPage: React.FC = () => {
     {
       title: "Hành động",
       key: "action",
+      width: 80,
       render: (_: any, record: any) => (
-        <Space size="middle">
-          <Button
-            icon={<ShareAltOutlined />}
-            onClick={() => handleShare(record)}
-            type="dashed"
-          >
-            Chia sẻ
-          </Button>
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
-            Sửa
-          </Button>
-          <Popconfirm
-            title="Xóa sách này?"
-            onConfirm={() => deleteMutation.mutate(record._id)}
-          >
-            <Button icon={<DeleteOutlined />} danger>
-              Xóa
-            </Button>
-          </Popconfirm>
-        </Space>
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: "view",
+                label: "Xem chi tiết",
+                icon: <EyeOutlined />,
+                onClick: () => handleEdit(record),
+              },
+              {
+                key: "edit",
+                label: "Chỉnh sửa",
+                icon: <EditOutlined />,
+                onClick: () => handleEdit(record),
+              },
+              {
+                key: "landing",
+                label: "Landing Page",
+                icon: <BookOutlined />,
+                onClick: () => handleManageLandingPage(record),
+              },
+              {
+                key: "share",
+                label: "Chia sẻ",
+                icon: <ShareAltOutlined />,
+                onClick: () => handleShare(record),
+              },
+              {
+                type: "divider",
+              },
+              {
+                key: "delete",
+                label: (
+                  <Popconfirm
+                    title="Xóa sách này?"
+                    onConfirm={() => deleteMutation.mutate(record._id)}
+                    okText="Xóa"
+                    cancelText="Hủy"
+                  >
+                    <span>Xóa</span>
+                  </Popconfirm>
+                ),
+                icon: <DeleteOutlined />,
+                danger: true,
+              },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <Button type="text" icon={<MoreOutlined />} />
+        </Dropdown>
       ),
     },
   ];

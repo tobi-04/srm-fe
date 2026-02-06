@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNode } from "@craftjs/core";
 import { Form, Input, Checkbox, message, Slider, Tabs } from "antd";
 import { useParams, useSearchParams } from "react-router-dom";
-import { submitUserForm, SubmitUserFormInput } from "../../../api/landingPage";
+import {
+  submitUserFormByCourseSlug as submitUserForm,
+  SubmitUserFormInput,
+} from "../../../api/landingPage";
 import { useAuthStore } from "../../../stores/authStore";
 import { CSSEditor } from "./shared/CSSEditor";
 import { getOrCreateTrafficSource } from "../../../utils/trafficSource";
@@ -127,11 +130,6 @@ export const UserForm: React.FC<UserFormProps> = ({
       return;
     }
 
-    if (!formData.ref.trim()) {
-      message.error("Vui lòng nhập mã giới thiệu");
-      return;
-    }
-
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
@@ -246,7 +244,8 @@ export const UserForm: React.FC<UserFormProps> = ({
         marginTop: `${marginTop}px`,
         marginBottom: `${marginBottom}px`,
         border: selected ? "2px dashed #1890ff" : "none",
-      }}>
+      }}
+    >
       <div
         style={{
           maxWidth: `${maxWidth}px`,
@@ -255,7 +254,8 @@ export const UserForm: React.FC<UserFormProps> = ({
           padding: 0,
           boxSizing: "border-box",
           ...customCSS,
-        }}>
+        }}
+      >
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -278,7 +278,8 @@ export const UserForm: React.FC<UserFormProps> = ({
                 marginTop: "-8px",
                 marginBottom: "8px",
                 display: "block",
-              }}>
+              }}
+            >
               Name is locked for logged-in users
             </small>
           )}
@@ -303,7 +304,8 @@ export const UserForm: React.FC<UserFormProps> = ({
                 marginTop: "-8px",
                 marginBottom: "8px",
                 display: "block",
-              }}>
+              }}
+            >
               Email is locked for logged-in users
             </small>
           )}
@@ -315,14 +317,14 @@ export const UserForm: React.FC<UserFormProps> = ({
                 color: "#666",
                 marginBottom: "4px",
                 display: "block",
-              }}>
-              Mã giới thiệu *
+              }}
+            >
+              Mã giới thiệu
             </label>
             <input
               type="text"
-              placeholder="Nhập mã giới thiệu"
+              placeholder="Nhập mã giới thiệu (tùy chọn)"
               style={inputStyle}
-              required
               value={formData.ref}
               onChange={(e) => handleInputChange("ref", e.target.value)}
               disabled={isSubmitting}
@@ -357,7 +359,8 @@ export const UserForm: React.FC<UserFormProps> = ({
                   color: "#666",
                   marginBottom: "4px",
                   display: "block",
-                }}>
+                }}
+              >
                 {birthdayPlaceholder} (Optional)
               </label>
               <input
@@ -451,7 +454,8 @@ const UserFormSettings = () => {
                     setProp(
                       (props: any) => (props.showPhone = e.target.checked),
                     )
-                  }>
+                  }
+                >
                   Show Phone Field
                 </Checkbox>
               </Form.Item>
@@ -475,7 +479,8 @@ const UserFormSettings = () => {
                     setProp(
                       (props: any) => (props.showAddress = e.target.checked),
                     )
-                  }>
+                  }
+                >
                   Show Address Field
                 </Checkbox>
               </Form.Item>
@@ -499,7 +504,8 @@ const UserFormSettings = () => {
                     setProp(
                       (props: any) => (props.showBirthday = e.target.checked),
                     )
-                  }>
+                  }
+                >
                   Show Birthday Field
                 </Checkbox>
               </Form.Item>
