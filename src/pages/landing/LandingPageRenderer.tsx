@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Editor, Frame, Element } from "@craftjs/core";
 import { Layout, Alert } from "antd";
-import { useQuery } from "@tanstack/react-query";
 import {
   Text,
   Button as BuilderButton,
@@ -39,8 +38,6 @@ import { LandingPageProvider } from "../../contexts/LandingPageContext";
 import { CountdownProvider } from "../../contexts/CountdownContext";
 import { BookCheckoutModal } from "../../components/books/BookCheckoutModal";
 import { IndicatorCheckoutModal } from "../../components/indicators/IndicatorCheckoutModal";
-import { bookApi } from "../../api/bookApi";
-import { indicatorApi } from "../../api/indicatorApi";
 
 const { Content } = Layout;
 

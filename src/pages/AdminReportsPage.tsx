@@ -8,7 +8,6 @@ import {
   Space,
   message,
   Typography,
-  Spin,
   Tag,
   Statistic,
   Row,
@@ -77,7 +76,7 @@ export default function AdminReportsPage() {
       return response.data;
     },
     staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache
+    gcTime: 0, // Don't cache
   });
 
   const handleExport = async () => {
@@ -122,7 +121,7 @@ export default function AdminReportsPage() {
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      message.success(`Đã xuất ${data?.total || 0} bản ghi thành công!`);
+      message.success(`Đã xuất ${(data as any)?.total || 0} bản ghi thành công!`);
     } catch (error: any) {
       console.error("Export failed:", error);
       message.error(error.response?.data?.message || "Lỗi khi xuất báo cáo");
@@ -280,7 +279,7 @@ export default function AdminReportsPage() {
             <Card>
               <Statistic
                 title="Tổng số đơn"
-                value={data?.total || 0}
+                value={(data as any)?.total || 0}
                 suffix="đơn hàng"
               />
             </Card>

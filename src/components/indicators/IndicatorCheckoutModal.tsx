@@ -8,7 +8,7 @@ import {
   Card,
   Alert,
   Spin,
-  QRCode,
+  Space,
   Checkbox,
   message,
 } from "antd";
@@ -17,7 +17,6 @@ import {
   CheckCircleOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
-import { MdAccountCircle } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { indicatorApi } from "../../api/indicatorApi";
 import { useAuthStore } from "../../stores/authStore";

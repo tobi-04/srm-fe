@@ -11,14 +11,12 @@ import {
   Card,
   Alert,
   Spin,
-  QRCode,
 } from "antd";
 import {
   CreditCardOutlined,
   LoadingOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
-import { MdAccountCircle } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { bookApi } from "../../api/bookApi";
 import { CouponInput } from "../payment/CouponInput";
