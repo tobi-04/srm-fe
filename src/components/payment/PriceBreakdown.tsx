@@ -8,6 +8,7 @@ interface PriceBreakdownProps {
   defaultDiscount?: number;
   couponDiscount?: number;
   couponCode?: string;
+  paymentFee?: number;
 }
 
 export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
@@ -15,9 +16,11 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
   defaultDiscount = 0,
   couponDiscount = 0,
   couponCode,
+  paymentFee = 700,
 }) => {
   const priceAfterDefault = originalPrice - defaultDiscount;
-  const finalPrice = priceAfterDefault - couponDiscount;
+  const priceAfterCoupon = priceAfterDefault - couponDiscount;
+  const finalPrice = priceAfterCoupon + paymentFee;
   const totalSavings = defaultDiscount + couponDiscount;
 
   const formatPrice = (price: number) => {
@@ -48,6 +51,11 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
             <Text type="success">-{formatPrice(couponDiscount)}</Text>
           </div>
         )}
+
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <Text type="secondary">Phí PBHIS:</Text>
+          <Text>{formatPrice(paymentFee)}</Text>
+        </div>
 
         <Divider style={{ margin: "8px 0" }} />
 

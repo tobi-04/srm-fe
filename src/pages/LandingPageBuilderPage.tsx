@@ -100,37 +100,56 @@ const SaveButton = ({
   );
 };
 
-const ClearAllButton = ({ currentStep }: { currentStep: PageStep }) => {
-  const { actions, query } = useEditor();
+const ResetToDefaultButton = ({
+  currentStep,
+  landingPageId,
+}: {
+  currentStep: PageStep;
+  landingPageId: string;
+}) => {
+  const queryClient = useQueryClient();
 
-  const handleClearAll = () => {
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      updateLandingPage(id, data),
+    onSuccess: () => {
+      message.success(`Đã khôi phục Bước ${currentStep} về mặc định`);
+      queryClient.invalidateQueries({
+        queryKey: ["landing-page", landingPageId],
+      });
+      // Force reload to apply changes from DB
+      window.location.reload();
+    },
+    onError: () => {
+      message.error("Không thể khôi phục về mặc định");
+    },
+  });
+
+  const handleReset = () => {
     Modal.confirm({
-      title: "Xóa tất cả components?",
-      content: `Bạn có chắc chắn muốn xóa tất cả components trong Bước ${currentStep}? Hành động này không thể hoàn tác.`,
-      okText: "Xóa tất cả",
+      title: "Khôi phục về mặc định?",
+      content: `Bạn có chắc chắn muốn khôi phục Bước ${currentStep} về mặc định? Tất cả thay đổi tùy chỉnh sẽ bị xóa.`,
+      okText: "Khôi phục",
       cancelText: "Hủy",
       okType: "danger",
       onOk: () => {
-        const ROOT = query.node("ROOT").get();
-
-        // Get all child nodes of ROOT (excluding ROOT itself)
-        if (ROOT && ROOT.data.nodes) {
-          ROOT.data.nodes.forEach((nodeId: string) => {
-            // Delete all direct children of ROOT
-            if (nodeId !== "ROOT") {
-              actions.delete(nodeId);
-            }
-          });
-        }
-
-        message.success(`Đã xóa tất cả components trong Bước ${currentStep}`);
+        const fieldName = `page_${currentStep}_content`;
+        updateMutation.mutate({
+          id: landingPageId,
+          data: { [fieldName]: null },
+        });
       },
     });
   };
 
   return (
-    <Button danger icon={<MdDeleteSweep />} onClick={handleClearAll}>
-      Xóa tất cả
+    <Button
+      danger
+      icon={<MdDeleteSweep />}
+      onClick={handleReset}
+      loading={updateMutation.isPending}
+    >
+      Khôi phục mặc định
     </Button>
   );
 };
@@ -426,7 +445,10 @@ export default function LandingPageBuilderPage() {
                           )
                         }
                       />
-                      <ClearAllButton currentStep={currentStep} />
+                      <ResetToDefaultButton
+                        currentStep={currentStep}
+                        landingPageId={id!}
+                      />
                       <Button
                         icon={<MdPreview />}
                         onClick={() => navigate(`/admin/landing-preview/${id}`)}

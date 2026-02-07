@@ -101,12 +101,22 @@ export const IndicatorCheckoutModal: React.FC<IndicatorCheckoutModalProps> = ({
                 borderRadius: 16,
                 margin: "20px 0",
                 border: "1px dashed #d9d9d9",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              <QRCode
-                value={qr_code_url}
-                size={200}
-                style={{ margin: "0 auto", borderRadius: 8 }}
+              <img
+                src={qr_code_url}
+                alt="Payment QR Code"
+                style={{
+                  width: 250,
+                  height: 250,
+                  borderRadius: 12,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  background: "#fff",
+                  padding: 10,
+                }}
               />
             </div>
 
@@ -238,71 +248,128 @@ export const IndicatorCheckoutModal: React.FC<IndicatorCheckoutModalProps> = ({
             await indicatorApi.getSubscriptionStatus(subscription_id);
           if (statusRes.data.status === "ACTIVE") {
             clearInterval(pollInterval);
+
+            // Fetch detailed indicator info with contact details after subscription is active
+            let detailedIndicator = indicator;
+            try {
+              const detailRes = await indicatorApi.getBySlug(indicator.slug);
+              detailedIndicator = detailRes.data;
+            } catch (err) {
+              console.error("Failed to fetch detailed indicator:", err);
+            }
+
             modal.destroy();
 
             Modal.success({
-              title: "Thanh toán thành công!",
-              width: 500,
+              title: (
+                <Space>
+                  <CheckCircleOutlined style={{ color: colors.green }} />
+                  <span>Thanh toán thành công!</span>
+                </Space>
+              ),
+              width: 600,
               content: (
                 <div style={{ textAlign: "center", padding: "20px 0" }}>
-                  <div
-                    style={{
-                      fontSize: 60,
-                      color: colors.green,
-                      marginBottom: 20,
-                    }}
-                  >
-                    <CheckCircleOutlined />
+                  <Title level={4} style={{ marginBottom: 24 }}>Bạn đã thuê thành công!</Title>
+
+                  <div style={{
+                    background: colors.slate50,
+                    padding: 20,
+                    borderRadius: 16,
+                    marginBottom: 24,
+                    border: `1px solid ${colors.slate800}20`,
+                    textAlign: "left"
+                  }}>
+                    <Text strong style={{ fontSize: 16, display: "block", marginBottom: 12 }}>
+                      Thông tin truy cập Indicator:
+                    </Text>
+
+                    <Space direction="vertical" size={12} style={{ width: "100%" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <Text type="secondary">Tên:</Text>
+                        <Text strong>{detailedIndicator.name}</Text>
+                      </div>
+
+                      {detailedIndicator.owner_name && (
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <Text type="secondary">Chủ sở hữu:</Text>
+                          <Text strong>{detailedIndicator.owner_name}</Text>
+                        </div>
+                      )}
+
+                      {detailedIndicator.contact_telegram && (
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <Text type="secondary">Telegram hỗ trợ:</Text>
+                          <Text strong copyable={{ text: detailedIndicator.contact_telegram }}>
+                            {detailedIndicator.contact_telegram}
+                          </Text>
+                        </div>
+                      )}
+
+                      {detailedIndicator.contact_email && (
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <Text type="secondary">Email hỗ trợ:</Text>
+                          <Text strong>{detailedIndicator.contact_email}</Text>
+                        </div>
+                      )}
+                    </Space>
+
+                    {detailedIndicator.description_detail && (
+                      <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px dashed #d9d9d9" }}>
+                        <Text strong style={{ display: "block", marginBottom: 8 }}>Hướng dẫn sử dụng:</Text>
+                        <div
+                          className="indicator-instructions"
+                          style={{ fontSize: 14, color: "#4b5563" }}
+                          dangerouslySetInnerHTML={{ __html: detailedIndicator.description_detail }}
+                        />
+                      </div>
+                    )}
                   </div>
-                  <Title level={4}>Bạn đã thuê thành công!</Title>
 
                   {is_new_user ? (
+                    <div style={{ textAlign: "left" }}>
+                      <Alert
+                        type="info"
+                        showIcon
+                        message={<Text strong>Thông tin tài khoản mới</Text>}
+                        description={
+                          <div style={{ marginTop: 8 }}>
+                            <Text>Hệ thống đã tự động tạo tài khoản và gửi mật khẩu đăng nhập vào email:</Text>
+                            <br />
+                            <Text strong style={{ fontSize: 16, color: colors.slate800 }}>{email}</Text>
+                            <div style={{ marginTop: 12, padding: "8px 12px", background: "#fff", borderRadius: 8, border: "1px solid #bae7ff" }}>
+                              <Text type="secondary" style={{ fontSize: 13 }}>
+                                💡 <b>Lưu ý:</b> Vui lòng kiểm tra mục <b>Thư rác (Spam)</b> nếu không thấy email.
+                              </Text>
+                            </div>
+                          </div>
+                        }
+                        style={{ borderRadius: 12, border: "1px solid #91d5ff" }}
+                      />
+                    </div>
+                  ) : (
                     <Alert
                       type="success"
-                      message="Tài khoản mới đã được tạo"
-                      description={
-                        <div style={{ textAlign: "left" }}>
-                          <Text>
-                            Thông tin đăng nhập đã được gửi đến:{" "}
-                            <Text strong>{email}</Text>
-                          </Text>
-                          <br />
-                          <Text>Vui lòng check email để lấy mật khẩu.</Text>
-                        </div>
-                      }
-                      icon={<MdAccountCircle style={{ fontSize: 24 }} />}
                       showIcon
-                      style={{ borderRadius: 12, marginTop: 16 }}
+                      message="Kích hoạt thành công"
+                      description={
+                        <Text>
+                          Bạn có thể truy cập trang <b>My Indicators</b> bất cứ lúc nào để xem lại thông tin hướng dẫn và liên hệ hỗ trợ.
+                        </Text>
+                      }
+                      style={{ borderRadius: 12, textAlign: "left" }}
                     />
-                  ) : (
-                    <Text style={{ fontSize: 16 }}>
-                      Indicator đã được thêm vào tài khoản của bạn.
-                    </Text>
                   )}
-
-                  <Card
-                    style={{
-                      marginTop: 24,
-                      borderRadius: 12,
-                      background: colors.slate50,
-                    }}
-                  >
-                    <Text strong>Bạn đã có quyền truy cập:</Text>
-                    <br />
-                    <Text
-                      style={{
-                        fontSize: 18,
-                        fontWeight: 700,
-                        color: colors.slate800,
-                      }}
-                    >
-                      {indicator.name}
-                    </Text>
-                  </Card>
                 </div>
               ),
-              okText: "Xem Indicator của tôi",
-              onOk: () => navigate("/student/my-indicators"),
+              okText: is_new_user ? "Đăng nhập ngay" : "Xem Indicator của tôi",
+              onOk: () => {
+                if (is_new_user) {
+                  navigate("/login");
+                } else {
+                  navigate("/student/my-indicators");
+                }
+              },
             });
           }
         } catch (err) {

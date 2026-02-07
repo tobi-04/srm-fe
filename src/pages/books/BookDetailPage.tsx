@@ -12,6 +12,7 @@ const BookDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [hasAttemptedCreate, setHasAttemptedCreate] = React.useState(false);
 
   // Fetch book data
   const { data: book, isLoading: isLoadingBook } = useQuery({
@@ -45,8 +46,10 @@ const BookDetailPage: React.FC = () => {
       book &&
       !isLoadingLandingPage &&
       !activeLandingPage &&
-      !createLandingPageMutation.isPending
+      !createLandingPageMutation.isPending &&
+      !hasAttemptedCreate
     ) {
+      setHasAttemptedCreate(true);
       createLandingPageMutation.mutate({
         resource_type: "book",
         book_id: book._id,
@@ -55,7 +58,7 @@ const BookDetailPage: React.FC = () => {
         status: "draft",
       });
     }
-  }, [book, isLoadingLandingPage, activeLandingPage]);
+  }, [book, isLoadingLandingPage, activeLandingPage, hasAttemptedCreate]);
 
   // Loading state
   if (

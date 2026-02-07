@@ -36,7 +36,6 @@ import {
   HeroSection,
 } from "../../components/landing-builder/components";
 import { LandingPageProvider } from "../../contexts/LandingPageContext";
-import { PaymentProvider } from "../../contexts/PaymentContext";
 import { CountdownProvider } from "../../contexts/CountdownContext";
 import { BookCheckoutModal } from "../../components/books/BookCheckoutModal";
 import { IndicatorCheckoutModal } from "../../components/indicators/IndicatorCheckoutModal";
@@ -97,35 +96,15 @@ export const LandingPageRenderer: React.FC<LandingPageRendererProps> = ({
   // Purchase Modal State
   const [isPurchaseModalOpen, setPurchaseModalOpen] = useState(false);
 
-  // Fetch book data if available
-  const { data: book } = useQuery({
-    queryKey: ["book-for-landing", landingPage?.book_id],
-    queryFn: () => {
-      const bookId =
-        typeof landingPage?.book_id === "object"
-          ? (landingPage.book_id as any)._id
-          : landingPage?.book_id;
-      return bookApi.adminGetById(bookId).then((res: any) => res.data);
-    },
-    enabled: !!(landingPage?.book_id || landingPage?.resource_type === "book"),
-  });
+  // Fetch book data if available - should be populated from backend
+  const book =
+    typeof landingPage?.book_id === "object" ? landingPage.book_id : null;
 
-  // Fetch indicator data if available
-  const { data: indicator } = useQuery({
-    queryKey: ["indicator-for-landing", landingPage?.indicator_id],
-    queryFn: () => {
-      const indicatorId =
-        typeof landingPage?.indicator_id === "object"
-          ? (landingPage.indicator_id as any)._id
-          : landingPage?.indicator_id;
-      return indicatorApi
-        .adminGetById(indicatorId)
-        .then((res: any) => res.data);
-    },
-    enabled: !!(
-      landingPage?.indicator_id || landingPage?.resource_type === "indicator"
-    ),
-  });
+  // Fetch indicator data if available - should be populated from backend
+  const indicator =
+    typeof landingPage?.indicator_id === "object"
+      ? landingPage.indicator_id
+      : null;
 
   // Get content for current step
   const getCurrentPageContent = () => {
@@ -171,53 +150,17 @@ export const LandingPageRenderer: React.FC<LandingPageRendererProps> = ({
             landingPage?.indicator_id;
 
           if (isIndicator) {
-            // Default sections for Indicator
+            // Default sections for Indicator - Only Hero
             return (
               <Element is={Container} padding={0} background="#ffffff" canvas>
                 <IndicatorHero />
-                <Element
-                  is={Container}
-                  padding={20}
-                  background="#f9f9f9"
-                  canvas
-                >
-                  <Text
-                    text="Chi tiết Indicator"
-                    type="title"
-                    textAlign="center"
-                    level={2}
-                  />
-                  <RichText text="<p>Thông tin chi tiết về indicator sẽ được hiển thị tại đây. Bạn có thể chỉnh sửa nội dung này trong Landing Page Builder.</p>" />
-                  <Element is={Container} padding={20} background="#fff" canvas>
-                    <IndicatorCheckoutButton />
-                  </Element>
-                </Element>
-                <Footer />
               </Element>
             );
           } else {
-            // Default sections for Book
+            // Default sections for Book - Only Hero
             return (
               <Element is={Container} padding={0} background="#ffffff" canvas>
                 <BookHero />
-                <Element
-                  is={Container}
-                  padding={20}
-                  background="#f9f9f9"
-                  canvas
-                >
-                  <Text
-                    text="Chi tiết nội dung sách"
-                    type="title"
-                    textAlign="center"
-                    level={2}
-                  />
-                  <RichText text="<p>Viết thêm chi tiết hấp dẫn về cuốn sách của bạn tại đây...</p>" />
-                  <Element is={Container} padding={20} background="#fff" canvas>
-                    <BookCheckoutButton />
-                  </Element>
-                </Element>
-                <Footer />
               </Element>
             );
           }
@@ -284,73 +227,71 @@ export const LandingPageRenderer: React.FC<LandingPageRendererProps> = ({
         isPurchaseModalOpen={isPurchaseModalOpen}
         setPurchaseModalOpen={setPurchaseModalOpen}
       >
-        <PaymentProvider>
-          <Layout style={{ minHeight: "100vh", background: "#ffffff" }}>
-            <Content>
-              {/* Draft preview banner for admins */}
-              {isAdmin && landingPage.status === "draft" && (
-                <Alert
-                  message="Chế độ xem trước bản nháp"
-                  description="Bạn đang xem landing page bản nháp. Trang này chưa hiển thị công khai."
-                  type="warning"
-                  showIcon
-                  banner
-                  style={{ marginBottom: 0 }}
-                />
-              )}
+        <Layout style={{ minHeight: "100vh", background: "#ffffff" }}>
+          <Content>
+            {/* Draft preview banner for admins */}
+            {isAdmin && landingPage.status === "draft" && (
+              <Alert
+                message="Chế độ xem trước bản nháp"
+                description="Bạn đang xem landing page bản nháp. Trang này chưa hiển thị công khai."
+                type="warning"
+                showIcon
+                banner
+                style={{ marginBottom: 0 }}
+              />
+            )}
 
-              {/* Render the page content using Craft.js in view-only mode */}
+            {/* Render the page content using Craft.js in view-only mode */}
+            <div
+              style={{
+                background: "#fff",
+                minHeight: "100vh",
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
               <div
-                style={{
-                  background: "#fff",
-                  minHeight: "100vh",
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                }}
+                style={{ width: "100%" }}
+                className="landing-builder-content"
               >
-                <div
-                  style={{ width: "100%" }}
-                  className="landing-builder-content"
-                >
-                  <Editor resolver={CRAFT_RESOLVER} enabled={false}>
-                    <Frame
-                      key={`step-${urlStep}`}
-                      data={
-                        hasContent ? JSON.stringify(pageContent) : undefined
-                      }
-                    >
-                      {!hasContent && getDefaultStepSections(urlStep)}
-                    </Frame>
-                  </Editor>
-                </div>
+                <Editor resolver={CRAFT_RESOLVER} enabled={false}>
+                  <Frame
+                    key={`step-${urlStep}`}
+                    data={
+                      hasContent ? JSON.stringify(pageContent) : undefined
+                    }
+                  >
+                    {!hasContent && getDefaultStepSections(urlStep)}
+                  </Frame>
+                </Editor>
               </div>
+            </div>
 
-              {/* Checkout Modals */}
-              {isPurchaseModalOpen && (
-                <>
-                  {(landingPage?.resource_type === "indicator" ||
-                    landingPage?.indicator_id) &&
-                  indicator ? (
-                    <IndicatorCheckoutModal
-                      open={isPurchaseModalOpen}
-                      onCancel={() => setPurchaseModalOpen(false)}
-                      indicator={indicator}
-                    />
-                  ) : (landingPage?.resource_type === "book" ||
-                      landingPage?.book_id) &&
-                    book ? (
-                    <BookCheckoutModal
-                      open={isPurchaseModalOpen}
-                      onCancel={() => setPurchaseModalOpen(false)}
-                      book={book}
-                    />
-                  ) : null}
-                </>
-              )}
-            </Content>
-          </Layout>
-        </PaymentProvider>
+            {/* Checkout Modals */}
+            {isPurchaseModalOpen && (
+              <>
+                {(landingPage?.resource_type === "indicator" ||
+                  landingPage?.indicator_id) &&
+                indicator ? (
+                  <IndicatorCheckoutModal
+                    open={isPurchaseModalOpen}
+                    onCancel={() => setPurchaseModalOpen(false)}
+                    indicator={indicator}
+                  />
+                ) : (landingPage?.resource_type === "book" ||
+                    landingPage?.book_id) &&
+                  book ? (
+                  <BookCheckoutModal
+                    open={isPurchaseModalOpen}
+                    onCancel={() => setPurchaseModalOpen(false)}
+                    book={book}
+                  />
+                ) : null}
+              </>
+            )}
+          </Content>
+        </Layout>
       </LandingPageProvider>
     </CountdownProvider>
   );

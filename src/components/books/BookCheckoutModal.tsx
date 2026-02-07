@@ -96,12 +96,22 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
                 borderRadius: 16,
                 margin: "20px 0",
                 border: "1px dashed #d9d9d9",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              <QRCode
-                value={response.data.qr_code_url}
-                size={200}
-                style={{ margin: "0 auto", borderRadius: 8 }}
+              <img
+                src={response.data.qr_code_url}
+                alt="Payment QR Code"
+                style={{
+                  width: 250,
+                  height: 250,
+                  borderRadius: 12,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  background: "#fff",
+                  padding: 10,
+                }}
               />
             </div>
 
@@ -248,75 +258,77 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
 
             // Show Success Dialog
             Modal.success({
-              title: "Thanh toán thành công!",
-              width: 500,
+              title: (
+                <Space>
+                  <CheckCircleOutlined style={{ color: "#52c41a" }} />
+                  <span>Thanh toán thành công!</span>
+                </Space>
+              ),
+              width: 550,
               content: (
                 <div style={{ textAlign: "center", padding: "20px 0" }}>
-                  <div
-                    style={{ fontSize: 60, color: "#52c41a", marginBottom: 20 }}
-                  >
-                    <CheckCircleOutlined />
+                  <Title level={4} style={{ marginBottom: 24 }}>Cảm ơn bạn đã mua sách!</Title>
+
+                  <div style={{
+                    background: "#f8fafc",
+                    padding: 20,
+                    borderRadius: 16,
+                    marginBottom: 24,
+                    border: "1px solid #e2e8f0",
+                    textAlign: "left"
+                  }}>
+                    <Text strong style={{ fontSize: 16, display: "block", marginBottom: 8 }}>
+                      Sản phẩm đã kích hoạt:
+                    </Text>
+                    <Text style={{ fontSize: 18, color: "#f78404", fontWeight: 700 }}>
+                      {book.title}
+                    </Text>
                   </div>
-                  <Title level={4}>Cảm ơn bạn đã mua sách!</Title>
 
                   {is_new_user ? (
+                    <div style={{ textAlign: "left" }}>
+                      <Alert
+                        type="info"
+                        showIcon
+                        message={<Text strong>Thông tin tài khoản mới</Text>}
+                        description={
+                          <div style={{ marginTop: 8 }}>
+                            <Text>Hệ thống đã tự động tạo tài khoản và gửi mật khẩu đăng nhập vào email:</Text>
+                            <br />
+                            <Text strong style={{ fontSize: 16, color: "#1e293b" }}>{email}</Text>
+                            <div style={{ marginTop: 12, padding: "8px 12px", background: "#fff", borderRadius: 8, border: "1px solid #bae7ff" }}>
+                              <Text type="secondary" style={{ fontSize: 13 }}>
+                                💡 <b>Lưu ý:</b> Nếu không thấy email trong Hộp thư đến, vui lòng kiểm tra mục <b>Thư rác (Spam)</b> hoặc <b>Quảng cáo</b>.
+                              </Text>
+                            </div>
+                          </div>
+                        }
+                        style={{ borderRadius: 12, border: "1px solid #91d5ff" }}
+                      />
+                    </div>
+                  ) : (
                     <Alert
                       type="success"
-                      message="Tài khoản mới đã được tạo"
-                      description={
-                        <div style={{ textAlign: "left" }}>
-                          <Text>
-                            Hệ thống đã gửi thông tin đăng nhập vào email:{" "}
-                            <Text strong>{email}</Text>
-                          </Text>
-                          <br />
-                          <Text>
-                            Vui lòng kiểm tra hộp thư (cả thư rác) để lấy mật
-                            khẩu truy cập.
-                          </Text>
-                        </div>
-                      }
-                      icon={<MdAccountCircle style={{ fontSize: 24 }} />}
                       showIcon
-                      style={{ borderRadius: 12, marginTop: 16 }}
+                      message="Kích hoạt thành công"
+                      description={
+                        <Text>
+                          Cuốn sách này đã được thêm vào thư viện của bạn. Bạn có thể truy cập <b>Dashboard</b> để xem và tải về ngay.
+                        </Text>
+                      }
+                      style={{ borderRadius: 12, textAlign: "left" }}
                     />
-                  ) : (
-                    <Text style={{ fontSize: 16 }}>
-                      Sách đã được thêm vào thư viện của bạn. Bạn có thể vào
-                      <Text strong style={{ color: "#f78404" }}>
-                        {" "}
-                        Dashboard{" "}
-                      </Text>
-                      để xem và tải về ngay.
-                    </Text>
                   )}
-
-                  <div
-                    style={{
-                      marginTop: 24,
-                      padding: 16,
-                      background: "#f8fafc",
-                      borderRadius: 12,
-                    }}
-                  >
-                    <Space direction="vertical" style={{ width: "100%" }}>
-                      <Text strong>Bạn đã có quyền truy cập:</Text>
-                      <Text
-                        style={{
-                          color: "#1e293b",
-                          fontSize: 18,
-                          fontWeight: 700,
-                          display: "block",
-                        }}
-                      >
-                        {book.title}
-                      </Text>
-                    </Space>
-                  </div>
                 </div>
               ),
-              okText: "Vào xem sách ngay",
-              onOk: () => navigate("/student/dashboard"),
+              okText: is_new_user ? "Đăng nhập ngay" : "Vào xem sách ngay",
+              onOk: () => {
+                if (is_new_user) {
+                  navigate("/login");
+                } else {
+                  navigate("/student/dashboard");
+                }
+              },
             });
           }
         } catch (err) {

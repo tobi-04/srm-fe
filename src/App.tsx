@@ -45,6 +45,8 @@ import IndicatorListPage from "./pages/indicators/IndicatorListPage";
 import IndicatorDetailPage from "./pages/indicators/IndicatorDetailPage";
 import MyIndicatorsPage from "./pages/indicators/MyIndicatorsPage";
 import IndicatorManagementPage from "./pages/indicators/IndicatorManagementPage";
+// Reports Page
+import AdminReportsPage from "./pages/AdminReportsPage";
 // Courses Page
 import CoursesPage from "./pages/CoursesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -332,6 +334,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <OrderHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminReportsPage />
               </ProtectedRoute>
             }
           />

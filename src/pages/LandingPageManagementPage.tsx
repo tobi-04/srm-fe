@@ -33,12 +33,17 @@ import {
   updateLandingPage,
   hardDeleteLandingPage,
 } from "../api/landingPage";
+import { bookApi } from "../api/bookApi";
+import { indicatorApi } from "../api/indicatorApi";
 import type { LandingPage } from "../stores/landingPageStore";
 
 const { Title } = Typography;
 
 interface FormValues {
-  course_id: string;
+  course_id?: string;
+  book_id?: string;
+  indicator_id?: string;
+  resource_type: "course" | "book" | "indicator";
   title: string;
   slug: string;
   status: "draft" | "published";
@@ -74,6 +79,28 @@ export default function LandingPageManagementPage() {
   });
 
   const courses = coursesData?.data || [];
+
+  // Query books for dropdown
+  const { data: booksData } = useQuery({
+    queryKey: ["admin-books"],
+    queryFn: async () => {
+      const response = await bookApi.adminGetBooks({ limit: 100 });
+      return response.data;
+    },
+  });
+
+  const books = booksData?.data || [];
+
+  // Query indicators for dropdown
+  const { data: indicatorsData } = useQuery({
+    queryKey: ["admin-indicators"],
+    queryFn: async () => {
+      const response = await indicatorApi.adminGetAll({ limit: 100 });
+      return response.data;
+    },
+  });
+
+  const indicators = indicatorsData?.data || [];
 
   // Query landing pages
   const { data, isLoading, refetch } = useQuery({
@@ -154,6 +181,9 @@ export default function LandingPageManagementPage() {
     setSelectedLandingPage(record);
     form.setFieldsValue({
       course_id: record.course_id,
+      book_id: record.book_id,
+      indicator_id: record.indicator_id,
+      resource_type: record.resource_type || (record.course_id ? "course" : record.book_id ? "book" : "indicator"),
       title: record.title,
       slug: record.slug,
       status: record.status,
@@ -216,7 +246,15 @@ export default function LandingPageManagementPage() {
           const course = courses.find((c: any) => c._id === resourceId);
           return course?.title || resourceId;
         }
-        return resourceId; // For books and indicators, show ID for now
+        if (activeTab === "books") {
+          const book = books.find((b: any) => b._id === resourceId);
+          return book?.title || resourceId;
+        }
+        if (activeTab === "indicators") {
+          const indicator = indicators.find((i: any) => i._id === resourceId);
+          return indicator?.name || resourceId;
+        }
+        return resourceId;
       },
     },
     {
@@ -347,20 +385,70 @@ export default function LandingPageManagementPage() {
           }}
           footer={null}
         >
-          <Form form={form} onFinish={handleSubmit} layout="vertical">
-            <Form.Item
-              name="course_id"
-              label="Khóa học"
-              rules={[{ required: true, message: "Vui lòng chọn khóa học" }]}
-            >
-              <Select placeholder="Chọn khóa học">
-                {courses.map((course: any) => (
-                  <Select.Option key={course._id} value={course._id}>
-                    {course.title}
-                  </Select.Option>
-                ))}
-              </Select>
+          <Form
+            form={form}
+            onFinish={handleSubmit}
+            layout="vertical"
+            initialValues={{
+              resource_type:
+                activeTab === "courses"
+                  ? "course"
+                  : activeTab === "books"
+                    ? "book"
+                    : "indicator",
+            }}
+          >
+            <Form.Item name="resource_type" hidden>
+              <Input />
             </Form.Item>
+
+            {activeTab === "courses" && (
+              <Form.Item
+                name="course_id"
+                label="Khóa học"
+                rules={[{ required: true, message: "Vui lòng chọn khóa học" }]}
+              >
+                <Select placeholder="Chọn khóa học">
+                  {courses.map((course: any) => (
+                    <Select.Option key={course._id} value={course._id}>
+                      {course.title}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+
+            {activeTab === "books" && (
+              <Form.Item
+                name="book_id"
+                label="Sách"
+                rules={[{ required: true, message: "Vui lòng chọn sách" }]}
+              >
+                <Select placeholder="Chọn sách">
+                  {books.map((book: any) => (
+                    <Select.Option key={book._id} value={book._id}>
+                      {book.title}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+
+            {activeTab === "indicators" && (
+              <Form.Item
+                name="indicator_id"
+                label="Indicator"
+                rules={[{ required: true, message: "Vui lòng chọn indicator" }]}
+              >
+                <Select placeholder="Chọn indicator">
+                  {indicators.map((indicator: any) => (
+                    <Select.Option key={indicator._id} value={indicator._id}>
+                      {indicator.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
 
             <Form.Item
               name="title"

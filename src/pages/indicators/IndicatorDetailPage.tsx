@@ -11,6 +11,7 @@ const IndicatorDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [hasAttemptedCreate, setHasAttemptedCreate] = React.useState(false);
 
   // Fetch indicator data
   const { data: indicator, isLoading: isLoadingIndicator } = useQuery({
@@ -44,8 +45,10 @@ const IndicatorDetailPage: React.FC = () => {
       indicator &&
       !isLoadingLandingPage &&
       !activeLandingPage &&
-      !createLandingPageMutation.isPending
+      !createLandingPageMutation.isPending &&
+      !hasAttemptedCreate
     ) {
+      setHasAttemptedCreate(true);
       createLandingPageMutation.mutate({
         resource_type: "indicator",
         indicator_id: indicator._id,
@@ -54,7 +57,7 @@ const IndicatorDetailPage: React.FC = () => {
         status: "draft",
       });
     }
-  }, [indicator, isLoadingLandingPage, activeLandingPage]);
+  }, [indicator, isLoadingLandingPage, activeLandingPage, hasAttemptedCreate]);
 
   // Loading state
   if (
