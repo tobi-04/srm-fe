@@ -205,9 +205,50 @@ export const PaymentQRCode: React.FC<PaymentQRCodeProps> = ({
             borderRadius: "8px",
             width: "100%",
             maxWidth: "400px",
-            border: "2px solid #1890ff",
+            border: "1px solid #1890ff",
           }}
         >
+          {transaction && (
+            <div style={{ marginBottom: "8px", fontSize: "14px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  color: "#666",
+                  marginBottom: "4px",
+                }}
+              >
+                <span>Giá gốc:</span>
+                <span>{formatCurrency(transaction.original_price || totalAmount - (transaction.fee || 700))}</span>
+              </div>
+              {transaction.coupon_discount_amount > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    color: "#52c41a",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <span>Mã giảm giá ({transaction.coupon_code}):</span>
+                  <span>-{formatCurrency(transaction.coupon_discount_amount)}</span>
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  color: "#666",
+                  paddingBottom: "8px",
+                  borderBottom: "1px dashed #d9d9d9",
+                  marginBottom: "8px",
+                }}
+              >
+                <span>Phí PBHIS:</span>
+                <span>{formatCurrency(transaction.fee || 700)}</span>
+              </div>
+            </div>
+          )}
           <div
             style={{
               display: "flex",
