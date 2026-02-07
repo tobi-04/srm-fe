@@ -6,7 +6,7 @@ const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+  baseURL: import.meta.env.VITE_API_URL || "https://api.thaisuinvest.com",
   withCredentials: true, // Enable sending httpOnly cookies
   headers: {
     "Content-Type": "application/json",
