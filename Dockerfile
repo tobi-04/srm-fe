@@ -27,6 +27,10 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code
 COPY . .
 
+# Accept VITE_API_URL at build time so production builds can be configured
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
 # Build application
 # Vite will tree-shake and minify automatically
 RUN npm run build
