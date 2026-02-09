@@ -15,6 +15,7 @@ export interface DashboardSummary {
   };
   students: {
     total: number;
+    newToday: number;
     newThisWeek: number;
     change: number;
     label: string;
@@ -27,6 +28,14 @@ export interface DashboardSummary {
   completion: {
     rate: number;
     change: number;
+    label: string;
+  };
+  customers: {
+    total: number;
+    label: string;
+  };
+  emails: {
+    total: number;
     label: string;
   };
 }

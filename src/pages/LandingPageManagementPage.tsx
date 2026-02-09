@@ -179,11 +179,23 @@ export default function LandingPageManagementPage() {
 
   const handleEdit = (record: LandingPage) => {
     setSelectedLandingPage(record);
+
+    const getResourceId = (res: any) => {
+      if (!res) return undefined;
+      return typeof res === "string" ? res : res._id;
+    };
+
+    const courseId = getResourceId(record.course_id);
+    const bookId = getResourceId(record.book_id);
+    const indicatorId = getResourceId(record.indicator_id);
+
     form.setFieldsValue({
-      course_id: record.course_id,
-      book_id: record.book_id,
-      indicator_id: record.indicator_id,
-      resource_type: record.resource_type || (record.course_id ? "course" : record.book_id ? "book" : "indicator"),
+      course_id: courseId,
+      book_id: bookId,
+      indicator_id: indicatorId,
+      resource_type:
+        record.resource_type ||
+        (courseId ? "course" : bookId ? "book" : "indicator"),
       title: record.title,
       slug: record.slug,
       status: record.status,

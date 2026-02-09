@@ -49,7 +49,7 @@ interface ReportRow {
 }
 
 export default function AdminReportsPage() {
-  const [timeRange, setTimeRange] = useState<TimeRange>(TimeRange.ALL); // Đổi từ MONTH sang ALL
+  const [timeRange, setTimeRange] = useState<TimeRange>(TimeRange.MONTH); // Mặc định 1 tháng
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
   const [isExporting, setIsExporting] = useState(false);
 

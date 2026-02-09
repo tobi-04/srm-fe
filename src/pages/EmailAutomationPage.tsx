@@ -27,6 +27,7 @@ import {
   MdSave,
   MdMail,
   MdSchedule,
+  MdContentCopy,
 } from "react-icons/md";
 import dayjs from "dayjs";
 import DashboardLayout from "../components/DashboardLayout";
@@ -57,6 +58,36 @@ export default function EmailAutomationPage() {
   const [eventType, setEventType] = useState("user.registered");
   const [trafficSources, setTrafficSources] = useState<string[]>([]);
   const [isActive, setIsActive] = useState(false);
+  const [productType, setProductType] = useState<
+    "COURSE" | "BOOK" | "INDICATOR" | undefined
+  >(undefined);
+  const [productId, setProductId] = useState<string | undefined>(undefined);
+  const [products, setProducts] = useState<{
+    courses: any[];
+    books: any[];
+    indicators: any[];
+    groupCounts: Record<string, number>;
+  }>({
+    courses: [],
+    books: [],
+    indicators: [],
+    groupCounts: {},
+  });
+
+  // User list states
+  const [userList, setUserList] = useState<any[]>([]);
+  const [userLoading, setUserLoading] = useState(false);
+  const [userPagination, setUserPagination] = useState({
+    current: 1,
+    pageSize: 20,
+    total: 0,
+  });
+  const [userFilters, setUserFilters] = useState<{
+    search?: string;
+    targetGroup?: string;
+    productType?: "COURSE" | "BOOK" | "INDICATOR";
+    productId?: string;
+  }>({});
 
   // Step editor modal
   const [stepModalVisible, setStepModalVisible] = useState(false);
@@ -81,6 +112,7 @@ export default function EmailAutomationPage() {
 
   useEffect(() => {
     loadAutomations();
+    loadProducts();
   }, []);
 
   useEffect(() => {
@@ -98,6 +130,42 @@ export default function EmailAutomationPage() {
       loadTemplateVariables(eventType);
     }
   }, [eventType]);
+
+  useEffect(() => {
+    if (activeTab === "users") {
+      loadUsers();
+    }
+  }, [activeTab, userFilters]);
+
+  const loadUsers = async (page = 1) => {
+    setUserLoading(true);
+    try {
+      const data = await emailAutomationApi.getUsers({
+        page,
+        limit: userPagination.pageSize,
+        ...userFilters,
+      });
+      setUserList(data.users);
+      setUserPagination({
+        ...userPagination,
+        current: page,
+        total: data.total,
+      });
+    } catch (error) {
+      message.error("Không thể tải danh sách email");
+    } finally {
+      setUserLoading(false);
+    }
+  };
+
+  const loadProducts = async () => {
+    try {
+      const data = await emailAutomationApi.getProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error("Không thể tải danh sách sản phẩm");
+    }
+  };
 
   const loadAutomations = async () => {
     try {
@@ -120,6 +188,8 @@ export default function EmailAutomationPage() {
     setTargetGroup(automation.target_group || "all_students");
     setTrafficSources(automation.traffic_sources || []);
     setIsActive(automation.is_active);
+    setProductType(automation.product_type);
+    setProductId(automation.product_id);
   };
 
   const handleNewAutomation = () => {
@@ -131,6 +201,8 @@ export default function EmailAutomationPage() {
     setTargetGroup("all_students");
     setTrafficSources([]);
     setIsActive(false);
+    setProductType(undefined);
+    setProductId(undefined);
     setSteps([]);
   };
 
@@ -185,6 +257,8 @@ export default function EmailAutomationPage() {
         target_group:
           triggerType === "group" ? (targetGroup as any) : undefined,
         traffic_sources: trafficSources,
+        product_type: productType,
+        product_id: productId,
       });
       message.success("Tạo automation thành công");
       await loadAutomations();
@@ -209,6 +283,8 @@ export default function EmailAutomationPage() {
         target_group:
           triggerType === "group" ? (targetGroup as any) : undefined,
         traffic_sources: trafficSources,
+        product_type: productType,
+        product_id: productId,
       });
       message.success("Cập nhật automation thành công");
       await loadAutomations();
@@ -237,6 +313,24 @@ export default function EmailAutomationPage() {
     }
   };
 
+  const handleCopyAutomation = async () => {
+    if (!selectedAutomation) return;
+
+    setLoading(true);
+    try {
+      const copied = await emailAutomationApi.copyAutomation(
+        selectedAutomation._id,
+      );
+      message.success("Nhân bản chiến dịch thành công");
+      await loadAutomations();
+      selectAutomation(copied);
+    } catch (error) {
+      message.error("Không thể nhân bản chiến dịch");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteAutomation = async () => {
     if (!selectedAutomation) return;
 
@@ -247,14 +341,20 @@ export default function EmailAutomationPage() {
       okText: "Xóa",
       okType: "danger",
       cancelText: "Hủy",
-      onOk: async () => {
+        onOk: async () => {
         setLoading(true);
         try {
           await emailAutomationApi.deleteAutomation(selectedAutomation._id);
           message.success("Xóa chiến dịch thành công");
-          setSelectedAutomation(null);
-          handleNewAutomation();
-          await loadAutomations();
+
+          const remainingAutomations = automations.filter(a => a._id !== selectedAutomation._id);
+          setAutomations(remainingAutomations);
+
+          if (remainingAutomations.length > 0) {
+            selectAutomation(remainingAutomations[0]);
+          } else {
+            handleNewAutomation();
+          }
         } catch (error) {
           message.error("Không thể xóa chiến dịch");
         } finally {
@@ -346,9 +446,31 @@ export default function EmailAutomationPage() {
   };
 
   const eventTypeOptions = [
-    { label: "Người dùng đăng ký", value: "user.registered" },
-    { label: "Mua khóa học", value: "course.purchased" },
-    { label: "Đăng ký nhưng chưa mua", value: "user.registered.no.purchase" },
+    {
+      label: `Người dùng đăng ký (${products?.groupCounts?.all_students || 0})`,
+      value: "user.registered",
+    },
+    { label: "Mua khóa học thành công", value: "course.purchased" },
+    { label: "Mua sách thành công", value: "book.purchased" },
+    { label: "Thuê indicator thành công", value: "indicator.purchased" },
+    {
+      label: `Đăng ký nhưng chưa mua khóa học (${
+        products?.groupCounts?.unpurchased_students || 0
+      })`,
+      value: "user.registered.no.purchase",
+    },
+    {
+      label: `Đăng ký nhưng chưa mua sách (${
+        products?.groupCounts?.non_book_purchased_users || 0
+      })`,
+      value: "user.registered.no.purchase.book",
+    },
+    {
+      label: `Đăng ký nhưng chưa thuê indicator (${
+        products?.groupCounts?.non_indicator_purchased_users || 0
+      })`,
+      value: "user.registered.no.purchase.indicator",
+    },
   ];
 
   const triggerTypeOptions = [
@@ -357,11 +479,212 @@ export default function EmailAutomationPage() {
   ];
 
   const targetGroupOptions = [
-    { label: "Tất cả học viên", value: "all_students" },
-    { label: "Học viên chưa mua khóa học", value: "unpurchased_students" },
-    { label: "Học viên đã mua khóa học", value: "purchased_students" },
-    { label: "Saler (Đội ngũ bán hàng)", value: "salers" },
+    {
+      label: `Tất cả học viên (${products?.groupCounts?.all_students || 0})`,
+      value: "all_students",
+    },
+    {
+      label: `Học viên chưa mua khóa học (Chung) (${products?.groupCounts?.unpurchased_students || 0})`,
+      value: "unpurchased_students",
+    },
+    {
+      label: `Học viên đã mua khóa học (Chung) (${products?.groupCounts?.purchased_students || 0})`,
+      value: "purchased_students",
+    },
+    {
+      label: `Học viên đã mua sách (Chung) (${products?.groupCounts?.book_purchased_users || 0})`,
+      value: "book_purchased_users",
+    },
+    {
+      label: `Học viên đã thuê indicator (Chung) (${products?.groupCounts?.indicator_purchased_users || 0})`,
+      value: "indicator_purchased_users",
+    },
+    {
+      label: `Học viên chưa mua sách (Chung) (${products?.groupCounts?.non_book_purchased_users || 0})`,
+      value: "non_book_purchased_users",
+    },
+    {
+      label: `Học viên chưa thuê indicator (Chung) (${products?.groupCounts?.non_indicator_purchased_users || 0})`,
+      value: "non_indicator_purchased_users",
+    },
+    {
+      label: `Saler (Đội ngũ bán hàng) (${products?.groupCounts?.salers || 0})`,
+      value: "salers",
+    },
+    {
+      label: "--- Nhóm theo sản phẩm cụ thể ---",
+      value: "divider",
+      disabled: true,
+    },
+    { label: "Đã mua khóa học cụ thể", value: "specific_course_purchased" },
+    {
+      label: "Chưa mua khóa học cụ thể",
+      value: "specific_course_not_purchased",
+    },
+    { label: "Đã mua sách cụ thể", value: "specific_book_purchased" },
+    { label: "Chưa mua sách cụ thể", value: "specific_book_not_purchased" },
+    {
+      label: "Đã thuê indicator cụ thể",
+      value: "specific_indicator_purchased",
+    },
+    {
+      label: "Chưa thuê indicator cụ thể",
+      value: "specific_indicator_not_purchased",
+    },
   ];
+
+  const handleProductChange = (
+    val: string,
+    type: "COURSE" | "BOOK" | "INDICATOR",
+  ) => {
+    setProductId(val);
+    setProductType(val ? type : undefined);
+  };
+
+  const productSelector = (
+    <Card size="small" style={{ marginTop: 8, background: "#fafafa" }}>
+      <Tabs
+        size="small"
+        activeKey={productType || "COURSE"}
+        onChange={(key) => {
+          setProductType(key as any);
+          setProductId(undefined); // Reset sản phẩm đã chọn khi chuyển Tab
+        }}
+        items={[
+          {
+            key: "COURSE",
+            label: "Khóa học",
+            children: (
+              <Select
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn khóa học..."
+                allowClear
+                value={productType === "COURSE" ? productId : undefined}
+                onChange={(val) => handleProductChange(val, "COURSE")}
+                options={products.courses.map((p) => {
+                  const isNotPurchased =
+                    targetGroup.includes("not") ||
+                    targetGroup.includes("unpurchased");
+                  const count = isNotPurchased ? p.unpurchasedCount : p.count;
+                  return {
+                    label: `${p.title} (${count || 0})`,
+                    value: p.id,
+                  };
+                })}
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              />
+            ),
+          },
+          {
+            key: "BOOK",
+            label: "Sách",
+            children: (
+              <Select
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn sách..."
+                allowClear
+                value={productType === "BOOK" ? productId : undefined}
+                onChange={(val) => handleProductChange(val, "BOOK")}
+                options={products.books.map((p) => {
+                  const isNotPurchased =
+                    targetGroup.includes("not") ||
+                    targetGroup.includes("unpurchased");
+                  const count = isNotPurchased ? p.unpurchasedCount : p.count;
+                  return {
+                    label: `${p.title} (${count || 0})`,
+                    value: p.id,
+                  };
+                })}
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              />
+            ),
+          },
+          {
+            key: "INDICATOR",
+            label: "Indicator",
+            children: (
+              <Select
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn indicator..."
+                allowClear
+                value={productType === "INDICATOR" ? productId : undefined}
+                onChange={(val) => handleProductChange(val, "INDICATOR")}
+                options={products.indicators.map((p) => {
+                  const isNotPurchased =
+                    targetGroup.includes("not") ||
+                    targetGroup.includes("unpurchased");
+                  const count = isNotPurchased ? p.unpurchasedCount : p.count;
+                  return {
+                    label: `${p.title || p.name || "N/A"} (${count || 0})`,
+                    value: p.id,
+                  };
+                })}
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              />
+            ),
+          },
+        ]}
+      />
+      <Text type="secondary" style={{ fontSize: 12 }}>
+        * Để trống nếu muốn áp dụng cho TẤT CẢ sản phẩm trong loại này.
+      </Text>
+    </Card>
+  );
+
+  const fullTargetGroupOptions = [...targetGroupOptions];
+
+  const handleTargetGroupChange = (value: string) => {
+    setTargetGroup(value);
+    // If selecting a general group, clear specific product
+    if (!value.startsWith("specific_")) {
+      setProductId(undefined);
+      setProductType(undefined);
+    } else {
+      // Set default product type based on selection
+      if (value.includes("course")) setProductType("COURSE");
+      else if (value.includes("book")) setProductType("BOOK");
+      else if (value.includes("indicator")) setProductType("INDICATOR");
+    }
+    // Tải lại số lượng để đảm bảo hiển thị đúng cho nhóm mới
+    loadProducts();
+  };
+
+  const getTargetGroupValue = () => {
+    return targetGroup;
+  };
+
+  const handleEventTypeChange = (value: string) => {
+    setEventType(value);
+    setProductId(undefined); // Reset sản phẩm đã chọn khi đổi sự kiện
+    // Tự động chuyển Tab dựa trên tên sự kiện
+    if (value.includes("course")) setProductType("COURSE");
+    else if (value.includes("book")) setProductType("BOOK");
+    else if (value.includes("indicator")) setProductType("INDICATOR");
+    else {
+      // Default to COURSE for general events that might still use product targeting
+      setProductType("COURSE");
+    }
+
+    // Tải lại số lượng mới nhất khi đổi sự kiện
+    loadProducts();
+  };
+
+  const productTabs = productSelector;
 
   const trafficSourceOptions = [
     { label: "Facebook", value: "facebook" },
@@ -370,6 +693,184 @@ export default function EmailAutomationPage() {
     { label: "Ads (Quảng cáo)", value: "ads" },
     { label: "Trực tiếp (Direct)", value: "direct" },
   ];
+
+  const userColumns = [
+    {
+      title: "Họ tên",
+      dataIndex: "name",
+      key: "name",
+      render: (text: string, record: any) => (
+        <Space direction="vertical" size={0}>
+          <Text strong>{text || "N/A"}</Text>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            ID: {record._id}
+          </Text>
+        </Space>
+      ),
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Vai trò",
+      dataIndex: "role",
+      key: "role",
+      render: (role: string) => (
+        <Tag color={role === "sale" ? "blue" : "default"}>
+          {role === "sale" ? "Sales" : "Học viên"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "is_active",
+      key: "is_active",
+      render: (active: boolean) => (
+        <Tag color={active ? "success" : "error"}>
+          {active ? "Hoạt động" : "Khóa"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Ngày tham gia",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (date: string) => (date ? dayjs(date).format("DD/MM/YYYY") : "-"),
+    },
+  ];
+
+  const userListPanel = (
+    <Card>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} md={6}>
+          <Input.Search
+            placeholder="Tìm theo tên, email..."
+            onSearch={(val) => setUserFilters({ ...userFilters, search: val })}
+            allowClear
+          />
+        </Col>
+        <Col xs={24} md={6}>
+          <Select
+            style={{ width: "100%" }}
+            placeholder="Lọc theo nhóm"
+            allowClear
+            popupMatchSelectWidth={false}
+            dropdownStyle={{ maxWidth: 500 }}
+            onChange={(val) =>
+              setUserFilters({
+                ...userFilters,
+                targetGroup: val,
+                productId: undefined,
+              })
+            }
+            options={targetGroupOptions.filter(
+              (opt) => opt.value !== "divider",
+            )}
+          />
+        </Col>
+        {userFilters.targetGroup?.startsWith("specific_") && (
+          <Col xs={24} md={12}>
+            <div style={{ display: "flex", gap: 8 }}>
+              {userFilters.targetGroup.includes("course") && (
+                <Select
+                  style={{ flex: 1 }}
+                  placeholder="Chọn khóa học..."
+                  showSearch
+                  allowClear
+                  popupMatchSelectWidth={false}
+                  dropdownStyle={{ maxWidth: 500 }}
+                  onChange={(val) =>
+                    setUserFilters({ ...userFilters, productId: val })
+                  }
+                  options={products.courses.map((c) => ({
+                    label: `${c.title} (${
+                      userFilters.targetGroup?.includes("not")
+                        ? c.unpurchasedCount
+                        : c.count
+                    })`,
+                    value: c.id,
+                  }))}
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                />
+              )}
+              {userFilters.targetGroup.includes("book") && (
+                <Select
+                  style={{ flex: 1 }}
+                  placeholder="Chọn sách..."
+                  showSearch
+                  allowClear
+                  popupMatchSelectWidth={false}
+                  dropdownStyle={{ maxWidth: 500 }}
+                  onChange={(val) =>
+                    setUserFilters({ ...userFilters, productId: val })
+                  }
+                  options={products.books.map((b) => ({
+                    label: `${b.title} (${
+                      userFilters.targetGroup?.includes("not")
+                        ? b.unpurchasedCount
+                        : b.count
+                    })`,
+                    value: b.id,
+                  }))}
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                />
+              )}
+              {userFilters.targetGroup.includes("indicator") && (
+                <Select
+                  style={{ flex: 1 }}
+                  placeholder="Chọn indicator..."
+                  showSearch
+                  allowClear
+                  popupMatchSelectWidth={false}
+                  dropdownStyle={{ maxWidth: 500 }}
+                  onChange={(val) =>
+                    setUserFilters({ ...userFilters, productId: val })
+                  }
+                  options={products.indicators.map((i) => ({
+                    label: `${i.title || i.name} (${
+                      userFilters.targetGroup?.includes("not")
+                        ? i.unpurchasedCount
+                        : i.count
+                    })`,
+                    value: i.id,
+                  }))}
+                  filterOption={(input, option) =>
+                    (option?.label ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                />
+              )}
+            </div>
+          </Col>
+        )}
+      </Row>
+
+      <Table
+        dataSource={userList}
+        columns={userColumns}
+        rowKey="_id"
+        loading={userLoading}
+        pagination={{
+          current: userPagination.current,
+          pageSize: userPagination.pageSize,
+          total: userPagination.total,
+          showSizeChanger: false,
+          onChange: (page) => loadUsers(page),
+        }}
+      />
+    </Card>
+  );
 
   const logColumns = [
     {
@@ -449,7 +950,8 @@ export default function EmailAutomationPage() {
           />
           <Text type="secondary">{isActive ? "Hoạt động" : "Tạm dừng"}</Text>
         </Space>
-      }>
+      }
+    >
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         {/* Automation selector */}
         {/* Unified Campaign Information */}
@@ -459,7 +961,8 @@ export default function EmailAutomationPage() {
             padding: 16,
             borderRadius: 8,
             border: "1px solid #e9ecef",
-          }}>
+          }}
+        >
           <div>
             <div
               style={{
@@ -467,25 +970,38 @@ export default function EmailAutomationPage() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: 8,
-              }}>
+              }}
+            >
               <Space>
                 <Text strong>Chiến dịch</Text>
                 {selectedAutomation && (
-                  <Button
-                    type="text"
-                    danger
-                    size="small"
-                    icon={<MdDelete />}
-                    onClick={handleDeleteAutomation}>
-                    Xóa
-                  </Button>
+                  <>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<MdContentCopy />}
+                      onClick={handleCopyAutomation}
+                    >
+                      Nhân bản
+                    </Button>
+                    <Button
+                      type="text"
+                      danger
+                      size="small"
+                      icon={<MdDelete />}
+                      onClick={handleDeleteAutomation}
+                    >
+                      Xóa
+                    </Button>
+                  </>
                 )}
               </Space>
               {!selectedAutomation && automations.length > 0 && (
                 <Button
                   type="link"
                   size="small"
-                  onClick={() => selectAutomation(automations[0])}>
+                  onClick={() => selectAutomation(automations[0])}
+                >
                   Quay lại chọn chiến dịch
                 </Button>
               )}
@@ -520,7 +1036,8 @@ export default function EmailAutomationPage() {
                       block
                       icon={<MdAdd />}
                       onClick={handleNewAutomation}
-                      style={{ textAlign: "left", color: "#f78404" }}>
+                      style={{ textAlign: "left", color: "#f78404" }}
+                    >
                       Tạo chiến dịch mới
                     </Button>
                   </>
@@ -541,28 +1058,58 @@ export default function EmailAutomationPage() {
           />
         </div>
 
-        {/* Conditional fields based on Trigger Type */}
         {triggerType === "event" ? (
-          <div>
-            <Text strong>Sự kiện kích hoạt</Text>
-            <Select
-              style={{ width: "100%", marginTop: 8 }}
-              value={eventType}
-              onChange={setEventType}
-              options={eventTypeOptions}
-            />
-          </div>
+          <Space direction="vertical" style={{ width: "100%" }} size="middle">
+            <div>
+              <Text strong>Sự kiện kích hoạt</Text>
+              <Select
+                style={{ width: "100%", marginTop: 8 }}
+                value={eventType}
+                popupMatchSelectWidth={false}
+                dropdownStyle={{ maxWidth: 500 }}
+                onChange={handleEventTypeChange}
+                options={eventTypeOptions}
+              />
+            </div>
+
+            {[
+              "course.purchased",
+              "book.purchased",
+              "indicator.purchased",
+              "user.registered.no.purchase",
+              "user.registered.no.purchase.book",
+              "user.registered.no.purchase.indicator",
+            ].includes(eventType) && (
+              <div>
+                <Text strong>Sản phẩm cụ thể (Tùy chọn)</Text>
+                {productTabs}
+              </div>
+            )}
+          </Space>
         ) : (
           <Space direction="vertical" style={{ width: "100%" }} size="middle">
             <div>
               <Text strong>Chọn nhóm đối tượng</Text>
               <Select
+                showSearch
                 style={{ width: "100%", marginTop: 8 }}
-                value={targetGroup}
-                onChange={setTargetGroup}
-                options={targetGroupOptions}
+                value={getTargetGroupValue()}
+                onChange={handleTargetGroupChange}
+                options={fullTargetGroupOptions}
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
               />
             </div>
+
+            {targetGroup.startsWith("specific_") && (
+              <div>
+                <Text strong>Chọn sản phẩm</Text>
+                {productSelector}
+              </div>
+            )}
           </Space>
         )}
 
@@ -575,13 +1122,15 @@ export default function EmailAutomationPage() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: 8,
-              }}>
+              }}
+            >
               <Text strong>Danh sách Email</Text>
               <Button
                 type="primary"
                 size="small"
                 icon={<MdAdd />}
-                onClick={handleAddStep}>
+                onClick={handleAddStep}
+              >
                 Thêm bước
               </Button>
             </div>
@@ -606,7 +1155,8 @@ export default function EmailAutomationPage() {
                       icon={<MdDelete />}
                       onClick={() => handleDeleteStep(step._id)}
                     />,
-                  ]}>
+                  ]}
+                >
                   <List.Item.Meta
                     avatar={
                       <div
@@ -620,7 +1170,8 @@ export default function EmailAutomationPage() {
                           alignItems: "center",
                           justifyContent: "center",
                           fontWeight: "bold",
-                        }}>
+                        }}
+                      >
                         {step.step_order}
                       </div>
                     }
@@ -657,7 +1208,8 @@ export default function EmailAutomationPage() {
           onClick={
             selectedAutomation ? handleUpdateAutomation : handleCreateAutomation
           }
-          loading={loading}>
+          loading={loading}
+        >
           {selectedAutomation ? "Cập nhật" : "Tạo mới"}
         </Button>
       </Space>
@@ -696,7 +1248,8 @@ export default function EmailAutomationPage() {
                   <Card
                     title="Cấu hình nguồn người dùng"
                     size="small"
-                    style={{ marginBottom: 16 }}>
+                    style={{ marginBottom: 16 }}
+                  >
                     <Space direction="vertical" style={{ width: "100%" }}>
                       <Text type="secondary">
                         Chỉ gửi cho người dùng từ các nguồn này (để trống để gửi
@@ -726,6 +1279,17 @@ export default function EmailAutomationPage() {
                 </Col>
               </Row>
             ),
+          },
+          {
+            key: "users",
+            label: (
+              <Space>
+                <MdAdd style={{ transform: "rotate(45deg)" }} />{" "}
+                {/* Giả lập icon danh sách */}
+                <span>Danh sách Email</span>
+              </Space>
+            ),
+            children: userListPanel,
           },
           {
             key: "history",
@@ -786,12 +1350,14 @@ export default function EmailAutomationPage() {
         onOk={handleSaveStep}
         width={800}
         okText="Lưu"
-        cancelText="Hủy">
+        cancelText="Hủy"
+      >
         <Form form={stepForm} layout="vertical">
           <Form.Item
             name="step_order"
             label="Thứ tự"
-            rules={[{ required: true, message: "Vui lòng nhập thứ tự" }]}>
+            rules={[{ required: true, message: "Vui lòng nhập thứ tự" }]}
+          >
             <InputNumber min={1} style={{ width: "100%" }} />
           </Form.Item>
 
@@ -799,10 +1365,9 @@ export default function EmailAutomationPage() {
             <Form.Item
               name="delay_days"
               label="Gửi sau (số ngày)"
-              rules={[
-                { required: true, message: "Vui lòng nhập số ngày chờ" },
-              ]}
-              extra="Số ngày chờ kể từ khi sự kiện xảy ra. 0 có nghĩa là gửi ngay lập tức.">
+              rules={[{ required: true, message: "Vui lòng nhập số ngày chờ" }]}
+              extra="Số ngày chờ kể từ khi sự kiện xảy ra. 0 có nghĩa là gửi ngay lập tức."
+            >
               <InputNumber min={0} style={{ width: "100%" }} />
             </Form.Item>
           ) : (
@@ -812,7 +1377,8 @@ export default function EmailAutomationPage() {
               rules={[
                 { required: true, message: "Vui lòng chọn ngày và giờ gửi" },
               ]}
-              extra="Chọn ngày và giờ cụ thể để gửi email này cho nhóm đối tượng.">
+              extra="Chọn ngày và giờ cụ thể để gửi email này cho nhóm đối tượng."
+            >
               <DatePicker
                 showTime={{
                   format: "HH:mm",
@@ -831,7 +1397,8 @@ export default function EmailAutomationPage() {
           <Form.Item
             name="subject_template"
             label="Tiêu đề email"
-            rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}>
+            rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
+          >
             <Input placeholder="VD: Chào mừng {{user.name}}!" />
           </Form.Item>
 

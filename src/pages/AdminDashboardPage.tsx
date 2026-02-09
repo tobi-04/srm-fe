@@ -15,8 +15,8 @@ import {
 import {
   MdAttachMoney,
   MdPersonAdd,
-  MdPlayCircle,
-  MdCheckCircle,
+  MdMail,
+  MdGroups,
   MdTrendingUp,
   MdTrendingDown,
   MdPerson,
@@ -32,23 +32,19 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
   Cell,
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "../components/DashboardLayout";
-import { adminAnalyticsApi, TopSaler } from "../api/adminAnalyticsApi";
+import { adminAnalyticsApi } from "../api/adminAnalyticsApi";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
-const COLORS = ["#10b981", "#8b5cf6", "#34d399", "#a78bfa"];
-
 export default function AdminDashboardPage() {
   const [timeRange, setTimeRange] = useState<number>(7);
-  const [salerPeriod, setSalerPeriod] = useState<"month" | "quarter" | "year">(
+  const [salerPeriod] = useState<"month" | "quarter" | "year">(
     "month",
   );
   const navigate = useNavigate();
@@ -64,7 +60,7 @@ export default function AdminDashboardPage() {
     queryFn: () => adminAnalyticsApi.getRevenueTrend(timeRange),
   });
 
-  const { data: trafficSources, isLoading: trafficLoading } = useQuery({
+  const { isLoading: trafficLoading } = useQuery({
     queryKey: ["admin-traffic-sources"],
     queryFn: adminAnalyticsApi.getTrafficSources,
   });
@@ -74,7 +70,7 @@ export default function AdminDashboardPage() {
     queryFn: adminAnalyticsApi.getRecentPayments,
   });
 
-  const { data: topSalers, isLoading: topSalersLoading } = useQuery({
+  const { isLoading: topSalersLoading } = useQuery({
     queryKey: ["admin-top-salers", salerPeriod],
     queryFn: () => adminAnalyticsApi.getTopSalers(salerPeriod, 3),
   });
@@ -90,7 +86,11 @@ export default function AdminDashboardPage() {
   });
 
   const isLoading =
-    summaryLoading || trendLoading || trafficLoading || paymentsLoading;
+    summaryLoading ||
+    trendLoading ||
+    trafficLoading ||
+    paymentsLoading ||
+    topSalersLoading;
 
   const statsCards = [
     {
@@ -103,31 +103,31 @@ export default function AdminDashboardPage() {
       iconBg: "#f0fdf4",
     },
     {
+      title: "Tổng khách hàng",
+      value: summary?.customers.total.toLocaleString("vi-VN"),
+      icon: <MdGroups size={24} color="#059669" />,
+      change: "Tổng cộng",
+      label: summary?.customers.label,
+      isPositive: true,
+      iconBg: "#ecfdf5",
+    },
+    {
       title: "Học viên mới",
-      value: summary?.students.total.toLocaleString("vi-VN"),
+      value: summary?.students.newToday.toLocaleString("vi-VN"),
       icon: <MdPersonAdd size={24} color="#2563eb" />,
-      change: summary?.students.change + "%",
+      change: "Mới",
       label: summary?.students.label,
-      isPositive: (summary?.students.change || 0) >= 0,
+      isPositive: true,
       iconBg: "#eff6ff",
     },
     {
-      title: "Bài học đang mở",
-      value: summary?.lessons.total.toLocaleString("vi-VN"),
-      icon: <MdPlayCircle size={24} color="#7c3aed" />,
-      change: summary?.lessons.status,
-      label: summary?.lessons.label,
+      title: "Số email mới",
+      value: summary?.emails.total.toLocaleString("vi-VN"),
+      icon: <MdMail size={24} color="#7c3aed" />,
+      change: "Hôm nay",
+      label: summary?.emails.label,
       isPositive: true,
       iconBg: "#f5f3ff",
-    },
-    {
-      title: "Tỷ lệ hoàn thành",
-      value: summary?.completion.rate + "%",
-      icon: <MdCheckCircle size={24} color="#059669" />,
-      change: summary?.completion.change + "%",
-      label: summary?.completion.label,
-      isPositive: (summary?.completion.change || 0) >= 0,
-      iconBg: "#ecfdf5",
     },
   ];
 
@@ -328,111 +328,10 @@ export default function AdminDashboardPage() {
           ))}
         </Row>
 
-        {/* Charts Row */}
+        {/* Sales Snapshots Row */}
         <Row gutter={[24, 24]}>
-          <Col xs={24} lg={16}>
-            <Card
-              variant="borderless"
-              style={{
-                borderRadius: 16,
-                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-              }}
-              title={
-                <div style={{ padding: "8px 0" }}>
-                  <Title level={4} style={{ margin: 0 }}>
-                    Tổng quan doanh thu
-                  </Title>
-                  <Text type="secondary" style={{ fontSize: 13 }}>
-                    Hiệu suất kinh doanh trong 30 ngày qua
-                  </Text>
-                </div>
-              }
-              extra={
-                <Select
-                  value={timeRange}
-                  variant="borderless"
-                  style={{ width: 120 }}
-                  onChange={(val) => setTimeRange(val)}
-                >
-                  <Select.Option value={30}>30 ngày qua</Select.Option>
-                  <Select.Option value={7}>7 ngày qua</Select.Option>
-                </Select>
-              }
-            >
-              <div style={{ width: "100%", height: 350 }}>
-                <ResponsiveContainer>
-                  <AreaChart data={revenueTrend}>
-                    <defs>
-                      <linearGradient
-                        id="colorRevenue"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#10b981"
-                          stopOpacity={0.1}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#10b981"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="#f1f5f9"
-                    />
-                    <XAxis
-                      dataKey="date"
-                      axisLine={{ stroke: "#f1f5f9" }}
-                      tickLine={{ stroke: "#f1f5f9" }}
-                      tick={{ fill: "#64748b", fontSize: 12 }}
-                      dy={10}
-                      tickFormatter={(value) => dayjs(value).format("DD/MM")}
-                    />
-                    <YAxis
-                      axisLine={{ stroke: "#f1f5f9" }}
-                      tickLine={{ stroke: "#f1f5f9" }}
-                      tick={{ fill: "#64748b", fontSize: 12 }}
-                      tickFormatter={(value) => {
-                        if (value >= 1000000)
-                          return `${(value / 1000000).toFixed(1)}Tr`;
-                        if (value >= 1000)
-                          return `${(value / 1000).toFixed(0)}k`;
-                        return value.toString();
-                      }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: 8,
-                        border: "none",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                      }}
-                      formatter={(value: any) => [
-                        value?.toLocaleString("vi-VN") + "đ",
-                        "Doanh thu",
-                      ]}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorRevenue)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} lg={8}>
+          {/* Daily Sales Snapshot */}
+          <Col xs={24} lg={12}>
             <Card
               variant="borderless"
               style={{
@@ -443,254 +342,209 @@ export default function AdminDashboardPage() {
               title={
                 <div style={{ padding: "8px 0" }}>
                   <Title level={4} style={{ margin: 0 }}>
-                    Nguồn truy cập
+                    DOANH THU THEO NGÀY
                   </Title>
                   <Text type="secondary" style={{ fontSize: 13 }}>
-                    Người dùng đến từ đâu
+                    Doanh thu 14 ngày gần đây
                   </Text>
                 </div>
               }
             >
-              <div
-                style={{
-                  position: "relative",
-                  height: 250,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={trafficSources as any[]}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="count"
-                    >
-                      {trafficSources?.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                <div style={{ position: "absolute", textAlign: "center" }}>
-                  <Title level={4} style={{ margin: 0 }}>
-                    {trafficSources?.[0]?.percent || 0}%
-                  </Title>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {trafficSources?.[0]?.name || "N/A"}
-                  </Text>
-                </div>
+              <div style={{ marginBottom: 16 }}>
+                <Table
+                  dataSource={dailySales?.slice(0, 7).sort((a, b) => {
+                    const dayOrder: Record<string, number> = {
+                      Mon: 1,
+                      Tue: 2,
+                      Wed: 3,
+                      Thu: 4,
+                      Fri: 5,
+                      Sat: 6,
+                      Sun: 7,
+                    };
+                    return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
+                  })}
+                  pagination={false}
+                  size="small"
+                  rowKey="date"
+                  columns={[
+                    {
+                      title: "THỨ",
+                      dataIndex: "dayOfWeek",
+                      key: "dayOfWeek",
+                      width: "15%",
+                      render: (day: string) => {
+                        const viDays: Record<string, string> = {
+                          Mon: "T2",
+                          Tue: "T3",
+                          Wed: "T4",
+                          Thu: "T5",
+                          Fri: "T6",
+                          Sat: "T7",
+                          Sun: "CN",
+                        };
+                        return (
+                          <Text style={{ fontWeight: 500 }}>
+                            {viDays[day] || day}
+                          </Text>
+                        );
+                      },
+                    },
+                    {
+                      title: "NGÀY",
+                      dataIndex: "date",
+                      key: "date",
+                      width: "20%",
+                      render: (date: string) => (
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          {dayjs(date).format("DD/MM")}
+                        </Text>
+                      ),
+                    },
+                    {
+                      title: "XU HƯỚNG",
+                      key: "trend",
+                      width: "35%",
+                      render: (_: any, record: any) => {
+                        const maxRevenue = Math.max(
+                          ...(dailySales?.map((d) => d.revenue) || [0]),
+                        );
+                        if (maxRevenue === 0) return null;
+                        const width = (record.revenue / maxRevenue) * 100;
+                        const dayColors: Record<string, string> = {
+                          Mon: "#10b981", // Green
+                          Tue: "#8b5cf6", // Purple
+                          Wed: "#10b981", // Green
+                          Thu: "#8b5cf6", // Purple
+                          Fri: "#10b981", // Green
+                          Sat: "#8b5cf6", // Purple
+                          Sun: "#10b981", // Green
+                        };
+                        return (
+                          <div
+                            style={{
+                              height: 20,
+                              background:
+                                dayColors[record.dayOfWeek] || "#10b981",
+                              width: `${width}%`,
+                              borderRadius: 4,
+                              minWidth: width > 0 ? 20 : 0,
+                            }}
+                          />
+                        );
+                      },
+                    },
+                    {
+                      title: "DOANH THU",
+                      dataIndex: "revenue",
+                      key: "revenue",
+                      align: "right" as const,
+                      width: "30%",
+                      render: (revenue: number) => (
+                        <Text strong style={{ fontSize: 14 }}>
+                          {revenue.toLocaleString("vi-VN")}đ
+                        </Text>
+                      ),
+                    },
+                  ]}
+                />
               </div>
 
-              <Space
-                direction="vertical"
-                style={{ width: "100%", marginTop: 24 }}
-                size={16}
-              >
-                {trafficSources?.map((source, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
+              <div style={{ height: 200 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={dailySales?.slice(0, 14).sort((a, b) => {
+                      const dayOrder: Record<string, number> = {
+                        Mon: 1,
+                        Tue: 2,
+                        Wed: 3,
+                        Thu: 4,
+                        Fri: 5,
+                        Sat: 6,
+                        Sun: 7,
+                      };
+                      return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
+                    })}
                   >
-                    <Space>
-                      <div
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: "50%",
-                          background: COLORS[index % COLORS.length],
-                        }}
-                      />
-                      <Text style={{ fontSize: 13 }}>{source.name}</Text>
-                    </Space>
-                    <Text strong style={{ fontSize: 13 }}>
-                      {source.percent}%
-                    </Text>
-                  </div>
-                ))}
-              </Space>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#f1f5f9"
+                    />
+                    <XAxis
+                      dataKey="date"
+                      axisLine={{ stroke: "#f1f5f9" }}
+                      tickLine={{ stroke: "#f1f5f9" }}
+                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      tickFormatter={(value) => dayjs(value).format("DD/MM")}
+                    />
+                    <YAxis
+                      axisLine={{ stroke: "#f1f5f9" }}
+                      tickLine={{ stroke: "#f1f5f9" }}
+                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      domain={[0, 'auto']}
+                      hide={Math.max(...(dailySales?.map(d => d.revenue) || [0])) === 0}
+                      tickFormatter={(value) => {
+                        if (value >= 1000000)
+                          return `${(value / 1000000).toFixed(1)}Tr`;
+                        if (value >= 1000)
+                          return `${(value / 1000).toFixed(0)}k`;
+                        return `${value}`;
+                      }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "none",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      }}
+                      formatter={(value: any) => [
+                        `${value?.toLocaleString("vi-VN")}đ`,
+                        "Doanh thu",
+                      ]}
+                      labelFormatter={(value) =>
+                        dayjs(value).format("dddd, DD/MM/YYYY")
+                      }
+                    />
+                    <Bar dataKey="revenue" radius={[4, 4, 0, 0]}>
+                      {dailySales
+                        ?.slice(0, 14)
+                        .sort((a, b) => {
+                          const dayOrder: Record<string, number> = {
+                            Mon: 1,
+                            Tue: 2,
+                            Wed: 3,
+                            Thu: 4,
+                            Fri: 5,
+                            Sat: 6,
+                            Sun: 7,
+                          };
+                          return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
+                        })
+                        .map((entry, index) => {
+                          const dayColors: Record<string, string> = {
+                            Mon: "#10b981", // Green
+                            Tue: "#8b5cf6", // Purple
+                            Wed: "#10b981", // Green
+                            Thu: "#8b5cf6", // Purple
+                            Fri: "#10b981", // Green
+                            Sat: "#8b5cf6", // Purple
+                            Sun: "#10b981", // Green
+                          };
+                          return (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={dayColors[entry.dayOfWeek] || "#10b981"}
+                            />
+                          );
+                        })}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </Card>
           </Col>
-        </Row>
 
-        {/* Top Salers Row */}
-        <Card
-          variant="borderless"
-          style={{ borderRadius: 16, boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}
-          title={
-            <div style={{ padding: "8px 0" }}>
-              <Title level={4} style={{ margin: 0 }}>
-                Top Salers đạt KPI
-              </Title>
-              <Text type="secondary" style={{ fontSize: 13 }}>
-                Xếp hạng theo % vượt KPI
-              </Text>
-            </div>
-          }
-          extra={
-            <Space>
-              <Select
-                value={salerPeriod}
-                variant="borderless"
-                style={{ width: 100 }}
-                onChange={(val) => setSalerPeriod(val)}
-              >
-                <Select.Option value="month">Tháng</Select.Option>
-                <Select.Option value="quarter">Quý</Select.Option>
-                <Select.Option value="year">Năm</Select.Option>
-              </Select>
-              <Button type="link" onClick={() => navigate("/admin/salers")}>
-                Xem tất cả
-              </Button>
-            </Space>
-          }
-        >
-          {topSalersLoading ? (
-            <div style={{ textAlign: "center", padding: 40 }}>
-              <Spin />
-            </div>
-          ) : topSalers && topSalers.length > 0 ? (
-            <Row gutter={[24, 24]}>
-              {/* Reorder: 2nd, 1st, 3rd */}
-              {[topSalers[1], topSalers[0], topSalers[2]]
-                .filter(Boolean)
-                .map((saler: TopSaler, displayIndex: number) => {
-                  // Original index (0 = 1st place, 1 = 2nd place, 2 = 3rd place)
-                  const originalIndex =
-                    displayIndex === 0 ? 1 : displayIndex === 1 ? 0 : 2;
-
-                  // Color scheme based on ranking
-                  const colorScheme =
-                    originalIndex === 0
-                      ? { bg: "#fff7ed", text: "#ea580c", border: "#fdba74" } // Orange for 1st
-                      : originalIndex === 1
-                        ? { bg: "#dbeafe", text: "#2563eb", border: "#93c5fd" } // Blue for 2nd
-                        : { bg: "#dbeafe", text: "#2563eb", border: "#93c5fd" }; // Blue for 3rd
-
-                  return (
-                    <Col xs={24} md={8} key={saler.saler_id}>
-                      <Card
-                        size="small"
-                        style={{
-                          borderRadius: 12,
-                          background: colorScheme.bg,
-                          border: `2px solid ${colorScheme.border}`,
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                          }}
-                        >
-                          <Avatar
-                            src={saler.avatar}
-                            size={48}
-                            style={{
-                              ...getAvatarStyles(saler.name),
-                              fontWeight: "bold",
-                              border: `2px solid ${colorScheme.border}`,
-                            }}
-                          >
-                            {saler.name?.substring(0, 2).toUpperCase()}
-                          </Avatar>
-                          <div style={{ flex: 1 }}>
-                            <Text
-                              strong
-                              style={{
-                                display: "block",
-                                color: colorScheme.text,
-                              }}
-                            >
-                              {originalIndex === 0
-                                ? "🥇 "
-                                : originalIndex === 1
-                                  ? "🥈 "
-                                  : "🥉 "}
-                              {saler.name}
-                            </Text>
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                              {saler.total_orders} đơn hàng
-                            </Text>
-                          </div>
-                        </div>
-                        <div style={{ marginTop: 16 }}>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              marginBottom: 4,
-                            }}
-                          >
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                              KPI
-                            </Text>
-                            <Text
-                              strong
-                              style={{
-                                color: colorScheme.text,
-                              }}
-                            >
-                              {saler.completion_percentage.toFixed(1)}%
-                            </Text>
-                          </div>
-                          <div
-                            style={{
-                              height: 8,
-                              background: "#e5e7eb",
-                              borderRadius: 4,
-                              overflow: "hidden",
-                            }}
-                          >
-                            <div
-                              style={{
-                                height: "100%",
-                                width: `${Math.min(saler.completion_percentage, 100)}%`,
-                                background: colorScheme.text,
-                                borderRadius: 4,
-                              }}
-                            />
-                          </div>
-                          {saler.exceeded_by > 0 && (
-                            <Text
-                              style={{
-                                fontSize: 11,
-                                color: colorScheme.text,
-                                marginTop: 4,
-                                display: "block",
-                              }}
-                            >
-                              Vượt +{saler.exceeded_by.toFixed(1)}%
-                            </Text>
-                          )}
-                        </div>
-                      </Card>
-                    </Col>
-                  );
-                })}
-            </Row>
-          ) : (
-            <div style={{ textAlign: "center", padding: 40 }}>
-              <Text type="secondary">Chưa có dữ liệu</Text>
-            </div>
-          )}
-        </Card>
-
-        {/* Sales Snapshots Row */}
-        <Row gutter={[24, 24]}>
           {/* Weekly Sales Snapshot */}
           <Col xs={24} lg={12}>
             <Card
@@ -779,6 +633,8 @@ export default function AdminDashboardPage() {
                       axisLine={{ stroke: "#f1f5f9" }}
                       tickLine={{ stroke: "#f1f5f9" }}
                       tick={{ fill: "#64748b", fontSize: 11 }}
+                      domain={[0, 'auto']}
+                      hide={Math.max(...(weeklySales?.map(w => w.revenue) || [0])) === 0}
                       tickFormatter={(value) => {
                         if (value >= 1000000)
                           return `${(value / 1000000).toFixed(1)}Tr`;
@@ -817,142 +673,62 @@ export default function AdminDashboardPage() {
               </div>
             </Card>
           </Col>
+        </Row>
 
-          {/* Daily Sales Snapshot */}
-          <Col xs={24} lg={12}>
+        {/* Charts Row */}
+        <Row gutter={[24, 24]}>
+          <Col span={24}>
             <Card
               variant="borderless"
               style={{
                 borderRadius: 16,
                 boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                height: "100%",
               }}
               title={
                 <div style={{ padding: "8px 0" }}>
                   <Title level={4} style={{ margin: 0 }}>
-                    DOANH THU THEO NGÀY
+                    Tổng quan doanh thu
                   </Title>
                   <Text type="secondary" style={{ fontSize: 13 }}>
-                    Doanh thu 14 ngày gần đây
+                    Hiệu suất kinh doanh trong 30 ngày qua
                   </Text>
                 </div>
               }
+              extra={
+                <Select
+                  value={timeRange}
+                  variant="borderless"
+                  style={{ width: 120 }}
+                  onChange={(val) => setTimeRange(val)}
+                >
+                  <Select.Option value={30}>30 ngày qua</Select.Option>
+                  <Select.Option value={7}>7 ngày qua</Select.Option>
+                </Select>
+              }
             >
-              <div style={{ marginBottom: 16 }}>
-                <Table
-                  dataSource={dailySales?.slice(0, 7).sort((a, b) => {
-                    const dayOrder: Record<string, number> = {
-                      Mon: 1,
-                      Tue: 2,
-                      Wed: 3,
-                      Thu: 4,
-                      Fri: 5,
-                      Sat: 6,
-                      Sun: 7,
-                    };
-                    return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
-                  })}
-                  pagination={false}
-                  size="small"
-                  rowKey="date"
-                  columns={[
-                    {
-                      title: "THỨ",
-                      dataIndex: "dayOfWeek",
-                      key: "dayOfWeek",
-                      width: "15%",
-                      render: (day: string) => {
-                        const viDays: Record<string, string> = {
-                          Mon: "T2",
-                          Tue: "T3",
-                          Wed: "T4",
-                          Thu: "T5",
-                          Fri: "T6",
-                          Sat: "T7",
-                          Sun: "CN",
-                        };
-                        return (
-                          <Text style={{ fontWeight: 500 }}>
-                            {viDays[day] || day}
-                          </Text>
-                        );
-                      },
-                    },
-                    {
-                      title: "NGÀY",
-                      dataIndex: "date",
-                      key: "date",
-                      width: "20%",
-                      render: (date: string) => (
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {dayjs(date).format("DD/MM")}
-                        </Text>
-                      ),
-                    },
-                    {
-                      title: "XU HƯỚNG",
-                      key: "trend",
-                      width: "35%",
-                      render: (_: any, record: any) => {
-                        const maxRevenue = Math.max(
-                          ...(dailySales?.map((d) => d.revenue) || [1]),
-                        );
-                        const width = (record.revenue / maxRevenue) * 100;
-                        const dayColors: Record<string, string> = {
-                          Mon: "#10b981", // Green
-                          Tue: "#8b5cf6", // Purple
-                          Wed: "#10b981", // Green
-                          Thu: "#8b5cf6", // Purple
-                          Fri: "#10b981", // Green
-                          Sat: "#8b5cf6", // Purple
-                          Sun: "#10b981", // Green
-                        };
-                        return (
-                          <div
-                            style={{
-                              height: 20,
-                              background:
-                                dayColors[record.dayOfWeek] || "#10b981",
-                              width: `${width}%`,
-                              borderRadius: 4,
-                              minWidth: width > 0 ? 20 : 0,
-                            }}
-                          />
-                        );
-                      },
-                    },
-                    {
-                      title: "DOANH THU",
-                      dataIndex: "revenue",
-                      key: "revenue",
-                      align: "right" as const,
-                      width: "30%",
-                      render: (revenue: number) => (
-                        <Text strong style={{ fontSize: 14 }}>
-                          {revenue.toLocaleString("vi-VN")}đ
-                        </Text>
-                      ),
-                    },
-                  ]}
-                />
-              </div>
-
-              <div style={{ height: 200 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={dailySales?.slice(0, 14).sort((a, b) => {
-                      const dayOrder: Record<string, number> = {
-                        Mon: 1,
-                        Tue: 2,
-                        Wed: 3,
-                        Thu: 4,
-                        Fri: 5,
-                        Sat: 6,
-                        Sun: 7,
-                      };
-                      return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
-                    })}
-                  >
+              <div style={{ width: "100%", height: 350 }}>
+                <ResponsiveContainer>
+                  <AreaChart data={revenueTrend}>
+                    <defs>
+                      <linearGradient
+                        id="colorRevenue"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#10b981"
+                          stopOpacity={0.1}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#10b981"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
@@ -962,19 +738,22 @@ export default function AdminDashboardPage() {
                       dataKey="date"
                       axisLine={{ stroke: "#f1f5f9" }}
                       tickLine={{ stroke: "#f1f5f9" }}
-                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      tick={{ fill: "#64748b", fontSize: 12 }}
+                      dy={10}
                       tickFormatter={(value) => dayjs(value).format("DD/MM")}
                     />
                     <YAxis
                       axisLine={{ stroke: "#f1f5f9" }}
                       tickLine={{ stroke: "#f1f5f9" }}
-                      tick={{ fill: "#64748b", fontSize: 11 }}
+                      tick={{ fill: "#64748b", fontSize: 12 }}
+                      domain={[0, 'auto']}
+                      hide={Math.max(...(revenueTrend?.map(t => t.revenue) || [0])) === 0}
                       tickFormatter={(value) => {
                         if (value >= 1000000)
                           return `${(value / 1000000).toFixed(1)}Tr`;
                         if (value >= 1000)
                           return `${(value / 1000).toFixed(0)}k`;
-                        return `${value}`;
+                        return value.toString();
                       }}
                     />
                     <Tooltip
@@ -984,47 +763,19 @@ export default function AdminDashboardPage() {
                         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                       }}
                       formatter={(value: any) => [
-                        `${value?.toLocaleString("vi-VN")}đ`,
+                        value?.toLocaleString("vi-VN") + "đ",
                         "Doanh thu",
                       ]}
-                      labelFormatter={(value) =>
-                        dayjs(value).format("dddd, DD/MM/YYYY")
-                      }
                     />
-                    <Bar dataKey="revenue" radius={[4, 4, 0, 0]}>
-                      {dailySales
-                        ?.slice(0, 14)
-                        .sort((a, b) => {
-                          const dayOrder: Record<string, number> = {
-                            Mon: 1,
-                            Tue: 2,
-                            Wed: 3,
-                            Thu: 4,
-                            Fri: 5,
-                            Sat: 6,
-                            Sun: 7,
-                          };
-                          return dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek];
-                        })
-                        .map((entry, index) => {
-                          const dayColors: Record<string, string> = {
-                            Mon: "#10b981", // Green
-                            Tue: "#8b5cf6", // Purple
-                            Wed: "#10b981", // Green
-                            Thu: "#8b5cf6", // Purple
-                            Fri: "#10b981", // Green
-                            Sat: "#8b5cf6", // Purple
-                            Sun: "#10b981", // Green
-                          };
-                          return (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={dayColors[entry.dayOfWeek] || "#10b981"}
-                            />
-                          );
-                        })}
-                    </Bar>
-                  </BarChart>
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorRevenue)"
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             </Card>

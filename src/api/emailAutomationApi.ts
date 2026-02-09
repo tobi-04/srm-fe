@@ -6,11 +6,9 @@ export interface EmailAutomation {
   description?: string;
   trigger_type: "event" | "group";
   event_type?: string;
-  target_group?:
-    | "all_students"
-    | "unpurchased_students"
-    | "purchased_students"
-    | "salers";
+  target_group?: string;
+  product_type?: "COURSE" | "BOOK" | "INDICATOR";
+  product_id?: string;
   traffic_sources?: string[];
   schedule_type?: "once" | "recurring";
   cron_expression?: string;
@@ -50,11 +48,9 @@ export interface CreateAutomationDto {
   description?: string;
   trigger_type?: "event" | "group";
   event_type?: string;
-  target_group?:
-    | "all_students"
-    | "unpurchased_students"
-    | "purchased_students"
-    | "salers";
+  target_group?: string;
+  product_type?: "COURSE" | "BOOK" | "INDICATOR";
+  product_id?: string;
   traffic_sources?: string[];
   schedule_type?: "once" | "recurring";
   cron_expression?: string;
@@ -70,19 +66,40 @@ export interface CreateStepDto {
   body_template: string;
 }
 
+export interface ProductHelper {
+  courses: { id: string; title: string; count: number; unpurchasedCount: number }[];
+  books: { id: string; title: string; count: number; unpurchasedCount: number }[];
+  indicators: {
+    id: string;
+    title: string;
+    count: number;
+    unpurchasedCount: number;
+  }[];
+  groupCounts: {
+    all_students: number;
+    purchased_students: number;
+    unpurchased_students: number;
+    book_purchased_users: number;
+    indicator_purchased_users: number;
+    non_book_purchased_users: number;
+    non_indicator_purchased_users: number;
+    salers: number;
+  };
+}
+
 // Authorization is handled by apiClient interceptors
 
 export const emailAutomationApi = {
   // Automations
   async getAutomations(includeInactive = true): Promise<EmailAutomation[]> {
     const response = await apiClient.get(
-      `/email-automation?includeInactive=${includeInactive}`
+      `/email-automation?includeInactive=${includeInactive}`,
     );
     return response.data;
   },
 
   async getAutomation(
-    id: string
+    id: string,
   ): Promise<EmailAutomation & { steps: EmailAutomationStep[] }> {
     const response = await apiClient.get(`/email-automation/${id}`);
     return response.data;
@@ -95,7 +112,7 @@ export const emailAutomationApi = {
 
   async updateAutomation(
     id: string,
-    data: Partial<CreateAutomationDto>
+    data: Partial<CreateAutomationDto>,
   ): Promise<EmailAutomation> {
     const response = await apiClient.put(`/email-automation/${id}`, data);
     return response.data;
@@ -104,8 +121,13 @@ export const emailAutomationApi = {
   async toggleAutomation(id: string): Promise<EmailAutomation> {
     const response = await apiClient.patch(
       `/email-automation/${id}/toggle`,
-      {}
+      {},
     );
+    return response.data;
+  },
+
+  async copyAutomation(id: string): Promise<EmailAutomation> {
+    const response = await apiClient.post(`/email-automation/${id}/copy`);
     return response.data;
   },
 
@@ -116,29 +138,29 @@ export const emailAutomationApi = {
   // Steps
   async getSteps(automationId: string): Promise<EmailAutomationStep[]> {
     const response = await apiClient.get(
-      `/email-automation/${automationId}/steps`
+      `/email-automation/${automationId}/steps`,
     );
     return response.data;
   },
 
   async addStep(
     automationId: string,
-    data: CreateStepDto
+    data: CreateStepDto,
   ): Promise<EmailAutomationStep> {
     const response = await apiClient.post(
       `/email-automation/${automationId}/steps`,
-      data
+      data,
     );
     return response.data;
   },
 
   async updateStep(
     stepId: string,
-    data: Partial<CreateStepDto>
+    data: Partial<CreateStepDto>,
   ): Promise<EmailAutomationStep> {
     const response = await apiClient.put(
       `/email-automation/steps/${stepId}`,
-      data
+      data,
     );
     return response.data;
   },
@@ -167,32 +189,62 @@ export const emailAutomationApi = {
     if (filters?.skip) params.append("skip", filters.skip.toString());
 
     const response = await apiClient.get(
-      `/email-automation/logs/history?${params.toString()}`
+      `/email-automation/logs/history?${params.toString()}`,
     );
     return response.data;
   },
 
   // Template helpers
   async getTemplateVariables(
-    eventType: string
+    eventType: string,
   ): Promise<{ variables: string[] }> {
     const response = await apiClient.get(
-      `/email-automation/templates/variables/${eventType}`
+      `/email-automation/templates/variables/${eventType}`,
     );
     return response.data;
   },
 
   async previewTemplate(
     template: string,
-    eventType: string
+    eventType: string,
   ): Promise<{ preview: string }> {
     const response = await apiClient.post(
       "/email-automation/templates/preview",
       {
         template,
         eventType,
-      }
+      },
     );
+    return response.data;
+  },
+
+  async getProducts(): Promise<ProductHelper> {
+    const response = await apiClient.get("/email-automation/helper/products");
+    return response.data;
+  },
+
+  async getUsers(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    targetGroup?: string;
+    productType?: string;
+    productId?: string;
+  }): Promise<{
+    users: any[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const query = new URLSearchParams();
+    if (params.page) query.append("page", params.page.toString());
+    if (params.limit) query.append("limit", params.limit.toString());
+    if (params.search) query.append("search", params.search);
+    if (params.targetGroup) query.append("targetGroup", params.targetGroup);
+    if (params.productType) query.append("productType", params.productType);
+    if (params.productId) query.append("productId", params.productId);
+
+    const response = await apiClient.get(`/email-automation/users?${query.toString()}`);
     return response.data;
   },
 };
