@@ -195,30 +195,32 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
 
         {/* Benefits List */}
         <div style={{ marginBottom: "24px" }}>
-          {benefits.map((benefit, index) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "12px",
-              }}
-            >
-              <MdCheckCircle
+          {benefits
+            .filter((benefit) => benefit.trim() !== "")
+            .map((benefit, index) => (
+              <div
+                key={index}
                 style={{
-                  fontSize: "clamp(20px, 24px, 24px)",
-                  color: checkIconColor,
-                  marginRight: "12px",
-                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "12px",
                 }}
-              />
-              <span
-                style={{ fontSize: "clamp(14px, 16px, 16px)", color: "#000" }}
               >
-                {benefit}
-              </span>
-            </div>
-          ))}
+                <MdCheckCircle
+                  style={{
+                    fontSize: "clamp(20px, 24px, 24px)",
+                    color: checkIconColor,
+                    marginRight: "12px",
+                    flexShrink: 0,
+                  }}
+                />
+                <span
+                  style={{ fontSize: "clamp(14px, 16px, 16px)", color: "#000" }}
+                >
+                  {benefit.trim()}
+                </span>
+              </div>
+            ))}
         </div>
 
         {/* CTA Button - Show based on countdown or immediate setting */}
@@ -317,15 +319,13 @@ const SalesPageContentSettings = () => {
                   rows={2}
                 />
               </Form.Item>
-              <Form.Item label="Benefits (comma-separated)">
+              <Form.Item label="Benefits (one per line)">
                 <Input.TextArea
-                  value={props.benefits.join(", ")}
+                  value={props.benefits.join("\n")}
                   onChange={(e) =>
                     setProp(
                       (props: any) =>
-                        (props.benefits = e.target.value
-                          .split(",")
-                          .map((b: string) => b.trim())),
+                        (props.benefits = e.target.value.split("\n")),
                     )
                   }
                   rows={3}

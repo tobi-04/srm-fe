@@ -38,12 +38,25 @@ const MyBooksPage: React.FC = () => {
     queryFn: () => bookApi.getMyBooks().then((res) => res.data),
   });
 
+  const [downloading, setDownloading] = React.useState<Record<string, boolean>>({});
+
   const handleDownload = async (bookId: string, fileId: string) => {
+    setDownloading((prev) => ({ ...prev, [fileId]: true }));
     try {
       const response = await bookApi.getDownloadUrl(bookId, fileId);
-      window.open(response.data.url, "_blank");
+      const url = response.data.url;
+      
+      // Create a temporary link to trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', ''); // Force download if possible
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       message.error("Không thể lấy link tải sách. Vui lòng thử lại sau.");
+    } finally {
+      setDownloading((prev) => ({ ...prev, [fileId]: false }));
     }
   };
 
@@ -105,9 +118,8 @@ const MyBooksPage: React.FC = () => {
                           <Button
                             type="link"
                             icon={<DownloadOutlined />}
-                            onClick={() =>
-                              handleDownload(item.book._id, file._id)
-                            }
+                            onClick={() => handleDownload(item.book._id, file._id)}
+                            loading={downloading[file._id]}
                           >
                             Tải về
                           </Button>,

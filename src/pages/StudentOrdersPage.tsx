@@ -31,10 +31,24 @@ export default function StudentOrdersPage() {
       responsive: ["sm"] as any,
     },
     {
-      title: "KHÓA HỌC",
-      dataIndex: "course_id",
-      key: "course",
-      render: (course: any) => <Text>{course?.title || "N/A"}</Text>,
+      title: "SẢN PHẨM",
+      dataIndex: "name",
+      key: "name",
+      render: (name: string, record: any) => {
+        let color = "blue";
+        if (record.type === "BOOK") color = "cyan";
+        if (record.type === "INDICATOR") color = "purple";
+        
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Text strong>{name}</Text>
+            <Tag color={color} style={{ width: 'fit-content', marginTop: 4, fontSize: 10 }}>
+              {record.type === "COURSE" ? "KHÓA HỌC" : 
+               record.type === "BOOK" ? "SÁCH" : "INDICATOR"}
+            </Tag>
+          </div>
+        );
+      },
     },
     {
       title: "SỐ TIỀN",
@@ -52,19 +66,34 @@ export default function StudentOrdersPage() {
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        const statusConfig = {
+        const statusConfig: any = {
           completed: {
             color: "success",
             icon: <MdCheckCircle />,
             text: "Hoàn thành",
+          },
+          PAID: {
+            color: "success",
+            icon: <MdCheckCircle />,
+            text: "Đã thanh toán",
+          },
+          ACTIVE: {
+            color: "success",
+            icon: <MdCheckCircle />,
+            text: "Đang hoạt động",
           },
           pending: {
             color: "warning",
             icon: <MdAccessTime />,
             text: "Chờ thanh toán",
           },
+          PENDING: {
+            color: "warning",
+            icon: <MdAccessTime />,
+            text: "Chờ thanh toán",
+          },
         };
-        const config = statusConfig[status as keyof typeof statusConfig] || {
+        const config = statusConfig[status] || {
           color: "default",
           icon: null,
           text: status,
@@ -81,7 +110,7 @@ export default function StudentOrdersPage() {
     },
     {
       title: "NGÀY MUA",
-      dataIndex: "paid_at",
+      dataIndex: "created_at",
       key: "date",
       render: (date: string) =>
         date ? new Date(date).toLocaleDateString("vi-VN") : "N/A",

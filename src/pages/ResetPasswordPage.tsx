@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Form, Input, Button, Card, message, Typography } from 'antd';
+import { useState, useEffect } from 'react';
+import { Form, Input, Button, Card, message, Typography, Alert } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { authApi } from '../api/auth';
 
 const { Title, Text } = Typography;
@@ -12,11 +12,23 @@ export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
 
-  const onFinish = async (values: { token: string; new_password: string }) => {
+  // Validate token on mount
+  useEffect(() => {
+    if (!token) {
+      message.error('Invalid or missing reset token. Please request a new reset link.');
+    }
+  }, [token]);
+
+  const onFinish = async (values: { new_password: string }) => {
+    if (!token) {
+      message.error('Reset token is missing. Please use the link from your email.');
+      return;
+    }
+
     setLoading(true);
     try {
       await authApi.resetPassword({
-        token: values.token,
+        token: token,
         new_password: values.new_password,
       });
       message.success('Password reset successfully! Please login with your new password.');
@@ -88,26 +100,28 @@ export default function ResetPasswordPage() {
             </Text>
           </div>
 
+          {!token && (
+            <Alert
+              message="Invalid Reset Link"
+              description={
+                <div>
+                  <p>The reset link is invalid or missing.</p>
+                  <p>Please request a new password reset link from the login page.</p>
+                </div>
+              }
+              type="error"
+              showIcon
+              style={{ marginBottom: 24, borderRadius: '8px' }}
+            />
+          )}
+
           <Form
             name="resetPassword"
             onFinish={onFinish}
             autoComplete="off"
             layout="vertical"
-            initialValues={{ token }}
             requiredMark={false}
           >
-            <Form.Item
-              name="token"
-              label={<span style={{ fontWeight: 500 }}>Reset Token</span>}
-              rules={[{ required: true, message: 'Please input the reset token!' }]}
-            >
-              <Input.TextArea
-                placeholder="Paste your reset token here"
-                autoSize={{ minRows: 3, maxRows: 5 }}
-                style={{ borderRadius: '8px' }}
-              />
-            </Form.Item>
-
             <Form.Item
               name="new_password"
               label={<span style={{ fontWeight: 500 }}>New Password</span>}
@@ -153,6 +167,7 @@ export default function ResetPasswordPage() {
                 type="primary"
                 htmlType="submit"
                 loading={loading}
+                disabled={!token}
                 size="large"
                 block
                 style={{
@@ -168,6 +183,32 @@ export default function ResetPasswordPage() {
                 Reset Password
               </Button>
             </Form.Item>
+
+            <div style={{ textAlign: 'center', fontSize: '15px' }}>
+              <Link
+                to="/forgot-password"
+                style={{
+                  color: '#667eea',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  marginRight: 16
+                }}
+              >
+                Request new link
+              </Link>
+              <span style={{ color: '#d9d9d9' }}>•</span>
+              <Link
+                to="/login"
+                style={{
+                  color: '#667eea',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  marginLeft: 16
+                }}
+              >
+                Back to login
+              </Link>
+            </div>
           </Form>
         </Card>
       </div>

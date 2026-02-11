@@ -126,29 +126,31 @@ export const InstructorBio: React.FC<InstructorBioProps> = ({
 
           {/* Benefits List */}
           <div style={{ marginBottom: "24px" }}>
-            {benefits.map((benefit, index) => (
-              <div
-                key={index}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  marginBottom: "12px",
-                }}>
-                <MdCheckCircle
+            {benefits
+              .filter((benefit) => benefit.trim() !== "")
+              .map((benefit, index) => (
+                <div
+                  key={index}
                   style={{
-                    fontSize: "24px",
-                    color: checkIconColor,
-                    marginRight: "12px",
-                    flexShrink: 0,
-                    marginTop: "2px",
-                  }}
-                />
-                <span
-                  style={{ fontSize: "16px", color: "#000", lineHeight: 1.5 }}>
-                  {benefit}
-                </span>
-              </div>
-            ))}
+                    display: "flex",
+                    alignItems: "flex-start",
+                    marginBottom: "12px",
+                  }}>
+                  <MdCheckCircle
+                    style={{
+                      fontSize: "24px",
+                      color: checkIconColor,
+                      marginRight: "12px",
+                      flexShrink: 0,
+                      marginTop: "2px",
+                    }}
+                  />
+                  <span
+                    style={{ fontSize: "16px", color: "#000", lineHeight: 1.5 }}>
+                    {benefit.trim()}
+                  </span>
+                </div>
+              ))}
           </div>
 
           {/* CTA Button */}
@@ -256,15 +258,13 @@ const InstructorBioSettings = () => {
                   }
                 />
               </Form.Item>
-              <Form.Item label="Benefits (comma-separated)">
+              <Form.Item label="Benefits (one per line)">
                 <Input.TextArea
-                  value={props.benefits.join(", ")}
+                  value={props.benefits.join("\n")}
                   onChange={(e) =>
                     setProp(
                       (props: any) =>
-                        (props.benefits = e.target.value
-                          .split(",")
-                          .map((b: string) => b.trim())),
+                        (props.benefits = e.target.value.split("\n")),
                     )
                   }
                   rows={5}

@@ -120,10 +120,10 @@ export default function AdminDashboardPage() {
     },
     {
       title: "Tổng Email",
-      value: summary?.emails.total?.toLocaleString("vi-VN") || "0",
+      value: summary?.emails.allEmails?.toLocaleString("vi-VN") || "0",
       icon: <MdMail size={20} color="#f78404" />,
       change: "Tất cả",
-      label: "Hệ thống",
+      label: "Đã mua hàng",
       isPositive: true,
       iconBg: "#fff7ed",
     },

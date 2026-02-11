@@ -36,6 +36,7 @@ export interface DashboardSummary {
   };
   emails: {
     total: number;
+    allEmails: number;
     label: string;
   };
 }

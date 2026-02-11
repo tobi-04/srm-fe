@@ -53,35 +53,37 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
       </h3>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {instructions.map((instruction, index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "12px",
-            }}>
+        {instructions
+          .filter((instruction) => instruction.trim() !== "")
+          .map((instruction, index) => (
             <div
+              key={index}
               style={{
-                width: "24px",
-                height: "24px",
-                borderRadius: "50%",
-                background: "#1890ff",
-                color: "#fff",
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "14px",
-                fontWeight: "bold",
-                flexShrink: 0,
+                alignItems: "flex-start",
+                gap: "12px",
               }}>
-              {index + 1}
+              <div
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  borderRadius: "50%",
+                  background: "#1890ff",
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  flexShrink: 0,
+                }}>
+                {index + 1}
+              </div>
+              <span style={{ fontSize: "16px", lineHeight: "24px" }}>
+                {instruction.trim()}
+              </span>
             </div>
-            <span style={{ fontSize: "16px", lineHeight: "24px" }}>
-              {instruction}
-            </span>
-          </div>
-        ))}
+          ))}
       </div>
 
       <div
@@ -125,15 +127,13 @@ const PaymentInfoSettings = () => {
                   }
                 />
               </Form.Item>
-              <Form.Item label="Instructions (comma-separated)">
+              <Form.Item label="Instructions (one per line)">
                 <Input.TextArea
-                  value={props.instructions.join(", ")}
+                  value={props.instructions.join("\n")}
                   onChange={(e) =>
                     setProp(
                       (props: any) =>
-                        (props.instructions = e.target.value
-                          .split(",")
-                          .map((i: string) => i.trim())),
+                        (props.instructions = e.target.value.split("\n")),
                     )
                   }
                   rows={4}
