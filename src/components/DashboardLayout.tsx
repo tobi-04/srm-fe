@@ -274,10 +274,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 display: "block",
               }}
             >
-              CRM/LMS cá nhân
+              ThaisuInvest
             </Text>
             <Text type="secondary" style={{ fontSize: 11 }}>
-              Hệ thống quản lý
+              Hệ thống quản trị
             </Text>
           </div>
         )}

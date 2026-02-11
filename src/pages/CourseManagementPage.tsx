@@ -861,6 +861,9 @@ export default function CourseManagementPage() {
               <Select.Option value="published">Xuất bản</Select.Option>
             </Select>
           </Form.Item>
+          <Form.Item name="zalo_group_url" label="Link nhóm Zalo">
+            <Input placeholder="Ví dụ: https://zalo.me/g/xxxxxx" />
+          </Form.Item>
           <Form.Item
             name="syllabus"
             label="Chương trình học (mỗi chủ đề một dòng)"

@@ -31,6 +31,7 @@ export default function LandingPageView() {
     data: landingPage,
     isLoading,
     error,
+    refetch: refetchLandingPage,
   } = useQuery({
     queryKey: ["landing-page-by-course-slug", slug],
     queryFn: () => getLandingPageByCourseSlug(slug!),
@@ -62,6 +63,8 @@ export default function LandingPageView() {
 
     if (urlStep === 3 && transaction?.status === "completed") {
       message.success("Thanh toán đã được xác nhận!");
+      // Refetch landing page to get the latest data (including sensitive info if user is now enrolled)
+      refetchLandingPage();
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
@@ -85,14 +88,15 @@ export default function LandingPageView() {
 
   // Update URL to ensure step is present but avoid loops
   useEffect(() => {
-    // Force step 2 for books/indicators flow if landing on default
+    // Force step 2 for books/indicators flow if landing on default (exclude success page)
     if (
       landingPage &&
       (landingPage.resource_type === "book" ||
         landingPage.book_id ||
         landingPage.resource_type === "indicator" ||
         landingPage.indicator_id) &&
-      urlStep !== 2
+      urlStep !== 2 &&
+      urlStep !== 4
     ) {
       setSearchParams(
         (prev) => {
@@ -180,6 +184,21 @@ export default function LandingPageView() {
 
   // Render success page
   if (urlStep === 4) {
+    const getZaloUrl = () => {
+      if (landingPage.resource_type === "course" && typeof landingPage.course_id === "object") {
+        return landingPage.course_id.zalo_group_url;
+      }
+      if (landingPage.resource_type === "book" && typeof landingPage.book_id === "object") {
+        return landingPage.book_id.zalo_group_url;
+      }
+      if (landingPage.resource_type === "indicator" && typeof landingPage.indicator_id === "object") {
+        return landingPage.indicator_id.zalo_group_url;
+      }
+      return null;
+    };
+
+    const zaloUrl = getZaloUrl();
+
     return (
       <Layout style={{ minHeight: "100vh", background: "#f0f2f5" }}>
         <Content
@@ -244,6 +263,23 @@ export default function LandingPageView() {
                 }}
               >
                 ĐĂNG NHẬP & HỌC NGAY
+              </AntButton>,
+              <AntButton
+                type="default"
+                key="zalo"
+                size="large"
+                style={{
+                  height: "50px",
+                  padding: "0 40px",
+                  fontSize: "18px",
+                  borderRadius: "8px",
+                  borderColor: "#0068ff",
+                  color: "#0068ff",
+                  marginTop: "16px",
+                }}
+                onClick={() => window.open(zaloUrl || "https://zalo.me/g/fallback", "_blank")}
+              >
+                THAM GIA NHÓM ZALO {!zaloUrl && "(Chưa có link)"}
               </AntButton>,
             ]}
           />

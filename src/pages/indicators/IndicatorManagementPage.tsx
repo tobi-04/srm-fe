@@ -463,6 +463,10 @@ const IndicatorManagementPage: React.FC = () => {
             />
           </Form.Item>
 
+          <Form.Item name="zalo_group_url" label="Link nhóm Zalo">
+            <Input size="large" placeholder="Ví dụ: https://zalo.me/g/xxxxxx" />
+          </Form.Item>
+
           <Form.Item>
             <Button
               type="primary"

@@ -22,7 +22,7 @@ import {
 import { MdShowChart } from "react-icons/md";
 import { indicatorApi, IndicatorSubscription } from "../../api/indicatorApi";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "../../components/DashboardLayout";
+import StudentDashboardLayout from "../../components/StudentDashboardLayout";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
@@ -58,7 +58,7 @@ const MyIndicatorsPage: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
+    <StudentDashboardLayout>
       <div style={{ padding: "24px 32px" }}>
         <div style={{ marginBottom: 32 }}>
           <Title level={2} style={{ marginBottom: 8 }}>
@@ -143,11 +143,6 @@ const MyIndicatorsPage: React.FC = () => {
                         ? dayjs(sub.end_at).format("DD/MM/YYYY")
                         : "N/A"}
                     </Text>
-                    {sub.auto_renew && (
-                      <Tag color="blue" style={{ fontSize: 11 }}>
-                        Tự động gia hạn
-                      </Tag>
-                    )}
                   </Space>
 
                   {sub.status === "ACTIVE" && (
@@ -207,24 +202,13 @@ const MyIndicatorsPage: React.FC = () => {
                       </Space>
                     </>
                   )}
-
-                  <Button
-                    type="link"
-                    block
-                    style={{ marginTop: 16 }}
-                    onClick={() =>
-                      navigate(`/indicators/${sub.indicator.slug}`)
-                    }
-                  >
-                    Xem chi tiết
-                  </Button>
                 </Card>
               </Col>
             ))}
           </Row>
         )}
       </div>
-    </DashboardLayout>
+    </StudentDashboardLayout>
   );
 };
 

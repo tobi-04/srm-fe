@@ -110,10 +110,42 @@ const BookManagementPage: React.FC = () => {
     },
   });
 
-  const handleEdit = (record: any) => {
-    setEditingBook(record);
-    form.setFieldsValue(record);
-    setIsModalOpen(true);
+  const handleEdit = async (record: any) => {
+    try {
+      message.loading({ content: "Đang tải thông tin sách...", key: "fetch-book" });
+      const res = await bookApi.adminGetById(record._id);
+      const bookData = res.data;
+      setEditingBook(bookData);
+      form.setFieldsValue(bookData);
+
+      // Map existing files to fileList for display in the modal
+      if (bookData.files && bookData.files.length > 0) {
+        setFileList(
+          bookData.files.map((f: any) => {
+            const fileNameWithTimestamp = f.file_path.split("/").pop() || "";
+            const fileName = fileNameWithTimestamp.includes("-")
+              ? fileNameWithTimestamp.substring(fileNameWithTimestamp.indexOf("-") + 1)
+              : fileNameWithTimestamp;
+
+            return {
+              uid: f._id,
+              name: `[${f.file_type}] ${fileName}`,
+              status: "done",
+              url: f.file_path,
+              isExisting: true,
+            };
+          }),
+        );
+      } else {
+        setFileList([]);
+      }
+
+      setIsModalOpen(true);
+      message.destroy("fetch-book");
+    } catch (error) {
+      console.error(error);
+      message.error({ content: "Lỗi khi tải thông tin sách", key: "fetch-book" });
+    }
   };
 
   const handleSubmit = (values: any) => {
@@ -138,6 +170,17 @@ const BookManagementPage: React.FC = () => {
         formData.append("files", file.originFileObj);
       }
     });
+
+    // Check if any existing files were removed from the fileList
+    if (editingBook && editingBook.files) {
+      const currentUids = fileList.map((f) => f.uid);
+      editingBook.files.forEach((oldFile: any) => {
+        if (!currentUids.includes(oldFile._id)) {
+          // If the user removed an existing file from the list, delete it
+          bookApi.adminDeleteFile(oldFile._id).catch(console.error);
+        }
+      });
+    }
 
     // Only hit the API if something actually changed or new files were added
     const hasChanges = Array.from((formData as any).entries()).length > 0;
@@ -170,6 +213,7 @@ const BookManagementPage: React.FC = () => {
       onSuccess("ok");
       message.success("Tải file lên thành công");
       queryClient.invalidateQueries({ queryKey: ["admin-books"] });
+      setIsFileModalOpen(false); // Close modal after success
     } catch (err) {
       onError(err);
       message.error("Tải file thất bại");
@@ -276,35 +320,96 @@ const BookManagementPage: React.FC = () => {
     {
       title: "Files",
       key: "files",
-      render: (record: any) => (
-        <Space direction="vertical" size={4}>
-          {record.files?.map((f: any) => (
-            <Tag
-              key={f._id}
-              closable
-              onClose={() => deleteFileMutation.mutate(f._id)}
-            >
-              {f.file_type === "PDF" ? (
-                <FilePdfOutlined />
-              ) : (
-                <FileTextOutlined />
-              )}{" "}
-              {f.file_type}
-            </Tag>
-          ))}
-          <Button
-            size="small"
-            type="dashed"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setSelectedBookId(record._id);
-              setIsFileModalOpen(true);
-            }}
-          >
-            Thêm file
-          </Button>
-        </Space>
-      ),
+      width: 220,
+      render: (record: any) => {
+        const hasPdf = record.files?.some((f: any) => f.file_type === "PDF");
+        const hasEpub = record.files?.some((f: any) => f.file_type === "EPUB");
+
+        return (
+          <Space direction="vertical" size={4} style={{ width: "100%" }}>
+            {record.files?.map((f: any) => {
+              // Extract filename from path (remove timestamp prefix)
+              const fullPath = f.file_path || "";
+              const fileNameWithTimestamp = fullPath.split("/").pop() || "";
+              const fileName = fileNameWithTimestamp.includes("-")
+                ? fileNameWithTimestamp.substring(fileNameWithTimestamp.indexOf("-") + 1)
+                : fileNameWithTimestamp;
+
+              return (
+                <div
+                  key={f._id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    background: "#f5f5f5",
+                    padding: "2px 8px",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    width: "100%",
+                  }}
+                >
+                  <Space size={4} style={{ overflow: "hidden", flex: 1 }}>
+                    {f.file_type === "PDF" ? (
+                      <FilePdfOutlined style={{ color: "#ff4d4f" }} />
+                    ) : (
+                      <FileTextOutlined style={{ color: "#1890ff" }} />
+                    )}
+                    <Typography.Text
+                      style={{ fontSize: "11px", maxWidth: "100px" }}
+                      ellipsis={{ tooltip: fileName }}
+                    >
+                      {fileName}
+                    </Typography.Text>
+                  </Space>
+                  <Space size={2}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<EditOutlined style={{ fontSize: "12px" }} />}
+                      onClick={() => {
+                        setSelectedBookId(record._id);
+                        setIsFileModalOpen(true);
+                      }}
+                      title="Thay thế file"
+                      style={{ padding: "0 4px" }}
+                    />
+                    <Popconfirm
+                      title="Xóa file này?"
+                      onConfirm={() => deleteFileMutation.mutate(f._id)}
+                      okText="Xóa"
+                      cancelText="Hủy"
+                    >
+                      <Button
+                        type="text"
+                        size="small"
+                        danger
+                        icon={<DeleteOutlined style={{ fontSize: "12px" }} />}
+                        style={{ padding: "0 4px" }}
+                      />
+                    </Popconfirm>
+                  </Space>
+                </div>
+              );
+            })}
+
+            {(!hasPdf || !hasEpub) && (
+              <Button
+                size="small"
+                type="dashed"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setSelectedBookId(record._id);
+                  setIsFileModalOpen(true);
+                }}
+                style={{ width: "100%", fontSize: "11px" }}
+              >
+                Thêm {!hasPdf ? "PDF" : ""}{!hasPdf && !hasEpub ? " / " : ""}{!hasEpub ? "EPUB" : ""}
+              </Button>
+            )}
+          </Space>
+        );
+      },
     },
     {
       title: "Hành động",
@@ -502,6 +607,10 @@ const BookManagementPage: React.FC = () => {
               </Form.Item>
             </Col>
           </Row>
+
+          <Form.Item name="zalo_group_url" label="Link nhóm Zalo">
+            <Input placeholder="Ví dụ: https://zalo.me/g/xxxxxx" />
+          </Form.Item>
 
           <Form.Item label="Chọn file PDF hoặc EPUB">
             <Upload

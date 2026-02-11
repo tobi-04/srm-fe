@@ -4,7 +4,6 @@ import { Row, Col, Space, Divider } from "antd";
 import {
   MdSchool,
   MdEmail,
-  MdPhone,
   MdLocationOn,
   MdFacebook,
 } from "react-icons/md";
@@ -234,17 +233,7 @@ const PublicFooter: React.FC = () => {
                 />
                 <div>
                   <div style={{ color: "#cbd5e1", fontSize: 14 }}>
-                    support@srmfinedu.vn
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 12, alignItems: "start" }}>
-                <MdPhone
-                  style={{ fontSize: 20, color: "#f78404", marginTop: 2 }}
-                />
-                <div>
-                  <div style={{ color: "#cbd5e1", fontSize: 14 }}>
-                    +84 123 456 789
+                    thaisuinvest@gmail.com
                   </div>
                 </div>
               </div>

@@ -19,12 +19,12 @@ const SEO: React.FC<SEOProps> = ({
   ogType = "website",
   ogImage,
   ogUrl,
-  twitterHandle = "@srm_lesson",
+  twitterHandle = "@thaisuinvest",
   noindex = false,
 }) => {
-  const siteTitle = "SRM Lesson - Nền tảng học tập trực tuyến";
+  const siteTitle = "ThaisuInvest - Nền tảng học tập trực tuyến";
   const defaultDescription =
-    "SRM Lesson cung cấp các khóa học chất lượng cao về tài chính, kinh doanh và phát triển cá nhân.";
+    "ThaisuInvest cung cấp các khóa học chất lượng cao về tài chính, kinh doanh và phát triển cá nhân.";
   const defaultOgImage = "/og-image.jpg"; // Placeholder for default social image
 
   const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
@@ -46,7 +46,7 @@ const SEO: React.FC<SEOProps> = ({
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={currentOgUrl} />
       <meta property="og:image" content={currentOgImage} />
-      <meta property="og:site_name" content="SRM Lesson" />
+      <meta property="og:site_name" content="ThaisuInvest" />
 
       {/* Twitter Tags */}
       <meta name="twitter:card" content="summary_large_image" />

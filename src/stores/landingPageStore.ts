@@ -10,6 +10,7 @@ export interface LandingPage {
         title: string;
         slug: string;
         price: number;
+        zalo_group_url?: string;
         [key: string]: any;
       };
   book_id?:
@@ -18,6 +19,7 @@ export interface LandingPage {
         _id: string;
         title: string;
         price: number;
+        zalo_group_url?: string;
         [key: string]: any;
       };
   indicator_id?:
@@ -26,6 +28,7 @@ export interface LandingPage {
         _id: string;
         title: string;
         price: number;
+        zalo_group_url?: string;
         [key: string]: any;
       };
   title: string;

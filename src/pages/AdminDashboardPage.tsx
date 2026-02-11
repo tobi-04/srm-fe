@@ -17,8 +17,6 @@ import {
   MdPersonAdd,
   MdMail,
   MdGroups,
-  MdTrendingUp,
-  MdTrendingDown,
   MdPerson,
 } from "react-icons/md";
 import { getAvatarStyles } from "../utils/color";
@@ -96,36 +94,45 @@ export default function AdminDashboardPage() {
     {
       title: "Tổng doanh thu",
       value: summary?.revenue.value.toLocaleString("vi-VN") + "đ",
-      icon: <MdAttachMoney size={24} color="#16a34a" />,
+      icon: <MdAttachMoney size={20} color="#16a34a" />,
       change: summary?.revenue.change + "%",
-      label: summary?.revenue.label,
+      label: "Tháng này",
       isPositive: (summary?.revenue.change || 0) >= 0,
       iconBg: "#f0fdf4",
     },
     {
-      title: "Tổng khách hàng",
+      title: "Khách hàng",
       value: summary?.customers.total.toLocaleString("vi-VN"),
-      icon: <MdGroups size={24} color="#059669" />,
-      change: "Tổng cộng",
-      label: summary?.customers.label,
+      icon: <MdGroups size={20} color="#059669" />,
+      change: "Tổng",
+      label: "Học viên",
       isPositive: true,
       iconBg: "#ecfdf5",
     },
     {
       title: "Học viên mới",
       value: summary?.students.newToday.toLocaleString("vi-VN"),
-      icon: <MdPersonAdd size={24} color="#2563eb" />,
+      icon: <MdPersonAdd size={20} color="#2563eb" />,
       change: "Mới",
-      label: summary?.students.label,
+      label: "Hôm nay",
       isPositive: true,
       iconBg: "#eff6ff",
     },
     {
-      title: "Số email mới",
+      title: "Tổng Email",
+      value: summary?.emails.total?.toLocaleString("vi-VN") || "0",
+      icon: <MdMail size={20} color="#f78404" />,
+      change: "Tất cả",
+      label: "Hệ thống",
+      isPositive: true,
+      iconBg: "#fff7ed",
+    },
+    {
+      title: "Email mới",
       value: summary?.emails.total.toLocaleString("vi-VN"),
-      icon: <MdMail size={24} color="#7c3aed" />,
-      change: "Hôm nay",
-      label: summary?.emails.label,
+      icon: <MdMail size={20} color="#7c3aed" />,
+      change: "Gửi",
+      label: "Hôm nay",
       isPositive: true,
       iconBg: "#f5f3ff",
     },
@@ -259,12 +266,13 @@ export default function AdminDashboardPage() {
         {/* Stats Cards */}
         <Row gutter={[24, 24]}>
           {statsCards.map((stat, index) => (
-            <Col xs={24} sm={12} lg={6} key={index}>
+            <Col xs={24} sm={12} md={8} className="stat-col" key={index}>
               <Card
                 variant="borderless"
                 style={{
                   borderRadius: 16,
                   boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                  height: "100%",
                 }}
                 styles={{ body: { padding: "24px" } }}
               >
@@ -272,28 +280,15 @@ export default function AdminDashboardPage() {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "flex-start",
+                    alignItems: "center",
+                    marginBottom: 12,
                   }}
                 >
-                  <div>
-                    <Text
-                      type="secondary"
-                      style={{ fontSize: 14, fontWeight: 500 }}
-                    >
-                      {stat.title}
-                    </Text>
-                    <Title
-                      level={3}
-                      style={{ margin: "8px 0", fontWeight: 700 }}
-                    >
-                      {stat.value}
-                    </Title>
-                  </div>
                   <div
                     style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 12,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 10,
                       background: stat.iconBg,
                       display: "flex",
                       alignItems: "center",
@@ -302,27 +297,50 @@ export default function AdminDashboardPage() {
                   >
                     {stat.icon}
                   </div>
-                </div>
-                <Space style={{ marginTop: 12 }}>
                   <Tag
-                    icon={
-                      stat.isPositive ? <MdTrendingUp /> : <MdTrendingDown />
-                    }
                     color={stat.isPositive ? "success" : "error"}
                     bordered={false}
                     style={{
-                      borderRadius: 4,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 4,
+                      borderRadius: 6,
+                      fontSize: 10,
+                      margin: 0,
+                      padding: "0 6px",
                     }}
                   >
                     {stat.change}
                   </Tag>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
+                </div>
+
+                <div>
+                  <Text
+                    type="secondary"
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 500,
+                      display: "block",
+                      marginBottom: 4,
+                    }}
+                  >
+                    {stat.title}
+                  </Text>
+                  <Title
+                    level={4}
+                    style={{
+                      margin: 0,
+                      fontWeight: 700,
+                      fontSize: 18,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {stat.value}
+                  </Title>
+                </div>
+
+                <div style={{ marginTop: 12 }}>
+                  <Text type="secondary" style={{ fontSize: 11, opacity: 0.7 }}>
                     {stat.label}
                   </Text>
-                </Space>
+                </div>
               </Card>
             </Col>
           ))}
@@ -809,6 +827,18 @@ export default function AdminDashboardPage() {
       </Space>
 
       <style>{`
+        @media (min-width: 1200px) {
+          .stat-col {
+            flex: 0 0 20% !important;
+            max-width: 20% !important;
+          }
+        }
+        @media (min-width: 768px) and (max-width: 1199px) {
+          .stat-col:nth-child(n+4) {
+             flex: 0 0 50% !important;
+             max-width: 50% !important;
+          }
+        }
         .ant-table-thead > tr > th {
           background: #f8fafc !important;
           color: #64748b !important;

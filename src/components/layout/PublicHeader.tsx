@@ -76,7 +76,7 @@ const PublicHeader: React.FC = () => {
                   margin: 0,
                 }}
               >
-                SRM <span style={{ color: "#f78404" }}>FIN-EDU</span>
+                Thaisu<span style={{ color: "#f78404" }}>Invest</span>
               </h1>
             ) : (
               <h2
@@ -88,7 +88,7 @@ const PublicHeader: React.FC = () => {
                   margin: 0,
                 }}
               >
-                SRM <span style={{ color: "#f78404" }}>FIN-EDU</span>
+                Thaisu<span style={{ color: "#f78404" }}>Invest</span>
               </h2>
             )}
             <div style={{ fontSize: 11, color: "#64748b", fontWeight: 500 }}>

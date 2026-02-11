@@ -254,6 +254,12 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
             clearInterval(pollInterval);
             modal.destroy();
 
+            // Prepare book info with data from statusRes (like zalo link)
+            const paidBook = {
+              ...book,
+              ...statusRes.data
+            };
+
             // Show Success Dialog
             Modal.success({
               title: (
@@ -279,7 +285,7 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
                       Sản phẩm đã kích hoạt:
                     </Text>
                     <Text style={{ fontSize: 18, color: "#f78404", fontWeight: 700 }}>
-                      {book.title}
+                      {paidBook.title}
                     </Text>
                   </div>
 
@@ -317,6 +323,34 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
                       style={{ borderRadius: 12, textAlign: "left" }}
                     />
                   )}
+
+                  {true && (
+                    <div style={{ marginTop: 24 }}>
+                      <Button
+                        type="default"
+                        size="large"
+                        block
+                        style={{
+                          height: 50,
+                          borderRadius: 12,
+                          borderColor: "#0068ff",
+                          color: "#0068ff",
+                          fontWeight: 600,
+                          fontSize: 16,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 8,
+                        }}
+                        onClick={() => window.open(paidBook.zalo_group_url || "https://zalo.me/g/something", "_blank")}
+                      >
+                        THAM GIA NHÓM ZALO NGAY
+                      </Button>
+                      <Text type="secondary" style={{ fontSize: 12, marginTop: 8, display: "block" }}>
+                        Tham gia nhóm để nhận hỗ trợ và thảo luận cùng cộng đồng (Link: {paidBook.zalo_group_url || "Chưa có link"})
+                      </Text>
+                    </div>
+                  )}
                 </div>
               ),
               okText: is_new_user ? "Đăng nhập ngay" : "Vào xem sách ngay",
@@ -331,10 +365,18 @@ export const BookCheckoutModal: React.FC<BookCheckoutModalProps> = ({
           }
         } catch (err) {
           console.error("Polling error:", err);
+          // If user already owns the book, stop polling and show message
+          const errorMessage = (err as any)?.response?.data?.message;
+          if (errorMessage === "Bạn đã mua sách này rồi") {
+            clearInterval(pollInterval);
+            modal.destroy();
+            message.info(errorMessage);
+          }
         }
       }, 3000);
-    } catch (error) {
-      message.error("Có lỗi xảy ra khi đặt hàng");
+    } catch (error: any) {
+      console.error("Book checkout error:", error);
+      message.error(error.response?.data?.message || "Có lỗi xảy ra khi đặt hàng");
     }
   };
 

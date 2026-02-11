@@ -42,7 +42,11 @@ export default function LoginPage() {
       }
 
       if (response.user.role === "admin") {
-        navigate(from === "/" ? "/admin" : from);
+        navigate("/admin");
+      } else if (response.user.role === "saler") {
+        navigate("/saler");
+      } else if (response.user.role === "user") {
+        navigate("/student");
       } else {
         navigate(from);
       }

@@ -140,7 +140,11 @@ export const SalesPageContent: React.FC<SalesPageContentProps> = ({
       console.error("Payment creation error:", error);
       const errorMessage = error.response?.data?.message;
 
-      if (errorMessage === "ALREADY_ENROLLED") {
+      // Check for ownership messages
+      if (
+        errorMessage === "ALREADY_ENROLLED" ||
+        errorMessage === "Bạn đã mua khóa học này rồi"
+      ) {
         message.info("Bạn đã sở hữu khóa học này!");
         // If we are already enrolled, we can redirect to the learn page
         if (landingPage.course_id) {
