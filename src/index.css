@@ -1,7 +1,7 @@
 @tailwind utilities;
 
 :root {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Inter', 'Roboto', 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -146,4 +146,37 @@ body {
     padding-left: 4px !important;
     padding-right: 4px !important;
   }
+}
+
+/* Landing Page Components Styles */
+.landing-builder-component {
+  font-family: inherit;
+}
+
+.landing-builder-component h1,
+.landing-builder-component h2,
+.landing-builder-component h3,
+.landing-builder-component h4,
+.landing-builder-component h5,
+.landing-builder-component h6 {
+  font-family: inherit;
+}
+
+.landing-builder-component p,
+.landing-builder-component span,
+.landing-builder-component div {
+  font-family: inherit;
+}
+
+/* Ensure Vietnamese characters display properly */
+.landing-builder-content * {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Landing Page Font Support for Vietnamese */
+.landing-builder-content {
+  font-feature-settings: "kern" 1, "liga" 1;
+  text-rendering: optimizeLegibility;
 }

@@ -32,18 +32,19 @@ interface RichTextProps {
 }
 
 const FONT_FAMILIES = [
+  "Inter, sans-serif",
+  "Roboto, sans-serif",
+  "Open Sans, sans-serif",
+  "Nunito, sans-serif",
+  "Poppins, sans-serif",
+  "Montserrat, sans-serif",
+  "Lato, sans-serif",
   "Arial, sans-serif",
   "Helvetica, sans-serif",
   "Georgia, serif",
   "Times New Roman, serif",
-  "Courier New, monospace",
   "Verdana, sans-serif",
-  "Roboto, sans-serif",
-  "Open Sans, sans-serif",
-  "Lato, sans-serif",
-  "Montserrat, sans-serif",
-  "Poppins, sans-serif",
-  "Inter, sans-serif",
+  "Courier New, monospace",
 ];
 
 export const RichText: React.FC<RichTextProps> = ({

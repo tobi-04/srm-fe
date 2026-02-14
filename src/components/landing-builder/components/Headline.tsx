@@ -20,7 +20,7 @@ interface HeadlineProps {
 }
 
 export const Headline: React.FC<HeadlineProps> = ({
-  text = "How To Make An Additional",
+  text = "How To Make An Additional $1,000 - $3,000 Per Day",
   highlightText = "$1,000 - $3,000",
   highlightColor = "yellow",
   fontSize = 36,
@@ -42,8 +42,12 @@ export const Headline: React.FC<HeadlineProps> = ({
   }));
 
   const renderTextWithHighlight = () => {
-    const fullText = `${text} ${highlightText} Per Day In Passive Income On Complete Autopilot In 2026...`;
-    const parts = fullText.split(highlightText);
+    // If no highlight text or highlight text not found in main text, just show main text
+    if (!highlightText || !text.includes(highlightText)) {
+      return text;
+    }
+
+    const parts = text.split(highlightText);
 
     return (
       <>
@@ -107,16 +111,17 @@ const HeadlineSettings = () => {
           label: "Cài đặt",
           children: (
             <Form layout="vertical">
-              <Form.Item label="Main Text">
+              <Form.Item label="Toàn bộ nội dung" help="Nhập toàn bộ câu văn tiêu đề">
                 <Input.TextArea
                   value={props.text}
                   onChange={(e) =>
                     setProp((props: any) => (props.text = e.target.value))
                   }
-                  rows={2}
+                  rows={3}
+                  placeholder="Ví dụ: Làm Thế Nào Để Kiếm Thêm 1.000$ - 3.000$ Mỗi Ngày"
                 />
               </Form.Item>
-              <Form.Item label="Highlight Text">
+              <Form.Item label="Text cần highlight" help="Nhập đoạn text trong nội dung trên để tô màu">
                 <Input
                   value={props.highlightText}
                   onChange={(e) =>
@@ -124,6 +129,7 @@ const HeadlineSettings = () => {
                       (props: any) => (props.highlightText = e.target.value),
                     )
                   }
+                  placeholder="Ví dụ: 1.000$ - 3.000$"
                 />
               </Form.Item>
               <Form.Item label="Highlight Color">
@@ -265,7 +271,7 @@ const HeadlineSettings = () => {
 (Headline as any).craft = {
   displayName: "Headline",
   props: {
-    text: "How To Make An Additional",
+    text: "How To Make An Additional $1,000 - $3,000 Per Day",
     highlightText: "$1,000 - $3,000",
     highlightColor: "yellow",
     fontSize: 36,
