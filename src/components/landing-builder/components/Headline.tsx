@@ -57,7 +57,8 @@ export const Headline: React.FC<HeadlineProps> = ({
             backgroundColor: highlightColor,
             textDecoration: hasUnderline ? "underline" : "none",
             padding: "0 12px",
-          }}>
+          }}
+        >
           {highlightText}
         </span>
         {parts[1]}
@@ -74,7 +75,8 @@ export const Headline: React.FC<HeadlineProps> = ({
         marginTop: `${marginTop}px`,
         marginBottom: `${marginBottom}px`,
         border: selected ? "2px dashed #1890ff" : "none",
-      }}>
+      }}
+    >
       <h1
         style={{
           fontSize: `clamp(${Math.max(20, fontSize * 0.55)}px, ${
@@ -88,7 +90,8 @@ export const Headline: React.FC<HeadlineProps> = ({
           lineHeight: 1.3,
           padding: 0,
           ...customCSS,
-        }}>
+        }}
+      >
         {renderTextWithHighlight()}
       </h1>
     </div>
@@ -111,7 +114,10 @@ const HeadlineSettings = () => {
           label: "Cài đặt",
           children: (
             <Form layout="vertical">
-              <Form.Item label="Toàn bộ nội dung" help="Nhập toàn bộ câu văn tiêu đề">
+              <Form.Item
+                label="Toàn bộ nội dung"
+                help="Nhập toàn bộ câu văn tiêu đề"
+              >
                 <Input.TextArea
                   value={props.text}
                   onChange={(e) =>
@@ -121,7 +127,10 @@ const HeadlineSettings = () => {
                   placeholder="Ví dụ: Làm Thế Nào Để Kiếm Thêm 1.000$ - 3.000$ Mỗi Ngày"
                 />
               </Form.Item>
-              <Form.Item label="Text cần highlight" help="Nhập đoạn text trong nội dung trên để tô màu">
+              <Form.Item
+                label="Text cần highlight"
+                help="Nhập đoạn text trong nội dung trên để tô màu"
+              >
                 <Input
                   value={props.highlightText}
                   onChange={(e) =>
@@ -198,7 +207,8 @@ const HeadlineSettings = () => {
                     setProp(
                       (props: any) => (props.hasUnderline = e.target.checked),
                     )
-                  }>
+                  }
+                >
                   Underline Highlighted Text
                 </Checkbox>
               </Form.Item>
@@ -217,7 +227,8 @@ const HeadlineSettings = () => {
                   props.maxWidth === 1200
                     ? "Full"
                     : (props.maxWidth || 900) + "px"
-                }`}>
+                }`}
+              >
                 <Slider
                   min={400}
                   max={1200}

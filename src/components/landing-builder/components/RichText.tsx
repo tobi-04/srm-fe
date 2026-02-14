@@ -114,7 +114,8 @@ export const RichText: React.FC<RichTextProps> = ({
           textAlign === "center" ? "auto" : textAlign === "left" ? "auto" : "0",
         border: selected ? "1px dashed #1890ff" : "1px transparent solid",
         ...customCSS,
-      }}>
+      }}
+    >
       <div
         style={{
           fontFamily,
@@ -126,7 +127,8 @@ export const RichText: React.FC<RichTextProps> = ({
           textAlign,
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
-        }}>
+        }}
+      >
         {renderText()}
       </div>
     </div>
@@ -298,7 +300,8 @@ const RichTextSettings = () => {
               </Form.Item>
 
               <Form.Item
-                label={`Max Width: ${props.maxWidth === 1200 ? "Full" : props.maxWidth + "px"}`}>
+                label={`Max Width: ${props.maxWidth === 1200 ? "Full" : props.maxWidth + "px"}`}
+              >
                 <Slider
                   min={300}
                   max={1200}
